@@ -7,7 +7,24 @@ import 'package:dcat/dcat.dart';
 import 'package:desktop_window/desktop_window.dart';
 import 'package:il_int/screens/merge_basefile.dart';
 import '../constant.dart';
+import 'package:http/http.dart' as http;
+import 'package:html/parser.dart' as htmlParser;
+import 'package:html/dom.dart' as htmlDom;
+import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+// #docregion platform_imports
+// Import for Android features.
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+// Import for iOS features.
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+// #enddocregion platform_imports
 
 
 
@@ -33,11 +50,11 @@ class _UnitPreShipmentCheckState extends State<UnitPreShipmentCheck> {
         appBar: AppBar(
           actions: [
             GestureDetector(
-              onTap: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => MergeBasefile()),);}, // --------------- Folder creator
+              onTap: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => MergeBasefile()),);}, // --------------- Merge Base files
               child: const Padding(
                 padding: EdgeInsets.only(right: 14.0),
                 child: Icon(
-                  Icons.merge_type_outlined,
+                  Icons.south_america_outlined,
                   color: Colors.white,
                   size: 40,
                 ),
@@ -60,147 +77,640 @@ class _UnitPreShipmentCheckState extends State<UnitPreShipmentCheck> {
           ),
           centerTitle: true,
           title: const Text(
-            'Merge base station files',
+            'Pre shipment unit check',
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
         ),
-        body: Wrap(
-          direction: Axis.vertical,
-          runSpacing: 8,
-          spacing: 8,
-          children: const [
-            ExampleDragTarget1(),
-          ],
-        ),
+        body: WebViewExample(),
       ),
     );
   }
 }
 
-class ExampleDragTarget1 extends StatefulWidget {
-  const ExampleDragTarget1({Key? key}) : super(key: key);
+
+//=========================================== PARSER
+const String kNavigationExamplePage = '''
+<!DOCTYPE html><html>
+<head><title>Navigation Delegate Example</title></head>
+<body>
+<p>
+The navigation delegate is set to block navigation to the youtube website.
+</p>
+<ul>
+<ul><a href="https://www.youtube.com/">https://www.youtube.com/</a></ul>
+<ul><a href="https://www.google.com/">https://www.google.com/</a></ul>
+</ul>
+</body>
+</html>
+''';
+
+const String kLocalExamplePage = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Load file or HTML string example</title>
+</head>
+<body>
+
+<h1>Local demo page</h1>
+<p>
+  This is an example page used to demonstrate how to load a local file or HTML
+  string using the <a href="https://pub.dev/packages/webview_flutter">Flutter
+  webview</a> plugin.
+</p>
+
+</body>
+</html>
+''';
+
+const String kTransparentBackgroundPage = '''
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Transparent background test</title>
+  </head>
+  <style type="text/css">
+    body { background: transparent; margin: 0; padding: 0; }
+    #container { position: relative; margin: 0; padding: 0; width: 100vw; height: 100vh; }
+    #shape { background: red; width: 200px; height: 200px; margin: 0; padding: 0; position: absolute; top: calc(50% - 100px); left: calc(50% - 100px); }
+    p { text-align: center; }
+  </style>
+  <body>
+    <div id="container">
+      <p>Transparent background test</p>
+      <div id="shape"></div>
+    </div>
+  </body>
+  </html>
+''';
+
+const String kLogExamplePage = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Load file or HTML string example</title>
+</head>
+<body onload="console.log('Logging that the page is loading.')">
+
+<h1>Local demo page</h1>
+<p>
+  This page is used to test the forwarding of console logs to Dart.
+</p>
+
+<style>
+    .btn-group button {
+      padding: 24px; 24px;
+      display: block;
+      width: 25%;
+      margin: 5px 0px 0px 0px;
+    }
+</style>
+
+<div class="btn-group">
+    <button onclick="console.error('This is an error message.')">Error</button>
+    <button onclick="console.warn('This is a warning message.')">Warning</button>
+    <button onclick="console.info('This is a info message.')">Info</button>
+    <button onclick="console.debug('This is a debug message.')">Debug</button>
+    <button onclick="console.log('This is a log message.')">Log</button>
+</div>
+
+</body>
+</html>
+''';
+
+class WebViewExample extends StatefulWidget {
+  const WebViewExample({super.key});
 
   @override
-  _ExampleDragTargetState createState() => _ExampleDragTargetState();
+  State<WebViewExample> createState() => _WebViewExampleState();
 }
 
-class _ExampleDragTargetState extends State<ExampleDragTarget1> {
-  bool _dragging = false;
-  Offset? offset;
-  late XFile firstDrag;
-  late XFile secondDrag;
-  final List<XFile> listX = [];
+class _WebViewExampleState extends State<WebViewExample> {
+  late final WebViewController _controller;
 
-  Future<void> merge() async {
-    if (listX.length == 2) {
-      var slot0 = listX[0].name.split("-");
-      slot0.removeLast();
-      var slot0Val = int.parse(slot0[slot0.length - 1]);
-      //
-      var slot1 = listX[1].name.split("-");
-      slot1.removeLast();
-      var slot1Val = int.parse(slot1[slot1.length - 1]);
-      //
-      if (slot0Val < slot1Val) {
-        firstDrag = listX[0];
-        secondDrag = listX[1];
-      } else {
-        firstDrag = listX[1];
-        secondDrag = listX[0];
-      }
-      //
-      print('--------  ${slot0Val}');
-      print('--------  ${slot0Val.runtimeType}');
+  @override
+  void initState() {
+    super.initState();
+
+    // #docregion platform_features
+    late final PlatformWebViewControllerCreationParams params;
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      params = WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
+      );
+    } else {
+      params = const PlatformWebViewControllerCreationParams();
     }
 
-    /// Path splitter
-    String outputPath = listX[0].path;
-    List<String> putiy = outputPath.split("\\");
-    putiy.removeLast();
-    putiy.add('basefile');
-    var directoryPath = putiy.join("/");
+    final WebViewController controller =
+    WebViewController.fromPlatformCreationParams(params);
+    // #enddocregion platform_features
 
-    /// Log
-    // print('--------  ${slot0.runtimeType}');
-    print('Output directory --------  ${directoryPath}');
+    controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            debugPrint('WebView is loading (progress : $progress%)');
+          },
+          onPageStarted: (String url) {
+            debugPrint('Page started loading: $url');
+          },
+          onPageFinished: (String url) {
+            debugPrint('Page finished loading: $url');
+          },
+          onWebResourceError: (WebResourceError error) {
+            debugPrint('''
+Page resource error:
+  code: ${error.errorCode}
+  description: ${error.description}
+  errorType: ${error.errorType}
+  isForMainFrame: ${error.isForMainFrame}
+          ''');
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            if (request.url.startsWith('http://192.168.12.1/')) {
+              debugPrint('blocking navigation to ${request.url}');
+              return NavigationDecision.prevent;
+            }
+            debugPrint('allowing navigation to ${request.url}');
+            return NavigationDecision.navigate;
+          },
+          onUrlChange: (UrlChange change) {
+            debugPrint('url change to ${change.url}');
+          },
+          onHttpAuthRequest: (HttpAuthRequest request) {
+            openDialog(request);
+          },
+        ),
+      )
+      ..addJavaScriptChannel(
+        'Toaster',
+        onMessageReceived: (JavaScriptMessage message) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message.message)),
+          );
+        },
+      )
+      ..loadRequest(Uri.parse('http://192.168.12.1/'));
 
-    /// Merger
-    final result = await cat(
-        [firstDrag.path, secondDrag.path], File(directoryPath).openWrite());
-    if (result.isFailure) {
-      for (final error in result.errors) {
-        print('Error: ${error.message}');
-      }
+    // #docregion platform_features
+    if (controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(true);
+      (controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
     }
+    // #enddocregion platform_features
+
+    _controller = controller;
   }
 
   @override
   Widget build(BuildContext context) {
-    var windowW = MediaQuery.of(context).size.width;
-    var windowH = MediaQuery.of(context).size.height;
-    return DropTarget(
-      onDragDone: (detail) async {
-        setState(() {
-          listX.addAll(detail.files);
-          if (listX.length > 2) {
-            listX.clear();
-          }
-          if (listX.length == 2) {
-            merge();
-          }
-        });
+    return Scaffold(
+      backgroundColor: Colors.green,
+      appBar: AppBar(
+        title: const Text('Flutter WebView example'),
+        // This drop down menu demonstrates that Flutter widgets can be shown over the web view.
+        actions: <Widget>[
+          NavigationControls(webViewController: _controller),
+          SampleMenu(webViewController: _controller),
+        ],
+      ),
+      body: WebViewWidget(controller: _controller),
+      floatingActionButton: favoriteButton(),
+    );
+  }
 
-        debugPrint('onDragDone:');
-        for (final file in detail.files) {
-          debugPrint('${file.name}\n'
-              '${file.path}\n'
-              '${file.readAsBytes().toString()}\n'
-              '${detail.files}\n');
+  Widget favoriteButton() {
+    return FloatingActionButton(
+      onPressed: () async {
+        final String? url = await _controller.currentUrl();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Favorited $url')),
+          );
         }
       },
-      onDragUpdated: (details) {
-        setState(() {
-          offset = details.localPosition;
-        });
+      child: const Icon(Icons.favorite),
+    );
+  }
+
+  Future<void> openDialog(HttpAuthRequest httpRequest) async {
+    final TextEditingController usernameTextController =
+    TextEditingController();
+    final TextEditingController passwordTextController =
+    TextEditingController();
+
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('${httpRequest.host}: ${httpRequest.realm ?? '-'}'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  decoration: const InputDecoration(labelText: 'Username'),
+                  autofocus: true,
+                  controller: usernameTextController,
+                ),
+                TextField(
+                  decoration: const InputDecoration(labelText: 'Password'),
+                  controller: passwordTextController,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            // Explicitly cancel the request on iOS as the OS does not emit new
+            // requests when a previous request is pending.
+            TextButton(
+              onPressed: () {
+                httpRequest.onCancel();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                httpRequest.onProceed(
+                  WebViewCredential(
+                    user: usernameTextController.text,
+                    password: passwordTextController.text,
+                  ),
+                );
+                Navigator.of(context).pop();
+              },
+              child: const Text('Authenticate'),
+            ),
+          ],
+        );
       },
-      onDragEntered: (detail) {
-        setState(() {
-          _dragging = true;
-          offset = detail.localPosition;
-          if (offset != null && listX.length == 0) {
-            dragAndDropMessage = "Drop it";
-          } else {
-            dragAndDropMessage = "Select two files and drop here";
-          }
-        });
+    );
+  }
+}
+
+enum MenuOptions {
+  showUserAgent,
+  listCookies,
+  clearCookies,
+  addToCache,
+  listCache,
+  clearCache,
+  navigationDelegate,
+  doPostRequest,
+  loadLocalFile,
+  loadFlutterAsset,
+  loadHtmlString,
+  transparentBackground,
+  setCookie,
+  logExample,
+  basicAuthentication,
+}
+
+class SampleMenu extends StatelessWidget {
+  SampleMenu({
+    super.key,
+    required this.webViewController,
+  });
+
+  final WebViewController webViewController;
+  late final WebViewCookieManager cookieManager = WebViewCookieManager();
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<MenuOptions>(
+      key: const ValueKey<String>('ShowPopupMenu'),
+      onSelected: (MenuOptions value) {
+        switch (value) {
+          case MenuOptions.showUserAgent:
+            _onShowUserAgent();
+          case MenuOptions.listCookies:
+            _onListCookies(context);
+          case MenuOptions.clearCookies:
+            _onClearCookies(context);
+          case MenuOptions.addToCache:
+            _onAddToCache(context);
+          case MenuOptions.listCache:
+            _onListCache();
+          case MenuOptions.clearCache:
+            _onClearCache(context);
+          case MenuOptions.navigationDelegate:
+            _onNavigationDelegateExample();
+          case MenuOptions.doPostRequest:
+            _onDoPostRequest();
+          case MenuOptions.loadLocalFile:
+            _onLoadLocalFileExample();
+          case MenuOptions.loadFlutterAsset:
+            _onLoadFlutterAssetExample();
+          case MenuOptions.loadHtmlString:
+            _onLoadHtmlStringExample();
+          case MenuOptions.transparentBackground:
+            _onTransparentBackground();
+          case MenuOptions.setCookie:
+            _onSetCookie();
+          case MenuOptions.logExample:
+            _onLogExample();
+          case MenuOptions.basicAuthentication:
+            _promptForUrl(context);
+        }
       },
-      onDragExited: (detail) {
-        setState(() {
-          _dragging = false;
-          offset = null;
-        });
-      },
-      child: Container(
-        height: windowH,
-        width: windowW,
-        color: _dragging ? Colors.green.withOpacity(0.4) : Colors.white,
-        child: Stack(
-          children: [
-            if (listX.isEmpty) Center(child: Text(dragAndDropMessage)),
-            if (listX.length == 1)
-              Center(
-                  child: Text(
-                      textAlign: TextAlign.center,
-                      "${listX[0].path}\nAnd the second file please")),
-            if (listX.length == 2)
-              Center(
-                  child: Text(
-                    "${listX.map((e) => e.path).join("\n")}\n\nThese two files are merged\nAll the best to you!",
-                    textAlign: TextAlign.center,
-                  )),
+      itemBuilder: (BuildContext context) => <PopupMenuItem<MenuOptions>>[
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.showUserAgent,
+          child: Text('Show user agent'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.listCookies,
+          child: Text('List cookies'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.clearCookies,
+          child: Text('Clear cookies'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.addToCache,
+          child: Text('Add to cache'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.listCache,
+          child: Text('List cache'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.clearCache,
+          child: Text('Clear cache'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.navigationDelegate,
+          child: Text('Navigation Delegate example'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.doPostRequest,
+          child: Text('Post Request'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.loadHtmlString,
+          child: Text('Load HTML string'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.loadLocalFile,
+          child: Text('Load local file'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.loadFlutterAsset,
+          child: Text('Load Flutter Asset'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          key: ValueKey<String>('ShowTransparentBackgroundExample'),
+          value: MenuOptions.transparentBackground,
+          child: Text('Transparent background example'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.setCookie,
+          child: Text('Set cookie'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.logExample,
+          child: Text('Log example'),
+        ),
+        const PopupMenuItem<MenuOptions>(
+          value: MenuOptions.basicAuthentication,
+          child: Text('Basic Authentication Example'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _onShowUserAgent() {
+    // Send a message with the user agent string to the Toaster JavaScript channel we registered
+    // with the WebView.
+    return webViewController.runJavaScript(
+      'Toaster.postMessage("User Agent: " + navigator.userAgent);',
+    );
+  }
+
+  Future<void> _onListCookies(BuildContext context) async {
+    final String cookies = await webViewController
+        .runJavaScriptReturningResult('document.cookie') as String;
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Text('Cookies:'),
+            _getCookieList(cookies),
           ],
         ),
+      ));
+    }
+  }
+
+  Future<void> _onAddToCache(BuildContext context) async {
+    await webViewController.runJavaScript(
+      'caches.open("test_caches_entry"); localStorage["test_localStorage"] = "dummy_entry";',
+    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Added a test entry to cache.'),
+      ));
+    }
+  }
+
+  Future<void> _onListCache() {
+    return webViewController.runJavaScript('caches.keys()'
+    // ignore: missing_whitespace_between_adjacent_strings
+        '.then((cacheKeys) => JSON.stringify({"cacheKeys" : cacheKeys, "localStorage" : localStorage}))'
+        '.then((caches) => Toaster.postMessage(caches))');
+  }
+
+  Future<void> _onClearCache(BuildContext context) async {
+    await webViewController.clearCache();
+    await webViewController.clearLocalStorage();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Cache cleared.'),
+      ));
+    }
+  }
+
+  Future<void> _onClearCookies(BuildContext context) async {
+    final bool hadCookies = await cookieManager.clearCookies();
+    String message = 'There were cookies. Now, they are gone!';
+    if (!hadCookies) {
+      message = 'There are no cookies.';
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(message),
+      ));
+    }
+  }
+
+  Future<void> _onNavigationDelegateExample() {
+    final String contentBase64 = base64Encode(
+      const Utf8Encoder().convert(kNavigationExamplePage),
+    );
+    return webViewController.loadRequest(
+      Uri.parse('data:text/html;base64,$contentBase64'),
+    );
+  }
+
+  Future<void> _onSetCookie() async {
+    await cookieManager.setCookie(
+      const WebViewCookie(
+        name: 'foo',
+        value: 'bar',
+        domain: 'httpbin.org',
+        path: '/anything',
       ),
+    );
+    await webViewController.loadRequest(Uri.parse(
+      'https://httpbin.org/anything',
+    ));
+  }
+
+  Future<void> _onDoPostRequest() {
+    return webViewController.loadRequest(
+      Uri.parse('https://httpbin.org/post'),
+      method: LoadRequestMethod.post,
+      headers: <String, String>{'foo': 'bar', 'Content-Type': 'text/plain'},
+      body: Uint8List.fromList('Test Body'.codeUnits),
+    );
+  }
+
+  Future<void> _onLoadLocalFileExample() async {
+    final String pathToIndex = await _prepareLocalFile();
+    await webViewController.loadFile(pathToIndex);
+  }
+
+  Future<void> _onLoadFlutterAssetExample() {
+    return webViewController.loadFlutterAsset('assets/www/index.html');
+  }
+
+  Future<void> _onLoadHtmlStringExample() {
+    return webViewController.loadHtmlString(kLocalExamplePage);
+  }
+
+  Future<void> _onTransparentBackground() {
+    return webViewController.loadHtmlString(kTransparentBackgroundPage);
+  }
+
+  Widget _getCookieList(String cookies) {
+    if (cookies == '""') {
+      return Container();
+    }
+    final List<String> cookieList = cookies.split(';');
+    final Iterable<Text> cookieWidgets =
+    cookieList.map((String cookie) => Text(cookie));
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
+      children: cookieWidgets.toList(),
+    );
+  }
+
+  static Future<String> _prepareLocalFile() async {
+    final String tmpDir = (await getTemporaryDirectory()).path;
+    final File indexFile = File(
+        <String>{tmpDir, 'www', 'index.html'}.join(Platform.pathSeparator));
+
+    await indexFile.create(recursive: true);
+    await indexFile.writeAsString(kLocalExamplePage);
+
+    return indexFile.path;
+  }
+
+  Future<void> _onLogExample() {
+    webViewController
+        .setOnConsoleMessage((JavaScriptConsoleMessage consoleMessage) {
+      debugPrint(
+          '== JS == ${consoleMessage.level.name}: ${consoleMessage.message}');
+    });
+
+    return webViewController.loadHtmlString(kLogExamplePage);
+  }
+
+  Future<void> _promptForUrl(BuildContext context) {
+    final TextEditingController urlTextController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Input URL to visit'),
+          content: TextField(
+            decoration: const InputDecoration(labelText: 'URL'),
+            autofocus: true,
+            controller: urlTextController,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                if (urlTextController.text.isNotEmpty) {
+                  final Uri? uri = Uri.tryParse(urlTextController.text);
+                  if (uri != null && uri.scheme.isNotEmpty) {
+                    webViewController.loadRequest(uri);
+                    Navigator.pop(context);
+                  }
+                }
+              },
+              child: const Text('Visit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class NavigationControls extends StatelessWidget {
+  const NavigationControls({super.key, required this.webViewController});
+
+  final WebViewController webViewController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () async {
+            if (await webViewController.canGoBack()) {
+              await webViewController.goBack();
+            } else {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('No back history item')),
+                );
+              }
+            }
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios),
+          onPressed: () async {
+            if (await webViewController.canGoForward()) {
+              await webViewController.goForward();
+            } else {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('No forward history item')),
+                );
+              }
+            }
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.replay),
+          onPressed: () => webViewController.reload(),
+        ),
+      ],
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:il_int/screens/merge_basefile.dart';
-import 'package:il_int/screens/unit_check.dart';
 
 void main() {
   runApp(const Ilint());

@@ -5,25 +5,23 @@ import 'package:cross_file/cross_file.dart';
 import 'dart:io';
 import 'package:dcat/dcat.dart';
 import 'package:desktop_window/desktop_window.dart';
-import 'package:il_int/screens/unit_check.dart';
+import 'package:il_int/screens/merge_basefile.dart';
 import '../constant.dart';
 
 
-void main() {
-  runApp(Container(child: MergeBasefile()));
-}
 
-class MergeBasefile extends StatefulWidget {
-  MergeBasefile({Key? key}) : super(key: key);
+
+class UnitPreShipmentCheck extends StatefulWidget {
+  UnitPreShipmentCheck({Key? key}) : super(key: key);
   @override
-  _MergeBasefileState createState() => _MergeBasefileState();
+  _UnitPreShipmentCheckState createState() => _UnitPreShipmentCheckState();
 }
 
-class _MergeBasefileState extends State<MergeBasefile> {
+class _UnitPreShipmentCheckState extends State<UnitPreShipmentCheck> {
   @override
   void initState() {
-    DesktopWindow.setWindowSize(const Size(400, 300));
-    DesktopWindow.setMinWindowSize(const Size(400, 300));
+    DesktopWindow.setWindowSize(const Size(800, 600));
+    DesktopWindow.setMinWindowSize(const Size(800, 600));
     super.initState();
   }
 
@@ -35,11 +33,11 @@ class _MergeBasefileState extends State<MergeBasefile> {
         appBar: AppBar(
           actions: [
             GestureDetector(
-              onTap: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => UnitPreShipmentCheck()),);}, // --------------- Unit check
+              onTap: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => MergeBasefile()),);}, // --------------- Merge Base files
               child: const Padding(
                 padding: EdgeInsets.only(right: 14.0),
                 child: Icon(
-                  Icons.price_check_outlined,
+                  Icons.merge_type_outlined,
                   color: Colors.white,
                   size: 40,
                 ),
@@ -62,7 +60,7 @@ class _MergeBasefileState extends State<MergeBasefile> {
           ),
           centerTitle: true,
           title: const Text(
-            'Merge base station files',
+            'Pre shipment unit check',
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
         ),
@@ -185,7 +183,7 @@ class _ExampleDragTargetState extends State<ExampleDragTarget1> {
       child: Container(
         height: windowH,
         width: windowW,
-        color: _dragging ? Colors.orange.withOpacity(0.4) : Colors.white,
+        color: _dragging ? Colors.green.withOpacity(0.4) : Colors.white,
         child: Stack(
           children: [
             if (listX.isEmpty) Center(child: Text(dragAndDropMessage)),
