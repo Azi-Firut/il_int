@@ -5,13 +5,9 @@ import 'package:cross_file/cross_file.dart';
 import 'dart:io';
 import 'package:dcat/dcat.dart';
 import 'package:desktop_window/desktop_window.dart';
+import 'package:il_int/screens/create_folders.dart';
 import 'package:il_int/screens/unit_check.dart';
 import '../constant.dart';
-
-
-void main() {
-  runApp(Container(child: MergeBasefile()));
-}
 
 class MergeBasefile extends StatefulWidget {
   MergeBasefile({Key? key}) : super(key: key);
@@ -35,11 +31,31 @@ class _MergeBasefileState extends State<MergeBasefile> {
         appBar: AppBar(
           actions: [
             GestureDetector(
-              onTap: () {Navigator.of(context).push(MaterialPageRoute(builder: (context) => UnitPreShipmentCheck()),);}, // --------------- Unit check
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => UnitPreShipmentCheck()),
+                );
+              }, // --------------- Unit check
               child: const Padding(
                 padding: EdgeInsets.only(right: 14.0),
                 child: Icon(
                   Icons.price_check_outlined,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => MyApp()),
+                );
+              }, // --------------- Unit check
+              child: const Padding(
+                padding: EdgeInsets.only(right: 14.0),
+                child: Icon(
+                  Icons.folder_open_rounded,
                   color: Colors.white,
                   size: 40,
                 ),
@@ -197,9 +213,9 @@ class _ExampleDragTargetState extends State<ExampleDragTarget1> {
             if (listX.length == 2)
               Center(
                   child: Text(
-                    "${listX.map((e) => e.path).join("\n")}\n\nThese two files are merged\nAll the best to you!",
-                    textAlign: TextAlign.center,
-                  )),
+                "${listX.map((e) => e.path).join("\n")}\n\nThese two files are merged\nAll the best to you!",
+                textAlign: TextAlign.center,
+              )),
           ],
         ),
       ),
