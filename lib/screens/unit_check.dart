@@ -5,7 +5,7 @@ import 'package:cross_file/cross_file.dart';
 import 'dart:io';
 import 'package:dcat/dcat.dart';
 import 'package:desktop_window/desktop_window.dart';
-import 'package:il_int/screens/merge_basefile.dart';
+import 'package:il_int/widgets/merge_screen.dart';
 import '../constant.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as htmlParser;
@@ -52,7 +52,7 @@ class _UnitPreShipmentCheckState extends State<UnitPreShipmentCheck> {
             GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => MergeBasefile()),
+                  MaterialPageRoute(builder: (context) => MergeBaseFiles()),
                 );
               }, // --------------- Merge Base files
               child: const Padding(

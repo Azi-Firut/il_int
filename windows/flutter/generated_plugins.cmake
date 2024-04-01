@@ -3,10 +3,13 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  bitsdojo_window_windows
+  connectivity_plus
   desktop_drop
   desktop_window
   drag_and_drop_windows
   file_selector_windows
+  wifi_scan_windows
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
