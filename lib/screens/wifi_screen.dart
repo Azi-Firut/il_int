@@ -1,8 +1,11 @@
-import 'dart:io';
-
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:process_run/process_run.dart';
+
+import '../constant.dart';
 
 class WiFiadd extends StatefulWidget {
   const WiFiadd({Key? key}) : super(key: key);
@@ -20,22 +23,39 @@ class _WiFiaddState extends State<WiFiadd> {
   }
 
   Future<void> wifiSearchPythonScript() async {
+// Создайте объект, содержащий карту паролей и SSID
+//     Map<String, String> credentials = {
+//       "WINGTRA": "WingtraLidar",
+//       "RESEPI": "LidarAndINS",
+//       "Pizdaki": "12345678",
+//       // Другие пары SSID и паролей
+//     };
+
+    final String jsonData = await rootBundle
+        .loadString('assets/ssids.json'); // Преобразуйте объект в JSON-строку
+    //  final String jsonData = jsonEncode(jsonData2);
+
+    // Преобразуйте объект в JSON-строку
+    // String jsonData = jsonEncode(credentials);
+    print(jsonData);
+
+    ///
+    final dataBytes =
+        Uint8List.fromList(utf8.encode(jsonData)); // Конвертация строки в байты
+    final stream =
+        Stream.fromIterable([dataBytes]); // Создание потока из байтов
+    final result = await run(
+        'data/flutter_assets/assets/wifi_search/wifi_search.exe',
+        stdin: stream); // Путь к вашему EXE скрипту Python Для финальной сборки
+
     // final result = await run(
-    //     'data/flutter_assets/assets/wifi_search/wifi_search.exe'); // Путь к вашему EXE скрипту Python Для финальной сборки
+    //   'python/wifi_search.py',
+    //   stdin: stream, // Передача данных в stdin
+    // );
 
-    final result =
-        await run('python/wifi_search.py'); // Путь к вашему  скрипту Python
-
-    print(result.toString());
-    print(result.errText);
-    print(result.first.toString());
-    print(result.runtimeType);
-    print(result[0]);
-    print(result[0].toString());
-    print(result[0].runtimeType);
     print(result[0].stderr);
     print(result[0].stdout);
-    // print(result[0].stdout);
+    print(result[0].outText);
 
     setState(() {
       output = result;
@@ -48,10 +68,10 @@ class _WiFiaddState extends State<WiFiadd> {
     return Column(
       children: [
         if (output == null)
-          const Text(
+          Text(
             "Wait...",
             style: TextStyle(
-              color: Color(0xFF777777),
+              color: textColorGray,
             ),
           ),
         ///////////
@@ -70,8 +90,8 @@ class _WiFiaddState extends State<WiFiadd> {
               children: [
                 Text(
                   "${output[0].stdout}",
-                  style: const TextStyle(
-                    color: Color(0xFF777777),
+                  style: TextStyle(
+                    color: textColorGray,
                   ),
                 ),
                 Padding(

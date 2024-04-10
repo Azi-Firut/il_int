@@ -78,11 +78,13 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
+  # http://unicode.org/Public/emoji/1.0/emoji-data.txt
   uses-material-design: true
   assets:
    - assets/
    - assets/open_folder/
    - assets/open_folder/_internal/
+   - assets/wifi_search/
    - assets/wifi_search/_internal/
   # To add assets to your application, add an assets section, like this:
   #assets:

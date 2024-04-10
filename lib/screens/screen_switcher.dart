@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:il_int/widgets/merge_screen.dart';
+import 'package:il_int/screens/merge_screen.dart';
 
 import 'wifi_screen.dart';
 import 'intro_screen.dart';

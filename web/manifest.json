@@ -1,5 +1,5 @@
 {
-    "name": "il_int",
+    "ssid": "il_int",
     "short_name": "il_int",
     "start_url": ".",
     "display": "standalone",

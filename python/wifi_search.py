@@ -1,16 +1,15 @@
+import json
 import datetime
 import time
-
 import pywifi
 from pywifi import const
-
 
 def add_network(iface, ssid, password):
     profiles = iface.network_profiles()
     for existing_profile in profiles:
         if existing_profile.ssid == ssid:
             print(f"Network '{ssid}' already exists.")
-            return True  # Если профиль уже существует, возвращаем True
+            return True
     profile = pywifi.Profile()
     profile.ssid = ssid
     profile.auth = const.AUTH_ALG_OPEN
@@ -23,81 +22,31 @@ def add_network(iface, ssid, password):
     time.sleep(5)
     return iface.status() == const.IFACE_CONNECTED
 
-def scan_and_add_networks():
+def scan_and_add_networks(credentials):
     wifi = pywifi.PyWiFi()
     iface = wifi.interfaces()[0]
     start_time = datetime.datetime.now()
-    while (datetime.datetime.now() - start_time).seconds < 10:  # Работать только 60 секунд
-        iface.scan()
-        time.sleep(5)
-        networks = iface.scan_results()
-        for network in networks:
-            ssid = network.ssid
-            if ssid.startswith("WINGTRA"):
-                added = add_network(iface, ssid, "WingtraLidar")
+    iface.scan()
+    time.sleep(5)
+    networks = iface.scan_results()
+    for network in networks:
+        for ssid, password in credentials.items():
+            if network.ssid.startswith(ssid):
+                added = add_network(iface, network.ssid, password)
                 if added:
-                    print(f"Added network '{ssid}' to favorites.")
+                    print(f"Added network '{network.ssid}' ")
                 else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-            # Добавьте другие сети по аналогии с предыдущими if-блоками
-            if ssid.startswith("RESEPI"):
-                added = add_network(iface, ssid, "LidarAndINS")
-                if added:
-                    print(f"Added network '{ssid}' to favorites.")
-                else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-            if ssid.startswith("FLIGHTS"):
-                added = add_network(iface, ssid, "FLIGHTSscan")
-                if added:
-                    print(f"Added network '{ssid}' to favorites.")
-                else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-            if ssid.startswith("RECON"):
-                added = add_network(iface, ssid, "LidarAndINS")
-                if added:
-                    print(f"Added network '{ssid}' to favorites.")
-                else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-            if ssid.startswith("STONEX"):
-                added = add_network(iface, ssid, "StoneXFLY")
-                if added:
-                    print(f"Added network '{ssid}' to favorites.")
-                else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-            if ssid.startswith("TERSUS"):
-                added = add_network(iface, ssid, "LidarAndINS")
-                if added:
-                    print(f"Added network '{ssid}' to favorites.")
-                else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-            if ssid.startswith("TRIDAR"):
-                 added = add_network(iface, ssid, "L!DAR2020")
-                 if added:
-                     print(f"Added network '{ssid}' to favorites.")
-                 else:
-                   print(f"Failed to add network '{ssid}' to favorites.")
-            if ssid.startswith("ML-"):
-                added = add_network(iface, ssid, "MICRoLiDAR")
-                if added:
-                    print(f"Added network '{ssid}' to favorites.")
-                else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-            if ssid.startswith("ROCK"):
-                added = add_network(iface, ssid, "rocklidar")
-                if added:
-                    print(f"Added network '{ssid}' to favorites.")
-                else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-            if ssid.startswith("Redmi"):
-                added = add_network(iface, ssid, "12345678")
-                if added:
-                    print(f"Added network '{ssid}' to favorites.")
-                else:
-                    print(f"Failed to add network '{ssid}' to favorites.")
-
-            # Проверяем, прошла ли минута
-            if (datetime.datetime.now() - start_time).seconds >= 10:
+                    print(f"Failed to add network '{network.ssid}' ")
                 break
+    if (datetime.datetime.now() - start_time).seconds >= 10:
+        return
 
 if __name__ == "__main__":
-    scan_and_add_networks()
+    # Чтение JSON из стандартного ввода
+    credentials_json = input()
+
+    # Преобразование JSON в объект Python
+    credentials = json.loads(credentials_json)
+
+    # Вызов функции для поиска и добавления сетей Wi-Fi
+    scan_and_add_networks(credentials)

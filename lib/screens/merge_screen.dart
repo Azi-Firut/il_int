@@ -117,8 +117,8 @@ class _MergeBaseFilesState extends State<MergeBaseFiles> {
               Center(
                 child: Text(
                   dragAndDropMessage,
-                  style: const TextStyle(
-                    color: Color(0xFF777777),
+                  style: TextStyle(
+                    color: textColorGray,
                   ),
                 ),
               ),
@@ -127,8 +127,8 @@ class _MergeBaseFilesState extends State<MergeBaseFiles> {
                 child: Text(
                   textAlign: TextAlign.center,
                   "${listX[0].path}\nAnd the second file please",
-                  style: const TextStyle(
-                    color: Color(0xFF777777),
+                  style: TextStyle(
+                    color: textColorGray,
                   ),
                 ),
               ),
@@ -137,8 +137,8 @@ class _MergeBaseFilesState extends State<MergeBaseFiles> {
                 child: Text(
                   "${listX.map((e) => e.path).join("\n")}\n\nThese two files are merged\nAll the best to you!",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Color(0xFF777777),
+                  style: TextStyle(
+                    color: textColorGray,
                   ),
                 ),
               ),
