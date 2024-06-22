@@ -9,6 +9,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   desktop_window
   drag_and_drop_windows
   file_selector_windows
+  flutter_secure_storage_windows
   wifi_scan_windows
 )
 

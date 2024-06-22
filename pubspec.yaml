@@ -51,6 +51,7 @@ dependencies:
   #serious_python: ^0.7.0
   bitsdojo_window: ^0.1.6
   provider: ^6.1.2
+  flutter_secure_storage: ^9.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -83,9 +84,10 @@ flutter:
   assets:
    - assets/
    - assets/open_folder/
-   - assets/open_folder/_internal/
+   - assets/open_folder/internal/
    - assets/wifi_search/
-   - assets/wifi_search/_internal/
+   - assets/wifi_search/internal/
+
   # To add assets to your application, add an assets section, like this:
   #assets:
    #  - images/a_dot_burr.jpeg

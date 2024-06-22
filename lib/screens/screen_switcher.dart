@@ -23,6 +23,8 @@ class _ScreenSwitcherState extends State<ScreenSwitcher> {
       return WiFiadd();
     } else if (widget.page == 2) {
       return MergeBaseFiles();
+    } else if (widget.page == 3) {
+      return MergeBaseFiles();
     } else {
       // Return some default widget if page number is not recognized
       return Container();
@@ -34,9 +36,3 @@ class _ScreenSwitcherState extends State<ScreenSwitcher> {
     return screenSwitcher();
   }
 }
-
-// Future<void> _openFolderPythonScript() async {
-//   final result = await run(
-//       'data/flutter_assets/assets/open_folder/open_folder.exe'); // Путь к вашему скрипту Python
-//   result;
-// }

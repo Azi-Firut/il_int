@@ -85,13 +85,23 @@ class _LeftSideState extends State<LeftSide> {
                   height: 1,
                   width: double.infinity,
                   color: const Color(0x1800A4FC),
-                ),
-                //end
+                ), //end
                 // BUTTON
                 const CustomTextButton(
                   icon: Icons.call_merge_rounded,
                   text: "Merge file",
                   onPress: 2,
+                ),
+                Container(
+                  height: 1,
+                  width: double.infinity,
+                  color: const Color(0x1500A4FC),
+                ),
+                // BUTTON
+                const CustomTextButton(
+                  icon: Icons.bug_report_outlined,
+                  text: "Device fix",
+                  onPress: 3,
                 ),
                 Container(
                   height: 1,

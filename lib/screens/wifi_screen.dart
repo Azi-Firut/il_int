@@ -48,11 +48,6 @@ class _WiFiaddState extends State<WiFiadd> {
         'data/flutter_assets/assets/wifi_search/wifi_search.exe',
         stdin: stream); // Путь к вашему EXE скрипту Python Для финальной сборки
 
-    // final result = await run(
-    //   'python/wifi_search.py',
-    //   stdin: stream, // Передача данных в stdin
-    // );
-
     print(result[0].stderr);
     print(result[0].stdout);
     print(result[0].outText);

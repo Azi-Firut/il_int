@@ -64,6 +64,29 @@ class Intro extends StatelessWidget {
                 ),
               ],
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(right: 12.0),
+                  child: Icon(
+                    Icons.bug_report_outlined,
+                    color: textColorGray,
+                    size: 18,
+                  ),
+                ),
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Text(
+                    "Tools for changing the brand and restoring a deleted calibration file (use if the device writes data to folders with an incorrect name).",
+                    style: TextStyle(
+                      color: textColorGray,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
