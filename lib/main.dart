@@ -153,13 +153,20 @@ class _RightSideState extends State<RightSide> {
               child: Row(
                 children: [
                   Expanded(child: MoveWindow()),
-                  const WindowButtons(),
+                  WindowButtons(),
                 ],
               ),
             ),
-            /////////////////////////////////////////////////////////////////////////////
-            ScreenSwitcher(page: context.watch<Data>().getScreenNumber),
-            //screenSwitcher(numPage),
+            //  ScreenSwitcher(page: context.watch<Data>().getScreenNumber),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ScreenSwitcher(page: context.watch<Data>().getScreenNumber),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

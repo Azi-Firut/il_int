@@ -23,20 +23,9 @@ class _WiFiaddState extends State<WiFiadd> {
   }
 
   Future<void> wifiSearchPythonScript() async {
-// Создайте объект, содержащий карту паролей и SSID
-//     Map<String, String> credentials = {
-//       "WINGTRA": "WingtraLidar",
-//       "RESEPI": "LidarAndINS",
-//       "Pizdaki": "12345678",
-//       // Другие пары SSID и паролей
-//     };
-
     final String jsonData = await rootBundle
         .loadString('assets/ssids.json'); // Преобразуйте объект в JSON-строку
-    //  final String jsonData = jsonEncode(jsonData2);
 
-    // Преобразуйте объект в JSON-строку
-    // String jsonData = jsonEncode(credentials);
     print(jsonData);
 
     ///
@@ -69,15 +58,6 @@ class _WiFiaddState extends State<WiFiadd> {
               color: textColorGray,
             ),
           ),
-        ///////////
-        // if (output[0].stdout == '')
-        //   const Text(
-        //     "No available networks found",
-        //     style: TextStyle(
-        //       color: Color(0xFF777777),
-        //     ),
-        //   ),
-        /////////////
         if (output != null && output.isNotEmpty && output[0].stdout != null)
           Padding(
             padding: const EdgeInsets.only(top: 18.0),
