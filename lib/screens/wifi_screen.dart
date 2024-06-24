@@ -16,6 +16,7 @@ class WiFiadd extends StatefulWidget {
 
 class _WiFiaddState extends State<WiFiadd> {
   var output;
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +28,7 @@ class _WiFiaddState extends State<WiFiadd> {
         .loadString('assets/ssids.json'); // Преобразуйте объект в JSON-строку
 
     print(jsonData);
+    // final wifiExe = "assets/wifi_search.exe";
 
     ///
     final dataBytes =
@@ -35,6 +37,8 @@ class _WiFiaddState extends State<WiFiadd> {
         Stream.fromIterable([dataBytes]); // Создание потока из байтов
     final result = await run(
         'data/flutter_assets/assets/wifi_search/wifi_search.exe',
+        // 'assets/wifi_search.exe',
+        //  wifiExe,
         stdin: stream); // Путь к вашему EXE скрипту Python Для финальной сборки
 
     print(result[0].stderr);

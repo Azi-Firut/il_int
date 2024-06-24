@@ -159,8 +159,11 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       final shell = Shell();
       String output = "";
       try {
-        var brand = await shell.run('''
+        var _brandNow = await shell.run('''
           plink.exe -i "$_keyPath" root@192.168.12.1 "cat /etc/brand"
+          ''');
+        await shell.run('''
+          plink.exe -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow!}' > /etc/brand && exit"
           ''');
         // Путь к файлу calibration в папке assets вашего проекта
         final calibrationAssetPath = 'assets/calibration';
@@ -189,33 +192,33 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     return utf8.decode(binary.codeUnits);
   }
 
-  void _runIMUCommands() async {
-    if (await _createTempKeyFile()) {
-      final shell = Shell();
-      String imuOutput = "";
-      try {
-        var result = await shell.run('''
-        plink.exe -i "$_keyPath" root@192.168.12.1 "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3 && cat /dev/ttymxc3 && exit"
-        ''');
-        imuOutput += _decodeBinary(result.outText.trim());
-        result = await shell.run('''
-        plink.exe -i "$_keyPath" root@192.168.12.1 "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3 && cat /dev/ttymxc3 && exit"
-        ''');
-        imuOutput += _decodeBinary(result.outText.trim());
-      } catch (e) {
-        imuOutput = "Failed to run IMU commands: $e";
-      } finally {
-        await _deleteTempKeyFile();
-      }
-      setState(() {
-        _imuOutput = imuOutput;
-      });
-    } else {
-      setState(() {
-        _imuOutput = "Failed to create key file.";
-      });
-    }
-  }
+  // void _runIMUCommands() async {
+  //   if (await _createTempKeyFile()) {
+  //     final shell = Shell();
+  //     String imuOutput = "";
+  //     try {
+  //       var result = await shell.run('''
+  //       plink.exe -i "$_keyPath" root@192.168.12.1 "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3 && cat /dev/ttymxc3 && exit"
+  //       ''');
+  //       imuOutput += _decodeBinary(result.outText.trim());
+  //       result = await shell.run('''
+  //       plink.exe -i "$_keyPath" root@192.168.12.1 "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3 && cat /dev/ttymxc3 && exit"
+  //       ''');
+  //       imuOutput += _decodeBinary(result.outText.trim());
+  //     } catch (e) {
+  //       imuOutput = "Failed to run IMU commands: $e";
+  //     } finally {
+  //       await _deleteTempKeyFile();
+  //     }
+  //     setState(() {
+  //       _imuOutput = imuOutput;
+  //     });
+  //   } else {
+  //     setState(() {
+  //       _imuOutput = "Failed to create key file.";
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +231,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
               Flexible(
                 fit: FlexFit.loose,
                 child: Text(
-                  "For this part of the application to work correctly, additional installed programs are required. (plink and pscp)",
+                  "For this part of the application to work correctly, additional installed programs are required (plink and pscp).",
                   style: TextStyle(
                     color: textColorGray,
                   ),
@@ -331,7 +334,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
               Flexible(
                 fit: FlexFit.loose,
                 child: Text(
-                  "To delete or restore the calibration file on the device, use the buttons below",
+                  "To delete or restore the calibration file on the device, use the buttons below.",
                   style: TextStyle(
                     color: textColorGray,
                   ),
