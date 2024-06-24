@@ -163,7 +163,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
           plink.exe -i "$_keyPath" root@192.168.12.1 "cat /etc/brand"
           ''');
         await shell.run('''
-          plink.exe -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow!}' > /etc/brand && exit"
+          plink.exe -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow}' > /etc/brand && exit"
           ''');
         // Путь к файлу calibration в папке assets вашего проекта
         final calibrationAssetPath = 'assets/calibration';
