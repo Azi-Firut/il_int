@@ -138,7 +138,8 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         var result = await shell.run('''
         plink.exe -i "$_keyPath" root@192.168.12.1 "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
         ''');
-        output = result.outText.trim();
+        output = "Calibration file successfully deleted.";
+      //  output = result.outText.trim();
       } catch (e) {
         output = "Failed to delete calibration: $e";
       } finally {
@@ -163,8 +164,10 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
           plink.exe -i "$_keyPath" root@192.168.12.1 "cat /etc/brand"
           ''');
         await shell.run('''
-          plink.exe -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow}' > /etc/brand && exit"
+          plink.exe -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow.outText}' > /etc/brand && exit"
           ''');
+        print(_brandNow.length);
+        print(_brandNow.outText);
         // Путь к файлу calibration в папке assets вашего проекта
         final calibrationAssetPath = 'assets/calibration';
         // Копирование файла calibration на удаленное устройство
