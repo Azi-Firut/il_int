@@ -250,6 +250,22 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
               Flexible(
                 fit: FlexFit.loose,
                 child: Text(
+                  "Turn on the device and connect to it using Wi-Fi. Make sure the connection is established.",
+                  style: TextStyle(
+                    color: textColorGray,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Flexible(
+                fit: FlexFit.loose,
+                child: Text(
                   "To change the device brand, select the brand from the list and click Change Brand.",
                   style: TextStyle(
                     color: textColorGray,
