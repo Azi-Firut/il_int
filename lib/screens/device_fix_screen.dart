@@ -112,6 +112,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
             _output = "Brand changed successfully to $_selectedBrand";
           });
         } catch (e) {
+          await _deleteTempKeyFile();
           setState(() {
             _output = "Failed to change brand: $e";
           });
@@ -119,11 +120,13 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
           await _deleteTempKeyFile();
         }
       } else {
+        await _deleteTempKeyFile();
         setState(() {
           _output = "Failed to create key file.";
         });
       }
     } else {
+      await _deleteTempKeyFile();
       setState(() {
         _output = "Please select a brand and ensure the key file is loaded.";
       });
@@ -141,6 +144,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         output = "Calibration file successfully deleted.";
       //  output = result.outText.trim();
       } catch (e) {
+        await _deleteTempKeyFile();
         output = "Failed to delete calibration: $e";
       } finally {
         await _deleteTempKeyFile();
@@ -149,6 +153,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         _output = output;
       });
     } else {
+      await _deleteTempKeyFile();
       setState(() {
         _output = "Failed to create key file.";
       });
@@ -166,8 +171,6 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         await shell.run('''
           plink.exe -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow.outText}' > /etc/brand && exit"
           ''');
-        print(_brandNow.length);
-        print(_brandNow.outText);
         // Путь к файлу calibration в папке assets вашего проекта
         final calibrationAssetPath = 'assets/calibration';
         // Копирование файла calibration на удаленное устройство
@@ -176,6 +179,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         ''');
         output = "Calibration file copied successfully.";
       } catch (e) {
+        await _deleteTempKeyFile();
         output = "Failed to copy calibration file: $e";
       } finally {
         await _deleteTempKeyFile();
@@ -185,6 +189,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         _output = output;
       });
     } else {
+      await _deleteTempKeyFile();
       setState(() {
         _output = "Failed to create key file.";
       });
