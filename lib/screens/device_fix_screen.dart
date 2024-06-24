@@ -40,14 +40,12 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     super.initState();
     _loadCalibrationFile();
     _decodedString = decodeStringWithRandom(_key);
-    //  print(_decodedString);
   }
 
   String decodeStringWithRandom(String input) {
     StringBuffer cleaned = StringBuffer();
     for (int i = 0; i < input.length; i++) {
       if (i % 3 != 2) {
-        // Remove every third character
         cleaned.write(input[i]);
       }
     }
@@ -96,7 +94,20 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   Future<void> _deleteTempKeyFile() async {
     final keyFile = File(_keyPath);
     if (await keyFile.exists()) {
-      await keyFile.delete();
+      try {
+        await keyFile.delete();
+        print("Temp key file deleted successfully.");
+      } catch (e) {
+        print("Failed to delete temp key file: $e");
+        await Future.delayed(Duration(seconds: 1));
+        // Retry deleting the key file
+        try {
+          await keyFile.delete();
+          print("Retry: Temp key file deleted successfully.");
+        } catch (retryException) {
+          print("Retry failed to delete temp key file: $retryException");
+        }
+      }
     }
   }
 
@@ -112,7 +123,6 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
             _output = "Brand changed successfully to $_selectedBrand";
           });
         } catch (e) {
-          await _deleteTempKeyFile();
           setState(() {
             _output = "Failed to change brand: $e";
           });
@@ -120,13 +130,11 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
           await _deleteTempKeyFile();
         }
       } else {
-        await _deleteTempKeyFile();
         setState(() {
           _output = "Failed to create key file.";
         });
       }
     } else {
-      await _deleteTempKeyFile();
       setState(() {
         _output = "Please select a brand and ensure the key file is loaded.";
       });
@@ -138,13 +146,11 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       final shell = Shell();
       String output = "";
       try {
-        var result = await shell.run('''
+        await shell.run('''
         plink.exe -i "$_keyPath" root@192.168.12.1 "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
         ''');
         output = "Calibration file successfully deleted.";
-      //  output = result.outText.trim();
       } catch (e) {
-        await _deleteTempKeyFile();
         output = "Failed to delete calibration: $e";
       } finally {
         await _deleteTempKeyFile();
@@ -153,7 +159,6 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         _output = output;
       });
     } else {
-      await _deleteTempKeyFile();
       setState(() {
         _output = "Failed to create key file.";
       });
@@ -179,7 +184,6 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         ''');
         output = "Calibration file copied successfully.";
       } catch (e) {
-        await _deleteTempKeyFile();
         output = "Failed to copy calibration file: $e";
       } finally {
         await _deleteTempKeyFile();
@@ -189,7 +193,6 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         _output = output;
       });
     } else {
-      await _deleteTempKeyFile();
       setState(() {
         _output = "Failed to create key file.";
       });
@@ -199,34 +202,6 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   String _decodeBinary(String binary) {
     return utf8.decode(binary.codeUnits);
   }
-
-  // void _runIMUCommands() async {
-  //   if (await _createTempKeyFile()) {
-  //     final shell = Shell();
-  //     String imuOutput = "";
-  //     try {
-  //       var result = await shell.run('''
-  //       plink.exe -i "$_keyPath" root@192.168.12.1 "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3 && cat /dev/ttymxc3 && exit"
-  //       ''');
-  //       imuOutput += _decodeBinary(result.outText.trim());
-  //       result = await shell.run('''
-  //       plink.exe -i "$_keyPath" root@192.168.12.1 "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3 && cat /dev/ttymxc3 && exit"
-  //       ''');
-  //       imuOutput += _decodeBinary(result.outText.trim());
-  //     } catch (e) {
-  //       imuOutput = "Failed to run IMU commands: $e";
-  //     } finally {
-  //       await _deleteTempKeyFile();
-  //     }
-  //     setState(() {
-  //       _imuOutput = imuOutput;
-  //     });
-  //   } else {
-  //     setState(() {
-  //       _imuOutput = "Failed to create key file.";
-  //     });
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -419,7 +394,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
           ),
         ),
 
-        /// must hide this text
+        // Скрываемый текст
         // Padding(
         //   padding: const EdgeInsets.all(8.0),
         //   child: Text(
