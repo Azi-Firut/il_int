@@ -1,13 +1,8 @@
-
-
-
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:process_run/shell.dart';
-
 
 import '../constant.dart';
 
@@ -55,8 +50,6 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     _loadCalibrationFile();
     _decodedString = decodeStringWithRandom(_key);
   }
-
-
 
   String decodeStringWithRandom(String input) {
     StringBuffer cleaned = StringBuffer();
@@ -117,31 +110,73 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     }
   }
 
-  void _runAuth() async {
-    if (await _createTempKeyFile()) {
-      final shell = Shell(runInShell: true);
-      String output = "";
-      try {
-        await shell.run('$_plinkPath -ssh root@192.168.12.1');
-       // await shell.run('$_plinkPath y');
-///
-        output = "Access granted";
-      } catch (e) {
-        output = "Access not allowed: $e";
-      } finally {
-        await shell.run('$_plinkPath y && exit');
-       // await _deleteTempKeyFile();
+  Future<void> _sendCommand() async {
+    var shell = Shell();
+    var hostKey =
+        "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc";
+
+    try {
+      // Establish SSH connection with pre-confirmed host key
+      var result = await shell
+          .run('$_plinkPath -ssh root@192.168.12.1 -hostkey "$hostKey"');
+
+      // Run the actual command
+      result = await shell.run('$_plinkPath -ssh root@192.168.12.1');
+
+      // Check if there is any output and handle it
+      if (result.outText.isNotEmpty) {
+        print('Command output: ${result.outText}');
       }
+
       setState(() {
-        _output = output;
+        _output = result.outText;
       });
-    } else {
+    } catch (e) {
       setState(() {
-        _output = "Failed to create key file.";
+        _output = 'Error: $e';
       });
     }
   }
+
+  // void _sendCommand() async {
+  //   var shell = Shell();
+  //   try {
+  //     List<ProcessResult> result;
+  //     //result = await shell.run('echo y | $_plinkPath -ssh root@192.168.12.1');
+  //     result =
+  //         await shell.run('$_plinkPath -ssh root@192.168.12.1 / && echo "y"');
   //
+  //     // // Establish SSH connection and skip prompts with -batch
+  //     // result = await shell.run('$_plinkPath -ssh -batch root@192.168.12.1');
+  //     //
+  //     // // Run the actual command
+  //     // result = await shell.run('echo y | $_plinkPath -ssh root@192.168.12.1 ');
+  //
+  //     print('----------------------------------------------------------');
+  //     //result = await shell.run('echo y $_plinkPath -i "$_keyPath"  -ssh root@192.168.12.1');
+  //     // result = await shell.run('$_plinkPath  y');
+  //     // result = await shell.run('echo y | $_plinkPath');
+  //     // result = await shell.run('$_plinkPath "y"');
+  //     // result = await shell.run('y');
+  //     // result = await shell.runSync('y');
+  //     print('==========================================');
+  //     if (result.outText.isNotEmpty) {
+  //       // await shell.run('$_plinkPath echo y');
+  //       print('PANIK');
+  //     }
+  //     //result = await shell.run('$_plinkPath ');
+  //
+  //     setState(() {
+  //       _output = result.outText;
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _output = 'Error: $e';
+  //     });
+  //   }
+  // }
+
+  ///
   // Future<void> runCommand() async {
   //   // Получаем временную директорию
   //   final tempDir = await getTemporaryDirectory();
@@ -173,41 +208,41 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   //   }
   // }
 
-
-
   void _changeBrand() async {
     if (_selectedBrand != null) {
       if (await _createTempKeyFile()) {
         final shell = Shell();
+        var hostKey =
+            "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc";
         try {
           final result = await shell.run('''
-        $_plinkPath -i "$_keyPath" -P 22 root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit"
+       $_plinkPath -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit"
         ''');
 
           //   final result = await shell.run('''
-        // ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit" root
-        // ''');
+          // ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit" root
+          // ''');
 
           // Combine stdout and stderr for the final output
-          String combinedOutput = result.map((e) => e.stdout + e.stderr).join('\n');
+          String combinedOutput =
+              result.map((e) => e.stdout + e.stderr).join('\n');
 
           setState(() {
             _output = "Brand changed successfully to $_selectedBrand";
             _output2 = shell.context.encoding as String;
             //_output2 = combinedOutput;
-
           });
         } catch (e) {
           String errorMessage = e.toString();
           // Check if the shell context has any error details
           String shellContext = shell.context.toString();
 
-          String combinedErrorOutput = "Error: $errorMessage\n \nShell output: $shellContext";
+          String combinedErrorOutput =
+              "Error: $errorMessage\n \nShell output: $shellContext";
 
           setState(() {
             _output = "Failed to change brand: $errorMessage";
-             _output2 = combinedErrorOutput;
-
+            _output2 = combinedErrorOutput;
           });
         } finally {
           await _deleteTempKeyFile();
@@ -321,6 +356,10 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        ElevatedButton(
+          onPressed: _sendCommand,
+          child: Text('Send Command'),
+        ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -510,10 +549,6 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     );
   }
 }
-
-
-
-
 
 //
 // import 'dart:convert';
