@@ -43,15 +43,15 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       "UHLVUUVFOktIVXBNlVciJ1LKZXTktGRmClsDZSE0yFOiIBlJY2ORzYYSP1zHaGJEyBLWR5pAc3CRwBMjDU2KCkDVuVY3IJ5OcHARpHb2I46IIGS5vCbmDUKIQ2V9tWbWBVuTdDTogVaWR1wUb3CJ0QZWNQtKb3XBlSbnLNzNaCP1rMZXBkKZUHBViIbGHljULUSxpMbmSVzXOiZAzWCkLFBVQULFFVMlUZqYWkMhODaESxYITmW9ZGVEPl0DYmG1sTemBRIHQXQlOPVFNlBVQUGFBJSWKJtUbHFpkKSEJF5OTlDRZHQUUFBZQkZJCSQkRt5IOUI1GYc0TlSBWUI8KORGCI5JUlUBtOM2CF3CZEUpnBNHCdkFYVTVXPa0Fx4XSjLl0OWHXBDDRFSJEYWVTdsOZ3Dp6PeECtpOY1CFsQeCRt0NaEKxRMa0Z9jEUUWM5SaFPI2LNkN50PcXOUwJTQKo3LZjSBtYNTABHVU2SdTYQTK0KVUHMJpBdmCF0ZZSR1MTaWN5lKczXogJMQBpBXQUHFBTSVXFDLOUQhwYUjYNCXajGZLMZEWpzMWkX0yYZEGtGDRTNV3MRmXg1FK2TcwCRTXdYZZ1YJOXcVQU0KWlMY4FaTJl5DUTM09QClNByCaXTZhVdGHUtBTUEFDQOiSBmMYTSQ1YMzWQ3KOGVUwQMTOA1EZjJI1DYWOFkNMmWRlOMzGM1EY2KYxPZjMZmIYmVM5UMDLEwEMDCJmA";
 
   // Переменные для путей к plink и pscp
-  // final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
-  // final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
-  final String _plinkPath = 'assets/plink.exe';
-  final String _pscpPath = 'assets/pscp.exe';
+  final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
+  final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
+  // final String _plinkPath = 'assets/plink.exe';
+  // final String _pscpPath = 'assets/pscp.exe';
 
   @override
   void initState() {
     super.initState();
-    _runAuth();
+    //_runAuth();
     _loadCalibrationFile();
     _decodedString = decodeStringWithRandom(_key);
   }
@@ -122,14 +122,15 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       final shell = Shell(runInShell: true);
       String output = "";
       try {
-        await shell.run('''echo y $_plinkPath -ssh -i $_keyPath root@192.168.12.1''');
-        await shell.run('''echo y $_plinkPath -ssh -i $_keyPath root@192.168.12.1''');
+        await shell.run('$_plinkPath -ssh root@192.168.12.1');
+       // await shell.run('$_plinkPath y');
 ///
         output = "Access granted";
       } catch (e) {
         output = "Access not allowed: $e";
       } finally {
-        await _deleteTempKeyFile();
+        await shell.run('$_plinkPath y && exit');
+       // await _deleteTempKeyFile();
       }
       setState(() {
         _output = output;

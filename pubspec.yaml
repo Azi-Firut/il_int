@@ -85,6 +85,8 @@ flutter:
   assets:
    - temp/
    - assets/
+   - assets/plink.exe
+   - assets/pscp.exe
    - assets/open_folder/
    - assets/open_folder/_internal/
    - assets/wifi_search/
