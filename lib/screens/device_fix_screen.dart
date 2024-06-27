@@ -3,10 +3,11 @@
 
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:process_run/shell.dart';
-import 'dart:io';
+
 
 import '../constant.dart';
 
@@ -32,6 +33,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   ];
   String? _selectedBrand;
   String _output = "";
+  String _output2 = "";
   String _imuOutput = "";
   String _keyPath = '';
   String brand = "";
@@ -41,15 +43,20 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       "UHLVUUVFOktIVXBNlVciJ1LKZXTktGRmClsDZSE0yFOiIBlJY2ORzYYSP1zHaGJEyBLWR5pAc3CRwBMjDU2KCkDVuVY3IJ5OcHARpHb2I46IIGS5vCbmDUKIQ2V9tWbWBVuTdDTogVaWR1wUb3CJ0QZWNQtKb3XBlSbnLNzNaCP1rMZXBkKZUHBViIbGHljULUSxpMbmSVzXOiZAzWCkLFBVQULFFVMlUZqYWkMhODaESxYITmW9ZGVEPl0DYmG1sTemBRIHQXQlOPVFNlBVQUGFBJSWKJtUbHFpkKSEJF5OTlDRZHQUUFBZQkZJCSQkRt5IOUI1GYc0TlSBWUI8KORGCI5JUlUBtOM2CF3CZEUpnBNHCdkFYVTVXPa0Fx4XSjLl0OWHXBDDRFSJEYWVTdsOZ3Dp6PeECtpOY1CFsQeCRt0NaEKxRMa0Z9jEUUWM5SaFPI2LNkN50PcXOUwJTQKo3LZjSBtYNTABHVU2SdTYQTK0KVUHMJpBdmCF0ZZSR1MTaWN5lKczXogJMQBpBXQUHFBTSVXFDLOUQhwYUjYNCXajGZLMZEWpzMWkX0yYZEGtGDRTNV3MRmXg1FK2TcwCRTXdYZZ1YJOXcVQU0KWlMY4FaTJl5DUTM09QClNByCaXTZhVdGHUtBTUEFDQOiSBmMYTSQ1YMzWQ3KOGVUwQMTOA1EZjJI1DYWOFkNMmWRlOMzGM1EY2KYxPZjMZmIYmVM5UMDLEwEMDCJmA";
 
   // Переменные для путей к plink и pscp
-  final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
-  final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
+  // final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
+  // final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
+  final String _plinkPath = 'assets/plink.exe';
+  final String _pscpPath = 'assets/pscp.exe';
 
   @override
   void initState() {
     super.initState();
+    _runAuth();
     _loadCalibrationFile();
     _decodedString = decodeStringWithRandom(_key);
   }
+
+
 
   String decodeStringWithRandom(String input) {
     StringBuffer cleaned = StringBuffer();
@@ -110,20 +117,96 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     }
   }
 
+  void _runAuth() async {
+    if (await _createTempKeyFile()) {
+      final shell = Shell(runInShell: true);
+      String output = "";
+      try {
+        await shell.run('''echo y $_plinkPath -ssh -i $_keyPath root@192.168.12.1''');
+        await shell.run('''echo y $_plinkPath -ssh -i $_keyPath root@192.168.12.1''');
+///
+        output = "Access granted";
+      } catch (e) {
+        output = "Access not allowed: $e";
+      } finally {
+        await _deleteTempKeyFile();
+      }
+      setState(() {
+        _output = output;
+      });
+    } else {
+      setState(() {
+        _output = "Failed to create key file.";
+      });
+    }
+  }
+  //
+  // Future<void> runCommand() async {
+  //   // Получаем временную директорию
+  //   final tempDir = await getTemporaryDirectory();
+  //   final plinkPath = '${tempDir.path}/plink.exe';
+  //
+  //   // Копируем plink.exe из assets во временную директорию
+  //   final byteData = await rootBundle.load('assets/plink.exe');
+  //   final file = File(plinkPath);
+  //   await file.writeAsBytes(byteData.buffer.asUint8List());
+  //
+  //   var shell = Shell();
+  //
+  //   try {
+  //     var result = await shell.run('''
+  //     echo y | "$plinkPath" -ssh root@192.168.12.1
+  //     ''');
+  //
+  //     // Обработка результата
+  //     for (var line in result.outText.split('\n')) {
+  //       print(line);
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //   } finally {
+  //     // Удаляем временный файл
+  //     if (await file.exists()) {
+  //       await file.delete();
+  //     }
+  //   }
+  // }
+
+
+
   void _changeBrand() async {
     if (_selectedBrand != null) {
       if (await _createTempKeyFile()) {
         final shell = Shell();
         try {
-          await shell.run('''
-          ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit"
-          ''');
+          final result = await shell.run('''
+        $_plinkPath -i "$_keyPath" -P 22 root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit"
+        ''');
+
+          //   final result = await shell.run('''
+        // ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit" root
+        // ''');
+
+          // Combine stdout and stderr for the final output
+          String combinedOutput = result.map((e) => e.stdout + e.stderr).join('\n');
+
           setState(() {
             _output = "Brand changed successfully to $_selectedBrand";
+            _output2 = shell.context.encoding as String;
+            //_output2 = combinedOutput;
+
           });
         } catch (e) {
+          String errorMessage = e.toString();
+          // Check if the shell context has any error details
+          String shellContext = shell.context.toString();
+
+          String combinedErrorOutput = "Error: $errorMessage\n \nShell output: $shellContext";
+
           setState(() {
-            _output = "Failed to change brand: $e";
+            _output = "Failed to change brand: $errorMessage";
+             _output2 = combinedErrorOutput;
+
           });
         } finally {
           await _deleteTempKeyFile();
@@ -140,13 +223,46 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     }
   }
 
+  // void _changeBrand() async {
+  //   if (_selectedBrand != null) {
+  //     if (await _createTempKeyFile()) {
+  //       final shell = Shell();
+  //       try {
+  //         await shell.run('''
+  //         ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit"
+  //         ''');
+  //         setState(() {
+  //           _output = "Brand changed successfully to $_selectedBrand";
+  //           _output2 = "${shell.context}";
+  //         });
+  //       } catch (e) {
+  //         setState(() {
+  //           _output = "Failed to change brand: $e";
+  //           _output2 = "${shell.context}";
+  //         });
+  //       } finally {
+  //         await _deleteTempKeyFile();
+  //         _output2 = "${shell.context}";
+  //       }
+  //     } else {
+  //       setState(() {
+  //         _output = "Failed to create key file.";
+  //       });
+  //     }
+  //   } else {
+  //     setState(() {
+  //       _output = "Please select a brand and ensure the key file is loaded.";
+  //     });
+  //   }
+  // }
+
   void _deleteCalibration() async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
       String output = "";
       try {
         await shell.run('''
-        ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
+        ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
         ''');
         output = "Calibration file successfully deleted.";
       } catch (e) {
@@ -170,14 +286,14 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       String output = "";
       try {
         var _brandNow = await shell.run('''
-          ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "cat /etc/brand"
+          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 "cat /etc/brand"
           ''');
         await shell.run('''
-          ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow.outText}' > /etc/brand && exit"
+          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow.outText}' > /etc/brand && exit"
           ''');
         final calibrationAssetPath = 'assets/calibration';
         await shell.run('''
-        ${_pscpPath} -i "$_keyPath" -P 22 "$calibrationAssetPath" root@192.168.12.1:/etc/payload/calibration
+        ${_pscpPath} -i "$_keyPath" -P 22 "$calibrationAssetPath" root@192.168.12.1:/etc/payload/calibration 
         ''');
         output = "Calibration file copied successfully.";
       } catch (e) {
@@ -375,6 +491,15 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
           padding: const EdgeInsets.all(8.0),
           child: Text(
             _output,
+            style: TextStyle(
+              color: textColorGray,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            _output2,
             style: TextStyle(
               color: textColorGray,
             ),
