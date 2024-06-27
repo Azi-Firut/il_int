@@ -28,7 +28,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   ];
   String? _selectedBrand;
   String _output = "";
-  String _output2 = "";
+  String _outputBrand = "";
   String _imuOutput = "";
   String _keyPath = '';
   String brand = "";
@@ -36,12 +36,12 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   String _decodedString = "";
   final String _key =
       "UHLVUUVFOktIVXBNlVciJ1LKZXTktGRmClsDZSE0yFOiIBlJY2ORzYYSP1zHaGJEyBLWR5pAc3CRwBMjDU2KCkDVuVY3IJ5OcHARpHb2I46IIGS5vCbmDUKIQ2V9tWbWBVuTdDTogVaWR1wUb3CJ0QZWNQtKb3XBlSbnLNzNaCP1rMZXBkKZUHBViIbGHljULUSxpMbmSVzXOiZAzWCkLFBVQULFFVMlUZqYWkMhODaESxYITmW9ZGVEPl0DYmG1sTemBRIHQXQlOPVFNlBVQUGFBJSWKJtUbHFpkKSEJF5OTlDRZHQUUFBZQkZJCSQkRt5IOUI1GYc0TlSBWUI8KORGCI5JUlUBtOM2CF3CZEUpnBNHCdkFYVTVXPa0Fx4XSjLl0OWHXBDDRFSJEYWVTdsOZ3Dp6PeECtpOY1CFsQeCRt0NaEKxRMa0Z9jEUUWM5SaFPI2LNkN50PcXOUwJTQKo3LZjSBtYNTABHVU2SdTYQTK0KVUHMJpBdmCF0ZZSR1MTaWN5lKczXogJMQBpBXQUHFBTSVXFDLOUQhwYUjYNCXajGZLMZEWpzMWkX0yYZEGtGDRTNV3MRmXg1FK2TcwCRTXdYZZ1YJOXcVQU0KWlMY4FaTJl5DUTM09QClNByCaXTZhVdGHUtBTUEFDQOiSBmMYTSQ1YMzWQ3KOGVUwQMTOA1EZjJI1DYWOFkNMmWRlOMzGM1EY2KYxPZjMZmIYmVM5UMDLEwEMDCJmA";
-
+  var hostKey =
+      "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc";
   // Переменные для путей к plink и pscp
   final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
   final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
-  // final String _plinkPath = 'assets/plink.exe';
-  // final String _pscpPath = 'assets/pscp.exe';
+
 
   @override
   void initState() {
@@ -96,75 +96,37 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     if (await keyFile.exists()) {
       try {
         await keyFile.delete();
-        print("Temp key file deleted successfully.");
+        print("The procedure is completed.");
       } catch (e) {
-        print("Failed to delete temp key file: $e");
+        print("Failed : $e");
         await Future.delayed(Duration(seconds: 1));
         try {
           await keyFile.delete();
-          print("Retry: Temp key file deleted successfully.");
+          print("Retry procedure.");
         } catch (retryException) {
-          print("Retry failed to delete temp key file: $retryException");
+          print("Procedure failed : $retryException");
         }
       }
     }
   }
 
-  Future<void> _sendCommand() async {
-    var shell = Shell();
-    var hostKey =
-        "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc";
-
-    try {
-      // Establish SSH connection with pre-confirmed host key
-      var result = await shell
-          .run('$_plinkPath -ssh root@192.168.12.1 -hostkey "$hostKey"');
-
-      // Run the actual command
-      result = await shell.run('$_plinkPath -ssh root@192.168.12.1');
-
-      // Check if there is any output and handle it
-      if (result.outText.isNotEmpty) {
-        print('Command output: ${result.outText}');
-      }
-
-      setState(() {
-        _output = result.outText;
-      });
-    } catch (e) {
-      setState(() {
-        _output = 'Error: $e';
-      });
-    }
-  }
-
-  // void _sendCommand() async {
+  // Future<void> _sendCommand() async {
   //   var shell = Shell();
+  //   var hostKey =
+  //       "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc";
+  //
   //   try {
-  //     List<ProcessResult> result;
-  //     //result = await shell.run('echo y | $_plinkPath -ssh root@192.168.12.1');
-  //     result =
-  //         await shell.run('$_plinkPath -ssh root@192.168.12.1 / && echo "y"');
+  //     // Establish SSH connection with pre-confirmed host key
+  //     var result = await shell
+  //         .run('$_plinkPath -ssh root@192.168.12.1 -hostkey "$hostKey"');
   //
-  //     // // Establish SSH connection and skip prompts with -batch
-  //     // result = await shell.run('$_plinkPath -ssh -batch root@192.168.12.1');
-  //     //
-  //     // // Run the actual command
-  //     // result = await shell.run('echo y | $_plinkPath -ssh root@192.168.12.1 ');
+  //     // Run the actual command
+  //     result = await shell.run('$_plinkPath -ssh root@192.168.12.1');
   //
-  //     print('----------------------------------------------------------');
-  //     //result = await shell.run('echo y $_plinkPath -i "$_keyPath"  -ssh root@192.168.12.1');
-  //     // result = await shell.run('$_plinkPath  y');
-  //     // result = await shell.run('echo y | $_plinkPath');
-  //     // result = await shell.run('$_plinkPath "y"');
-  //     // result = await shell.run('y');
-  //     // result = await shell.runSync('y');
-  //     print('==========================================');
+  //     // Check if there is any output and handle it
   //     if (result.outText.isNotEmpty) {
-  //       // await shell.run('$_plinkPath echo y');
-  //       print('PANIK');
+  //       print('Command output: ${result.outText}');
   //     }
-  //     //result = await shell.run('$_plinkPath ');
   //
   //     setState(() {
   //       _output = result.outText;
@@ -176,129 +138,57 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   //   }
   // }
 
-  ///
-  // Future<void> runCommand() async {
-  //   // Получаем временную директорию
-  //   final tempDir = await getTemporaryDirectory();
-  //   final plinkPath = '${tempDir.path}/plink.exe';
-  //
-  //   // Копируем plink.exe из assets во временную директорию
-  //   final byteData = await rootBundle.load('assets/plink.exe');
-  //   final file = File(plinkPath);
-  //   await file.writeAsBytes(byteData.buffer.asUint8List());
-  //
-  //   var shell = Shell();
-  //
-  //   try {
-  //     var result = await shell.run('''
-  //     echo y | "$plinkPath" -ssh root@192.168.12.1
-  //     ''');
-  //
-  //     // Обработка результата
-  //     for (var line in result.outText.split('\n')) {
-  //       print(line);
-  //     }
-  //   } catch (e) {
-  //     print('Error: $e');
-  //   } finally {
-  //     // Удаляем временный файл
-  //     if (await file.exists()) {
-  //       await file.delete();
-  //     }
-  //   }
-  // }
-
   void _changeBrand() async {
     if (_selectedBrand != null) {
       if (await _createTempKeyFile()) {
+        _outputBrand = "Procedure started............";
         final shell = Shell();
-        var hostKey =
-            "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc";
         try {
           final result = await shell.run('''
        $_plinkPath -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit"
         ''');
 
-          //   final result = await shell.run('''
-          // ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit" root
-          // ''');
-
-          // Combine stdout and stderr for the final output
           String combinedOutput =
               result.map((e) => e.stdout + e.stderr).join('\n');
 
           setState(() {
-            _output = "Brand changed successfully to $_selectedBrand";
-            _output2 = shell.context.encoding as String;
-            //_output2 = combinedOutput;
+            _outputBrand = "Brand changed successfully to $_selectedBrand\nNow you need to update the firmware on your device to the latest version";
           });
         } catch (e) {
           String errorMessage = e.toString();
-          // Check if the shell context has any error details
+
           String shellContext = shell.context.toString();
 
           String combinedErrorOutput =
               "Error: $errorMessage\n \nShell output: $shellContext";
 
           setState(() {
-            _output = "Failed to change brand: $errorMessage";
-            _output2 = combinedErrorOutput;
+            _outputBrand = "Failed to change brand: check all conditions before start";
+           // _output2 = combinedErrorOutput;
           });
         } finally {
           await _deleteTempKeyFile();
         }
       } else {
         setState(() {
-          _output = "Failed to create key file.";
+          _outputBrand = "Procedure failed";
         });
       }
     } else {
       setState(() {
-        _output = "Please select a brand and ensure the key file is loaded.";
+        _outputBrand = "Please select a brand and ensure the device is connected.";
       });
     }
   }
 
-  // void _changeBrand() async {
-  //   if (_selectedBrand != null) {
-  //     if (await _createTempKeyFile()) {
-  //       final shell = Shell();
-  //       try {
-  //         await shell.run('''
-  //         ${_plinkPath} -i "$_keyPath" root@192.168.12.1 "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit"
-  //         ''');
-  //         setState(() {
-  //           _output = "Brand changed successfully to $_selectedBrand";
-  //           _output2 = "${shell.context}";
-  //         });
-  //       } catch (e) {
-  //         setState(() {
-  //           _output = "Failed to change brand: $e";
-  //           _output2 = "${shell.context}";
-  //         });
-  //       } finally {
-  //         await _deleteTempKeyFile();
-  //         _output2 = "${shell.context}";
-  //       }
-  //     } else {
-  //       setState(() {
-  //         _output = "Failed to create key file.";
-  //       });
-  //     }
-  //   } else {
-  //     setState(() {
-  //       _output = "Please select a brand and ensure the key file is loaded.";
-  //     });
-  //   }
-  // }
-
   void _deleteCalibration() async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
+      _output = "Procedure started............";
       String output = "";
       try {
         await shell.run('''
-        ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
+        ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
         ''');
         output = "Calibration file successfully deleted.";
       } catch (e) {
@@ -311,7 +201,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       });
     } else {
       setState(() {
-        _output = "Failed to create key file.";
+        _output = "Procedure failed";
       });
     }
   }
@@ -319,13 +209,14 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   void _restoreCalibration() async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
+      _output = "Procedure started............";
       String output = "";
       try {
         var _brandNow = await shell.run('''
-          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 "cat /etc/brand"
+          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
           ''');
         await shell.run('''
-          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 "mount -o remount,rw / && echo '${_brandNow.outText}' > /etc/brand && exit"
+          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${_brandNow.outText}' > /etc/brand && exit"
           ''');
         final calibrationAssetPath = 'assets/calibration';
         await shell.run('''
@@ -343,7 +234,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       });
     } else {
       setState(() {
-        _output = "Failed to create key file.";
+        _output = "Procedure failed";
       });
     }
   }
@@ -356,26 +247,10 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ElevatedButton(
-          onPressed: _sendCommand,
-          child: Text('Send Command'),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              Flexible(
-                fit: FlexFit.loose,
-                child: Text(
-                  "For this part of the application to work correctly, additional installed programs are required (plink and pscp).",
-                  style: TextStyle(
-                    color: textColorGray,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        // ElevatedButton(
+        //   onPressed: _sendCommand,
+        //   child: Text('Send Command'),
+        // ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -392,6 +267,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
             ],
           ),
         ),
+
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
@@ -476,6 +352,23 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
           ),
         ),
         Padding(
+          padding: const EdgeInsets.only(left: 8.0,right: 8,bottom: 16,top: 16),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                fit: FlexFit.loose,
+                child: Text(
+                  _outputBrand,
+                  style: TextStyle(
+                    color: textColorGray,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ///////////////////////////////////////////////////////////////////////
+        Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
@@ -492,7 +385,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 18.0),
+          padding: const EdgeInsets.only(top: 8.0),
           child: ElevatedButton(
             onPressed: _deleteCalibration,
             style: ElevatedButton.styleFrom(
@@ -536,15 +429,15 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            _output2,
-            style: TextStyle(
-              color: textColorGray,
-            ),
-          ),
-        ),
+        // Padding(
+        //   padding: const EdgeInsets.all(8.0),
+        //   child: Text(
+        //     _output2,
+        //     style: TextStyle(
+        //       color: textColorGray,
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
