@@ -46,9 +46,8 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   @override
   void initState() {
     super.initState();
-    //_runAuth();
-    _loadCalibrationFile();
-    _checkCalibrationFile();
+    loadCalibrationFile();
+    checkCalibrationFile();
     _decodedString = decodeStringWithRandom(_key);
   }
 
@@ -64,7 +63,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     return decodedString;
   }
 
-  Future<void> _loadCalibrationFile() async {
+  Future<void> loadCalibrationFile() async {
     final appDir = Directory.current;
     final tempDir = Directory('${appDir.path}/assets');
     if (!await tempDir.exists()) {
@@ -207,8 +206,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     }
   }
 
-  void _checkCalibrationFile() async {
-
+  void checkCalibrationFile() async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
       _output = "... Looking for the device calibration file ...";
@@ -221,9 +219,6 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
 //         var result = await shell.run('''
 // ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist'; ls -l /etc/payload/)"
 // ''');
-
-
-        //print(result.outText);
         output = "${result.outText}";
       } catch (e) {
         output = "! Failed to retrieve data from device !";

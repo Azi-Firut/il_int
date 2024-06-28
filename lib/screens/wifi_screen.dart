@@ -1,27 +1,30 @@
 import 'dart:convert';
-import 'dart:typed_data';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:process_run/process_run.dart';
-
 import '../constant.dart';
 
 class WiFiadd extends StatefulWidget {
   const WiFiadd({Key? key}) : super(key: key);
 
   @override
-  _WiFiaddState createState() => _WiFiaddState();
+  WiFiaddState createState() => WiFiaddState();
 }
 
-class _WiFiaddState extends State<WiFiadd> {
+class WiFiaddState extends State<WiFiadd> {
   var output;
+
+
 
   @override
   void initState() {
     super.initState();
     wifiSearchPythonScript();
+
   }
+
+
 
   Future<void> wifiSearchPythonScript() async {
     final String jsonData = await rootBundle
