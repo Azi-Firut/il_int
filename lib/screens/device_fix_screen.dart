@@ -3,16 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:process_run/shell.dart';
-
 import '../constant.dart';
 
 class DeviceFixScreen extends StatefulWidget {
   const DeviceFixScreen({Key? key}) : super(key: key);
   @override
-  _DeviceFixScreenState createState() => _DeviceFixScreenState();
+  DeviceFixScreenState createState() => DeviceFixScreenState();
 }
 
-class _DeviceFixScreenState extends State<DeviceFixScreen> {
+class DeviceFixScreenState extends State<DeviceFixScreen> {
   final _brands = [
     "ROCK",
     "SNOOPY",
@@ -27,28 +26,24 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
     "STONEX"
   ];
   String? _selectedBrand;
-  String _output = "";
+  String _outputCalibration = "";
   String _outputBrand = "";
   String _imuOutput = "";
   String _keyPath = '';
   String brand = "";
   String _calibrationPath = '';
   String _decodedString = "";
-  final String _key =
-      "UHLVUUVFOktIVXBNlVciJ1LKZXTktGRmClsDZSE0yFOiIBlJY2ORzYYSP1zHaGJEyBLWR5pAc3CRwBMjDU2KCkDVuVY3IJ5OcHARpHb2I46IIGS5vCbmDUKIQ2V9tWbWBVuTdDTogVaWR1wUb3CJ0QZWNQtKb3XBlSbnLNzNaCP1rMZXBkKZUHBViIbGHljULUSxpMbmSVzXOiZAzWCkLFBVQULFFVMlUZqYWkMhODaESxYITmW9ZGVEPl0DYmG1sTemBRIHQXQlOPVFNlBVQUGFBJSWKJtUbHFpkKSEJF5OTlDRZHQUUFBZQkZJCSQkRt5IOUI1GYc0TlSBWUI8KORGCI5JUlUBtOM2CF3CZEUpnBNHCdkFYVTVXPa0Fx4XSjLl0OWHXBDDRFSJEYWVTdsOZ3Dp6PeECtpOY1CFsQeCRt0NaEKxRMa0Z9jEUUWM5SaFPI2LNkN50PcXOUwJTQKo3LZjSBtYNTABHVU2SdTYQTK0KVUHMJpBdmCF0ZZSR1MTaWN5lKczXogJMQBpBXQUHFBTSVXFDLOUQhwYUjYNCXajGZLMZEWpzMWkX0yYZEGtGDRTNV3MRmXg1FK2TcwCRTXdYZZ1YJOXcVQU0KWlMY4FaTJl5DUTM09QClNByCaXTZhVdGHUtBTUEFDQOiSBmMYTSQ1YMzWQ3KOGVUwQMTOA1EZjJI1DYWOFkNMmWRlOMzGM1EY2KYxPZjMZmIYmVM5UMDLEwEMDCJmA";
-  var hostKey =
-      "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc";
+
   // Переменные для путей к plink и pscp
   final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
   final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
-
 
   @override
   void initState() {
     super.initState();
     loadCalibrationFile();
     checkCalibrationFile();
-    _decodedString = decodeStringWithRandom(_key);
+    _decodedString = decodeStringWithRandom(key);
   }
 
   String decodeStringWithRandom(String input) {
@@ -152,7 +147,8 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
               result.map((e) => e.stdout + e.stderr).join('\n');
 
           setState(() {
-            _outputBrand = "Brand changed successfully to $_selectedBrand\nNow you need to update the firmware on your device to the latest version";
+            _outputBrand =
+                "Brand changed successfully to $_selectedBrand\nNow you need to update the firmware on your device to the latest version";
           });
         } catch (e) {
           String errorMessage = e.toString();
@@ -163,8 +159,9 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
               "Error: $errorMessage\n \nShell output: $shellContext";
 
           setState(() {
-            _outputBrand = "Failed to change brand: check all conditions before start";
-           // _output2 = combinedErrorOutput;
+            _outputBrand =
+                "Failed to change brand: check all conditions before start";
+            // _output2 = combinedErrorOutput;
           });
         } finally {
           await _deleteTempKeyFile();
@@ -176,7 +173,8 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
       }
     } else {
       setState(() {
-        _outputBrand = "Please select a brand and ensure the device is connected.";
+        _outputBrand =
+            "Please select a brand and ensure the device is connected.";
       });
     }
   }
@@ -184,7 +182,7 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   void _deleteCalibration() async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
-      _output = "Procedure started............";
+      _outputCalibration = "Procedure started............";
       String output = "";
       try {
         await shell.run('''
@@ -197,11 +195,11 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
         await _deleteTempKeyFile();
       }
       setState(() {
-        _output = output;
+        _outputCalibration = output;
       });
     } else {
       setState(() {
-        _output = "Procedure failed";
+        _outputCalibration = "Procedure failed";
       });
     }
   }
@@ -209,15 +207,16 @@ class _DeviceFixScreenState extends State<DeviceFixScreen> {
   void checkCalibrationFile() async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
-      _output = "... Looking for the device calibration file ...";
+      _outputCalibration = "... Looking for the device calibration file ...";
       String output = "";
       try {
         var result = await shell.run('''
 ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist';)"
 ''');
+
         /// Оставить (выводит лист файлов с юнита).
 //         var result = await shell.run('''
-// ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist'; ls -l /etc/payload/)"
+// ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist'; ls -l /etc/payload/)"
 // ''');
         output = "${result.outText}";
       } catch (e) {
@@ -226,19 +225,19 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         await _deleteTempKeyFile();
       }
       setState(() {
-        _output = output;
+        _outputCalibration = output;
       });
     } else {
       setState(() {
-        _output = "Procedure failed";
+        _outputCalibration = "Procedure failed";
       });
     }
   }
 
-  void _restoreCalibration() async {
+  void restoreCalibration() async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
-      _output = "Procedure started............";
+      _outputCalibration = "Procedure started............";
       String output = "";
       try {
         var _brandNow = await shell.run('''
@@ -247,7 +246,7 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         await shell.run('''
           ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${_brandNow.outText}' > /etc/brand && exit"
           ''');
-        final calibrationAssetPath = 'assets/calibration';
+        const calibrationAssetPath = 'assets/calibration';
         await shell.run('''
         ${_pscpPath} -i "$_keyPath" -P 22 "$calibrationAssetPath" root@192.168.12.1:/etc/payload/calibration 
         ''');
@@ -259,18 +258,18 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
       }
       setState(() {
         _imuOutput = brand;
-        _output = output;
+        _outputCalibration = output;
       });
     } else {
       setState(() {
-        _output = "Procedure failed";
+        _outputCalibration = "Procedure failed";
       });
     }
   }
 
-  String _decodeBinary(String binary) {
-    return utf8.decode(binary.codeUnits);
-  }
+  // String _decodeBinary(String binary) {
+  //   return utf8.decode(binary.codeUnits);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -381,8 +380,10 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 8.0,right: 8,bottom: 16,top: 16),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center,
+          padding:
+              const EdgeInsets.only(left: 8.0, right: 8, bottom: 16, top: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Flexible(
                 fit: FlexFit.loose,
@@ -434,7 +435,7 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         Padding(
           padding: const EdgeInsets.only(top: 18.0),
           child: ElevatedButton(
-            onPressed: _restoreCalibration,
+            onPressed: restoreCalibration,
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF02567E),
               shape: RoundedRectangleBorder(
@@ -452,7 +453,7 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            _output,
+            _outputCalibration,
             style: TextStyle(
               color: textColorGray,
             ),
