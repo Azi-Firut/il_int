@@ -218,7 +218,7 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
 //         var result = await shell.run('''
 // ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist'; ls -l /etc/payload/)"
 // ''');
-        output = "${result.outText}";
+        output = result.outText;
       } catch (e) {
         output = "! Failed to retrieve data from device !";
       } finally {
@@ -240,11 +240,11 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
       _outputCalibration = "Procedure started............";
       String output = "";
       try {
-        var _brandNow = await shell.run('''
+        var brandNow = await shell.run('''
           ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
           ''');
         await shell.run('''
-          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${_brandNow.outText}' > /etc/brand && exit"
+          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${brandNow.outText}' > /etc/brand && exit"
           ''');
         const calibrationAssetPath = 'assets/calibration';
         await shell.run('''
@@ -315,7 +315,7 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         Container(
           width: 155,
           height: 40,
-          padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
           decoration: BoxDecoration(
             color: Colors.orange,
             borderRadius: BorderRadius.circular(3.0),
