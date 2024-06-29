@@ -150,7 +150,7 @@ class WiFiaddState extends State<WiFiadd> {
       });
     }
   }
-///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////b////////////////////
   Future<void> wifiSearchPythonScript() async {
     final String jsonData = await rootBundle
         .loadString('assets/ssids.json'); // Преобразуйте объект в JSON-строку
