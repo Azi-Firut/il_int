@@ -108,6 +108,17 @@ class _LeftSideState extends State<LeftSide> {
                   width: double.infinity,
                   color: const Color(0x1500A4FC),
                 ),
+                // BUTTON
+                const CustomTextButton(
+                  icon: Icons.tips_and_updates_outlined,
+                  text: "Test",
+                  onPress: 4,
+                ),
+                Container(
+                  height: 1,
+                  width: double.infinity,
+                  color: const Color(0x1500A4FC),
+                ),
                 // end
 
                 WindowTitleBarBox(child: MoveWindow()),
