@@ -1,9 +1,7 @@
-import 'dart:convert';
-import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:process_run/shell.dart';
 import '../constant.dart';
+import '../models/device_manager.dart';
 
 class DeviceFixScreen extends StatefulWidget {
   const DeviceFixScreen({Key? key}) : super(key: key);
@@ -12,264 +10,21 @@ class DeviceFixScreen extends StatefulWidget {
 }
 
 class DeviceFixScreenState extends State<DeviceFixScreen> {
-  final _brands = [
-    "ROCK",
-    "SNOOPY",
-    "ML",
-    "MARSS",
-    "TRIDAR",
-    "RECON",
-    "TERSUS",
-    "RESEPI",
-    "FLIGHTS",
-    "WINGTRA",
-    "STONEX"
-  ];
-  String? _selectedBrand;
-  String _outputCalibration = "";
-  String _outputBrand = "";
-  String _imuOutput = "";
-  String _keyPath = '';
-  String brand = "";
-  String _calibrationPath = '';
-  String _decodedString = "";
 
-  // Переменные для путей к plink и pscp
-  final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
-  final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
+  final DeviceManager _deviceManager = DeviceManager();
 
   @override
   void initState() {
     super.initState();
-    loadCalibrationFile();
-    checkCalibrationFile();
-    _decodedString = decodeStringWithRandom(key);
+    _deviceManager.init();
+    _deviceManager.checkCalibrationFile(updateState);
+
+  }
+  void updateState() {
+    setState(() {});
   }
 
-  String decodeStringWithRandom(String input) {
-    StringBuffer cleaned = StringBuffer();
-    for (int i = 0; i < input.length; i++) {
-      if (i % 3 != 2) {
-        cleaned.write(input[i]);
-      }
-    }
-    List<int> bytes = base64Decode(cleaned.toString());
-    String decodedString = utf8.decode(bytes);
-    return decodedString;
-  }
 
-  Future<void> loadCalibrationFile() async {
-    final appDir = Directory.current;
-    final tempDir = Directory('${appDir.path}/assets');
-    if (!await tempDir.exists()) {
-      await tempDir.create(recursive: true);
-    }
-    final calibrationFile = File('${tempDir.path}/calibration');
-    final calibrationData = await rootBundle.load('assets/calibration');
-    await calibrationFile.writeAsBytes(calibrationData.buffer.asUint8List());
-    setState(() {
-      _calibrationPath = calibrationFile.path;
-    });
-  }
-
-  Future<bool> _createTempKeyFile() async {
-    final appDir = Directory.current;
-    final tempDir = Directory('${appDir.path}/temp');
-    if (!await tempDir.exists()) {
-      await tempDir.create(recursive: true);
-    }
-    final keyFile = File('${tempDir.path}/resepi_login.ppk');
-    await keyFile.writeAsString(_decodedString);
-    setState(() {
-      _keyPath = keyFile.path;
-    });
-    return await keyFile.exists();
-  }
-
-  Future<void> _deleteTempKeyFile() async {
-    final keyFile = File(_keyPath);
-    if (await keyFile.exists()) {
-      try {
-        await keyFile.delete();
-        print("The procedure is completed.");
-      } catch (e) {
-        print("Failed : $e");
-        await Future.delayed(Duration(seconds: 1));
-        try {
-          await keyFile.delete();
-          print("Retry procedure.");
-        } catch (retryException) {
-          print("Procedure failed : $retryException");
-        }
-      }
-    }
-  }
-
-  // Future<void> _sendCommand() async {
-  //   var shell = Shell();
-  //   var hostKey =
-  //       "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc";
-  //
-  //   try {
-  //     // Establish SSH connection with pre-confirmed host key
-  //     var result = await shell
-  //         .run('$_plinkPath -ssh root@192.168.12.1 -hostkey "$hostKey"');
-  //
-  //     // Run the actual command
-  //     result = await shell.run('$_plinkPath -ssh root@192.168.12.1');
-  //
-  //     // Check if there is any output and handle it
-  //     if (result.outText.isNotEmpty) {
-  //       print('Command output: ${result.outText}');
-  //     }
-  //
-  //     setState(() {
-  //       _output = result.outText;
-  //     });
-  //   } catch (e) {
-  //     setState(() {
-  //       _output = 'Error: $e';
-  //     });
-  //   }
-  // }
-
-  void _changeBrand() async {
-    if (_selectedBrand != null) {
-      if (await _createTempKeyFile()) {
-        _outputBrand = "Procedure started............";
-        final shell = Shell();
-        try {
-          final result = await shell.run('''
-       $_plinkPath -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${_selectedBrand!.toUpperCase()}' > /etc/brand && exit"
-        ''');
-
-          String combinedOutput =
-              result.map((e) => e.stdout + e.stderr).join('\n');
-
-          setState(() {
-            _outputBrand =
-                "Brand changed successfully to $_selectedBrand\nNow you need to update the firmware on your device to the latest version";
-          });
-        } catch (e) {
-          String errorMessage = e.toString();
-
-          String shellContext = shell.context.toString();
-
-          String combinedErrorOutput =
-              "Error: $errorMessage\n \nShell output: $shellContext";
-
-          setState(() {
-            _outputBrand =
-                "Failed to change brand: check all conditions before start";
-            // _output2 = combinedErrorOutput;
-          });
-        } finally {
-          await _deleteTempKeyFile();
-        }
-      } else {
-        setState(() {
-          _outputBrand = "Procedure failed";
-        });
-      }
-    } else {
-      setState(() {
-        _outputBrand =
-            "Please select a brand and ensure the device is connected.";
-      });
-    }
-  }
-
-  void _deleteCalibration() async {
-    if (await _createTempKeyFile()) {
-      final shell = Shell();
-      _outputCalibration = "Procedure started............";
-      String output = "";
-      try {
-        await shell.run('''
-        ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
-        ''');
-        output = "Calibration file successfully deleted.";
-      } catch (e) {
-        output = "Failed to delete calibration: $e";
-      } finally {
-        await _deleteTempKeyFile();
-      }
-      setState(() {
-        _outputCalibration = output;
-      });
-    } else {
-      setState(() {
-        _outputCalibration = "Procedure failed";
-      });
-    }
-  }
-
-  void checkCalibrationFile() async {
-    if (await _createTempKeyFile()) {
-      final shell = Shell();
-      _outputCalibration = "... Looking for the device calibration file ...";
-      String output = "";
-      try {
-        var result = await shell.run('''
-${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist';)"
-''');
-
-        /// Оставить (выводит лист файлов с юнита).
-//         var result = await shell.run('''
-// ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist'; ls -l /etc/payload/)"
-// ''');
-        output = result.outText;
-      } catch (e) {
-        output = "! Failed to retrieve data from device !";
-      } finally {
-        await _deleteTempKeyFile();
-      }
-      setState(() {
-        _outputCalibration = output;
-      });
-    } else {
-      setState(() {
-        _outputCalibration = "Procedure failed";
-      });
-    }
-  }
-
-  void restoreCalibration() async {
-    if (await _createTempKeyFile()) {
-      final shell = Shell();
-      _outputCalibration = "Procedure started............";
-      String output = "";
-      try {
-        var brandNow = await shell.run('''
-          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
-          ''');
-        await shell.run('''
-          ${_plinkPath} -i "$_keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${brandNow.outText}' > /etc/brand && exit"
-          ''');
-        const calibrationAssetPath = 'assets/calibration';
-        await shell.run('''
-        ${_pscpPath} -i "$_keyPath" -P 22 "$calibrationAssetPath" root@192.168.12.1:/etc/payload/calibration 
-        ''');
-        output = "Calibration file copied successfully.";
-      } catch (e) {
-        output = "Failed to copy calibration file: $e";
-      } finally {
-        await _deleteTempKeyFile();
-      }
-      setState(() {
-        _imuOutput = brand;
-        _outputCalibration = output;
-      });
-    } else {
-      setState(() {
-        _outputCalibration = "Procedure failed";
-      });
-    }
-  }
-
-  // String _decodeBinary(String binary) {
-  //   return utf8.decode(binary.codeUnits);
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -330,7 +85,7 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
           ),
           child: DropdownButton<String?>(
             dropdownColor: Colors.orange,
-            value: _selectedBrand,
+            value: _deviceManager.selectedBrand,
             hint: Text(
               'Select Brand',
               style: TextStyle(
@@ -344,10 +99,10 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
             underline: SizedBox(),
             onChanged: (String? newValue) {
               setState(() {
-                _selectedBrand = newValue;
+                _deviceManager.selectedBrand = newValue;
               });
             },
-            items: _brands.map<DropdownMenuItem<String?>>((String value) {
+            items: _deviceManager.brandsList.map<DropdownMenuItem<String?>>((String value) {
               return DropdownMenuItem<String?>(
                 value: value,
                 child: Text(
@@ -364,7 +119,9 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         Padding(
           padding: const EdgeInsets.only(top: 18.0),
           child: ElevatedButton(
-            onPressed: _changeBrand,
+            onPressed: ()async {
+              await _deviceManager.changeBrand(updateState);
+              },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF02567E),
               shape: RoundedRectangleBorder(
@@ -388,7 +145,7 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
               Flexible(
                 fit: FlexFit.loose,
                 child: Text(
-                  _outputBrand,
+                  _deviceManager.outputBrand,
                   style: TextStyle(
                     color: textColorGray,
                   ),
@@ -417,7 +174,8 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: ElevatedButton(
-            onPressed: _deleteCalibration,
+            onPressed:()async{await _deviceManager.deleteCalibration(updateState);
+              },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF02567E),
               shape: RoundedRectangleBorder(
@@ -435,7 +193,8 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         Padding(
           padding: const EdgeInsets.only(top: 18.0),
           child: ElevatedButton(
-            onPressed: restoreCalibration,
+            onPressed: () async{await _deviceManager.restoreCalibration(updateState);
+              },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF02567E),
               shape: RoundedRectangleBorder(
@@ -453,7 +212,7 @@ ${_plinkPath} -ssh -i "$_keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            _outputCalibration,
+            _deviceManager.outputCalibration,
             style: TextStyle(
               color: textColorGray,
             ),
