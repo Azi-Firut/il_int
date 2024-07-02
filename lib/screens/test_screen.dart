@@ -88,6 +88,13 @@ class TestScreenState extends State<TestScreen> {
               },
               child: Text('Get device info'),
             ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _testManager.imuInfo(updateState);
+              },
+              child: Text('IMU'),
+            ),
             Text(_testManager.outputCalibration),
           ],
         ),
