@@ -28,7 +28,7 @@ class _ScreenSwitcherState extends State<ScreenSwitcher> {
     } else if (widget.page == 3) {
       return DeviceFixScreen();
     } else if (widget.page == 4) {
-      return DeviceFixScreenTest();
+      return TestScreen();
     } else {
       // Return some default widget if page number is not recognized
       return Container();

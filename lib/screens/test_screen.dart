@@ -5,20 +5,21 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:process_run/shell.dart';
 import '../../constant.dart';
 import '../models/device_manager.dart';
+import '../models/test_class.dart';
 
-class DeviceFixScreenTest extends StatefulWidget {
-  const DeviceFixScreenTest({Key? key}) : super(key: key);
+class TestScreen extends StatefulWidget {
+  const TestScreen({Key? key}) : super(key: key);
   @override
-  DeviceFixScreenTestState createState() => DeviceFixScreenTestState();
+  TestScreenState createState() => TestScreenState();
 }
 
-class DeviceFixScreenTestState extends State<DeviceFixScreenTest> {
-  final DeviceManager _deviceManager = DeviceManager();
+class TestScreenState extends State<TestScreen> {
+  final TestClass _testManager = TestClass();
 
   @override
   void initState() {
     super.initState();
-    _deviceManager.init();
+    _testManager.init();
   }
 
   void updateState() {
@@ -36,13 +37,13 @@ class DeviceFixScreenTestState extends State<DeviceFixScreenTest> {
           children: [
             DropdownButton<String>(
               hint: Text("Select Brand"),
-              value: _deviceManager.selectedBrand,
+              value: _testManager.selectedBrand,
               onChanged: (String? newValue) {
                 setState(() {
-                  _deviceManager.selectedBrand = newValue;
+                  _testManager.selectedBrand = newValue;
                 });
               },
-              items: _deviceManager.brandsList.map((String brand) {
+              items: _testManager.brandsList.map((String brand) {
                 return DropdownMenuItem<String>(
                   value: brand,
                   child: Text(brand),
@@ -52,35 +53,42 @@ class DeviceFixScreenTestState extends State<DeviceFixScreenTest> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.changeBrand(updateState);
+                await _testManager.changeBrand(updateState);
               },
               child: Text('Change Brand'),
             ),
-            Text(_deviceManager.outputBrand),
+            Text(_testManager.outputBrand),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.deleteCalibration(updateState);
+                await _testManager.deleteCalibration(updateState);
               },
               child: Text('Delete Calibration'),
             ),
-            Text(_deviceManager.outputCalibration),
+            //Text(_testManager.outputCalibration),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.checkCalibrationFile(updateState);
+                await _testManager.checkCalibrationFile(updateState);
               },
               child: Text('Check Calibration File'),
             ),
-            Text(_deviceManager.outputCalibration),
+            //Text(_testManager.outputCalibration),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.restoreCalibration(updateState);
+                await _testManager.restoreCalibration(updateState);
               },
               child: Text('Restore Calibration'),
             ),
-            Text(_deviceManager.outputCalibration),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _testManager.getDeviceInfo(updateState);
+              },
+              child: Text('Get device info'),
+            ),
+            Text(_testManager.outputCalibration),
           ],
         ),
       ),
