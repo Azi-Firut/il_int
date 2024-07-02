@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:process_run/shell.dart';
 import '../constant.dart';
@@ -31,7 +30,6 @@ class DeviceManager {
   String? selectedBrand;
   String outputCalibration = "";
   String outputBrand = "";
-  String imuOutput = "";
   String keyPath = '';
   String brand = "";
   String calibrationPath = '';
@@ -42,12 +40,10 @@ class DeviceManager {
   final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
 
   void init() {
-    //checkCalibrationFile();
-    // loadCalibrationFile();
-    decodedString = decodeStringWithRandom(key);
+    decodedString = _decodeStringWithRandom(key);
   }
 
-  String decodeStringWithRandom(String input) {
+  String _decodeStringWithRandom(String input) {
     StringBuffer cleaned = StringBuffer();
     for (int i = 0; i < input.length; i++) {
       if (i % 3 != 2) {
@@ -152,7 +148,8 @@ class DeviceManager {
         ''');
         output = "Calibration file successfully deleted.";
       } catch (e) {
-        output = "Failed to delete calibration: $e";
+        output =
+            "Failed to delete calibration: check all conditions before start";
       } finally {
         await _deleteTempKeyFile();
       }
@@ -173,6 +170,11 @@ class DeviceManager {
         var result = await shell.run('''
 ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist';)"
 ''');
+        ////////////////////////////////////////////
+        if (result.outText == "Calibration file does not exist") {
+          restoreCalibration(updateState);
+        }
+        ////////////////////////////////////////////
         output = result.outText;
       } catch (e) {
         output = "! Failed to retrieve data from device !";
@@ -205,11 +207,11 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
         ''');
         output = "Calibration file copied successfully.";
       } catch (e) {
-        output = "Failed to copy calibration file: $e";
+        output =
+            "Failed to copy calibration file: check all conditions before start";
       } finally {
         await _deleteTempKeyFile();
       }
-      imuOutput = brand;
       outputCalibration = output;
     } else {
       outputCalibration = "Procedure failed";
