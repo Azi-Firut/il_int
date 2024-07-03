@@ -256,8 +256,7 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
         // ''');
         /////////////////
         output =
-            " Brand: ${brandNow.outText}\n Password: ${passphraseNow.outText}\n SSID: ${ssidNow.outText}\n Reciever: ${receiverNow.outText}\n Scanner: ${scannerNow.outText}\n Firmware: ${firmwareNow
-            .outText}";
+            " Brand: ${brandNow.outText}\n Password: ${passphraseNow.outText}\n SSID: ${ssidNow.outText}\n Reciever: ${receiverNow.outText}\n Scanner: ${scannerNow.outText}\n Firmware: ${firmwareNow.outText}";
         /////////////////
       } catch (e) {
         output =
@@ -280,6 +279,15 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
       updateState();
       String output = "";
       try {
+        /// "hexdump -C /dev/ttymxc3"
+        ///
+        //    var imuNow = await shell.run('''
+        //   ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" '
+        //     echo -en "\xA5\xA5\x01\x02\x06\x00\x53\x2D" > /dev/ttymxc3;
+        //     sleep 1;  # Подождать, чтобы устройство успело ответить
+        //     cat /dev/ttymxc3  # Прочитать ответ с устройства
+        //   '
+        // ''');
         var imuNow = await shell.run('''
   ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey"
     echo -en '\xA5\xA5\x01\x02\x06\x00\x53\x2D' > /dev/ttymxc3;
@@ -290,11 +298,10 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
 
         ///
         output = "IMU DATA: ${imuNow.outText}";
-
       } catch (e) {
         print(e);
         output =
-        "Failed to copy calibration file: check all conditions before start $e";
+            "Failed to copy calibration file: check all conditions before start $e";
       } finally {
         await _deleteTempKeyFile();
       }
