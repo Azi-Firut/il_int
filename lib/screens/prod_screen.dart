@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:process_run/shell.dart';
 
+import '../constant.dart';
+
 class FolderOpener extends StatefulWidget {
   @override
   _FolderOpenerState createState() => _FolderOpenerState();
@@ -88,13 +90,20 @@ class _FolderOpenerState extends State<FolderOpener> {
       child: Column(
         children: [
           TextField(
+            style: TextStyle(
+              color: textColorGray,
+            ),
+            textCapitalization: TextCapitalization.characters,
             controller: _controller,
-            decoration: InputDecoration(labelText: 'Enter Folder Name'),
+            decoration: InputDecoration(
+              hintText: 'Enter Unit Serial Number',
+              hintStyle: TextStyle(color: Colors.grey),
+            ),
           ),
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: _openFolder,
-            child: Text('Open Folder'),
+            child: Text('Search Unit Folder'),
           ),
           SizedBox(height: 20),
           Text(_statusMessage),
