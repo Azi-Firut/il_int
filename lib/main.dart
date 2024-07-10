@@ -110,9 +110,20 @@ class _LeftSideState extends State<LeftSide> {
                 ),
                 // BUTTON
                 const CustomTextButton(
+                  icon: Icons.developer_board,
+                  text: "Production",
+                  onPress: 4,
+                ),
+                Container(
+                  height: 1,
+                  width: double.infinity,
+                  color: const Color(0x1500A4FC),
+                ),
+                // BUTTON
+                const CustomTextButton(
                   icon: Icons.tips_and_updates_outlined,
                   text: "Test",
-                  onPress: 4,
+                  onPress: 99,
                 ),
                 Container(
                   height: 1,

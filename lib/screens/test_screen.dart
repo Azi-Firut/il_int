@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:process_run/shell.dart';
 import '../../constant.dart';
-import '../models/device_manager.dart';
+import '../models/device_manager_class.dart';
 import '../models/test_class.dart';
 
 class TestScreen extends StatefulWidget {
@@ -91,7 +91,7 @@ class TestScreenState extends State<TestScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _testManager.imuInfo(updateState);
+                await _testManager.runIMUCommands2(updateState);
               },
               child: Text('IMU'),
             ),

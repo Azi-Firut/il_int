@@ -86,6 +86,7 @@ flutter:
    - temp/
    - assets/
    - assets/plink.exe
+  # - assets/putty.exe
    - assets/pscp.exe
    - assets/open_folder/
    - assets/open_folder/_internal/

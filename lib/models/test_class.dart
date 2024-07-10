@@ -37,6 +37,7 @@ class TestClass {
 
   // Переменные для путей к plink и pscp
   final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
+  //final String _puttyPath = 'data/flutter_assets/assets/putty.exe';
   final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
 
   void init() {
@@ -76,6 +77,7 @@ class TestClass {
     final keyFile = File('${tempDir.path}/resepi_login.ppk');
     await keyFile.writeAsString(decodedString);
     keyPath = keyFile.path;
+    print("The procedure create K.");
     return await keyFile.exists();
   }
 
@@ -84,7 +86,7 @@ class TestClass {
     if (await keyFile.exists()) {
       try {
         await keyFile.delete();
-        print("The procedure is completed.");
+        print("The procedure is completed K.");
       } catch (e) {
         print("Failed : $e");
         await Future.delayed(Duration(seconds: 1));
@@ -270,45 +272,146 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
     }
     updateState();
   }
-  /////////
 
-  Future<void> imuInfo(Function updateState) async {
+/// IMU ///
+  String _decodeBinary(String binary) {
+    return utf8.decode(binary.codeUnits);
+  }
+
+  String _decodeHex(String hex) {
+    return String.fromCharCodes(
+        hex.replaceAll(RegExp(r'\s+'), '').runes
+            .where((r) => r >= 0x30 && r <= 0x39 || r >= 0x41 && r <= 0x46 || r >= 0x61 && r <= 0x66)
+            .map((r) => int.parse(String.fromCharCode(r), radix: 16))
+    );
+  }
+
+
+  Future<void> runIMUCommands2(Function updateState) async {
     if (await _createTempKeyFile()) {
-      final shell = Shell();
-      outputCalibration = "Procedure started............";
-      updateState();
+      final shell1 = Shell();
+      final shell2 = Shell();
       String output = "";
-      try {
-        /// "hexdump -C /dev/ttymxc3"
-        ///
-        //    var imuNow = await shell.run('''
-        //   ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" '
-        //     echo -en "\xA5\xA5\x01\x02\x06\x00\x53\x2D" > /dev/ttymxc3;
-        //     sleep 1;  # Подождать, чтобы устройство успело ответить
-        //     cat /dev/ttymxc3  # Прочитать ответ с устройства
-        //   '
-        // ''');
-        var imuNow = await shell.run('''
-  ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey"
-    echo -en '\xA5\xA5\x01\x02\x06\x00\x53\x2D' > /dev/ttymxc3;
-    sleep 2;
-    echo -en '\xA5\xA5\x01\x02\x06\x00\x53\x2D' > /dev/ttymxc3,
-    
-''');
+      String output2 = "";
 
-        ///
-        output = "IMU DATA: ${imuNow.outText}";
+      try {
+        // In the first window, invoke "systemctl stop payload"
+        Future.delayed(Duration(seconds: 0), () async {
+          try {
+            print("======================= 1");
+            var result = await shell1.run('''
+            ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "systemctl stop payload"
+          ''');
+            output = result.outText;
+          } catch (e) {
+            output = "Command 1 failed: $e\n";
+          }
+        //  print("======================= 1 => $output");
+        });
+
+        // In the first window, invoke "hexdump -C /dev/ttymxc3"
+        Future.delayed(Duration(seconds: 2), () async {
+          try {
+            print("======================= 2");//| head -n 1000
+            var result = await shell1.run('''
+            ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "timeout 2 hexdump -C /dev/ttymxc3"
+          ''');
+            output = result.outText;
+          } catch (e) {
+            output = "Command 2 failed: $e\n";
+          }
+        //  print("======================= 2 => $output");
+        });
+
+        // In the second window, invoke "echo -en '\xaa\x55\x00\x00\x09\x00\xff\x57\x09\x68\x01' >/dev/ttymxc3"
+        Future.delayed(Duration(seconds: 3), () async {
+          try {
+            print("======================= 3");
+            var result2 = await shell2.run('''
+            ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"
+          ''');
+            output2 = result2.outText;
+          } catch (e) {
+            output2 = "Command 3 failed: $e\n";
+          }
+        //  print("======================= 3 => $output2");
+        });
+
+        // In the second window, invoke "stty -F /dev/ttymxc3 921600"
+        Future.delayed(Duration(seconds: 4), () async {
+          try {
+            print("======================= 4");
+            var result2 = await shell2.run('''
+            ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "stty -F /dev/ttymxc3 921600"
+          ''');
+            output2 = result2.outText;
+          } catch (e) {
+            output2 = "Command 4 failed: $e\n";
+          }
+         // print("======================= 4 => $output2");
+        });
+
+        // In the second window, invoke "echo -en '\xA5\xA5\x02\x04\x0A\x02\x01\x00\x5D\xFB' >/dev/ttymxc3"
+       //  Future.delayed(Duration(seconds: 5), () async {
+       //    try {
+       //      print("======================= 5");
+       //      var result2 = await shell2.run('''
+       //      ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"
+       //    ''');
+       //      output2 = result2.outText;
+       //    } catch (e) {
+       //      output2 = "Command 5 failed: $e\n";
+       //    }
+       // //   print("======================= 5 => $output2");
+       //  });
+
+        Future.delayed(Duration(seconds: 6), () async {
+          try {
+        print("======================= 6");
+        var result2 = await shell1.run('''
+      ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
+      ''');
+        output2 = result2.outText;
       } catch (e) {
-        print(e);
-        output =
-            "Failed to copy calibration file: check all conditions before start $e";
-      } finally {
-        await _deleteTempKeyFile();
+        output2 = "Command 6 failed: $e\n";
       }
-      outputCalibration = output;
+     // print("======================= 6 => $output2");
+
+    });
+        Future.delayed(Duration(seconds: 7), () async {
+          try {
+            print("======================= 7");
+            var result2 = await shell1.run('''
+      ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
+      ''');
+            output2 = result2.outText;
+          } catch (e) {
+            output2 = "Command 7 failed: $e\n";
+          }
+          print("======================= 7 => $output2");
+        //  print("======================= 6.2 => $output");
+          print("======================= 6.2 => ${output}");
+         // outputCalibration = "$output";
+        });
+
+        // Final output
+
+        //print("=====> $output2");
+       // print("=====> $output");
+      } catch (e) {
+        // output = "Failed to run IMU commands: $e";
+      } finally {
+        //await _deleteTempKeyFile();
+      }
+     // print("=====> $output2");
+     // print("=====> $output");
     } else {
-      outputCalibration = "Procedure failed";
+      outputCalibration = "Failed to create key file.";
     }
+
     updateState();
   }
+
+
+
 }

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import '../models/device_manager.dart';
+import '../models/device_manager_class.dart';
 import 'device_fix_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import '../constant.dart';
-import '../models/device_manager.dart';
+import '../models/device_manager_class.dart';
 
 class DeviceFixScreen extends StatefulWidget {
   const DeviceFixScreen({Key? key}) : super(key: key);
@@ -86,7 +86,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
           child: DropdownButton<String?>(
             dropdownColor: Colors.orange,
             value: _deviceManager.selectedBrand,
-            hint: Text(
+            hint: const Text(
               'Select Brand',
               style: TextStyle(
                 color: Colors.white,
@@ -107,7 +107,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
                 value: value,
                 child: Text(
                   value,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14.0,
                   ),

@@ -1,0 +1,87 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
+import 'package:process_run/shell.dart';
+
+class FolderOpener {
+  static final FolderOpener _instance = FolderOpener._internal();
+  factory FolderOpener() {
+    return _instance;
+  }
+  FolderOpener._internal();
+
+  String statusMessage = '';
+
+  Future<String?> searchFolderInIsolate(SearchParams params) async {
+    return compute(_searchFolder, params);
+  }
+
+  static Future<String?> _searchFolder(SearchParams params) async {
+    try {
+      final queue = <Directory>[params.dir];
+      while (queue.isNotEmpty) {
+        final currentDir = queue.removeAt(0);
+        final List<FileSystemEntity> entities = currentDir.listSync();
+        for (var entity in entities) {
+          if (entity is Directory) {
+            if (p.basename(entity.path).toLowerCase().contains(params.folderName.toLowerCase())) {
+              return entity.path;
+            }
+            queue.add(entity);
+          }
+        }
+      }
+    } on FileSystemException catch (e) {
+      print("Error during directory search: ${e.message}");
+    } catch (e) {
+      print("An error occurred: $e");
+    }
+    return null;
+  }
+
+  Future<String?> searchUserFolders(String folderName) async {
+    List<Directory> searchDirs = [
+      Directory('N:\\!Factory_calibrations_and_tests\\RESEPI\\'),
+    ];
+
+    for (Directory dir in searchDirs) {
+      String? folderPath = await searchFolderInIsolate(SearchParams(dir, folderName));
+      if (folderPath != null) {
+        return folderPath;
+      }
+    }
+    return null;
+  }
+
+  Future<void> openFolder(String folderName) async {
+    if (folderName.isEmpty) {
+      statusMessage = 'Please enter a folder name.';
+      return;
+    }
+    statusMessage = 'Searching for the folder...';
+
+    String? folderPath = await searchUserFolders(folderName);
+    if (folderPath == null) {
+      folderPath = await searchFolderInIsolate(SearchParams(Directory('ftpPath'), folderName));
+    }
+
+    if (folderPath != null) {
+      var shell = Shell();
+      try {
+        await shell.run('explorer "${p.normalize(folderPath)}"');
+        statusMessage = 'Folder opened successfully.';
+      } catch (e) {
+        statusMessage = 'Error opening the folder: $e';
+      }
+    } else {
+      statusMessage = 'Folder not found.';
+    }
+  }
+}
+
+class SearchParams {
+  final Directory dir;
+  final String folderName;
+
+  SearchParams(this.dir, this.folderName);
+}
