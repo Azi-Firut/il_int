@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:il_int/screens/device_fix_screen.dart';
 import 'package:il_int/screens/merge_screen.dart';
+import 'package:il_int/screens/prod_screen.dart';
 import 'package:il_int/screens/test_screen.dart';
 
 import 'wifi_screen.dart';
@@ -27,6 +28,8 @@ class _ScreenSwitcherState extends State<ScreenSwitcher> {
       return MergeBaseFiles();
     } else if (widget.page == 3) {
       return DeviceFixScreen();
+    } else if (widget.page == 5) {
+      return FolderOpener();
     } else if (widget.page == 4) {
       return TestScreen();
     } else {
