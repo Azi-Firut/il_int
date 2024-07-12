@@ -91,7 +91,7 @@ class _ProdScreenState extends State<ProdScreen> {
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
-            child: const Text('Initial Parameters',style: TextStyle(
+            child: const Text('Final Parameters',style: TextStyle(
               color: Color(0xFFFFFFFF),
             ),),
           ),

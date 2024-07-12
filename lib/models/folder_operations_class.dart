@@ -42,6 +42,7 @@ class FolderOpener {
   Future<String?> searchUserFolders(String folderName) async {
     List<Directory> searchDirs = [
       Directory('N:\\!Factory_calibrations_and_tests\\RESEPI\\'),
+      Directory('N:\\Discrepancy_Reporting\\Quality Notices\\'),
     ];
 
     for (Directory dir in searchDirs) {

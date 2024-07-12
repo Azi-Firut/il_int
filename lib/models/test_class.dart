@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:process_run/shell.dart';
 import '../constant.dart';
@@ -29,6 +30,8 @@ class TestClass {
 
   String? selectedBrand;
   String outputCalibration = "";
+  String outputCalibration1 = "";String outputCalibration3 = "";String outputCalibration4 = "";String outputCalibration5 = "";String outputCalibration6 = "";String outputCalibration7 = "";
+  String _outputCalibration2="";
   String outputBrand = "";
   String keyPath = '';
   String brand = "";
@@ -286,130 +289,140 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
     );
   }
 
+  String get outputCalibration2 {
+    return _outputCalibration2.length > 50
+        ? _outputCalibration2.substring(_outputCalibration2.length - 50)
+        : _outputCalibration2;
+  }
+
+  set outputCalibration2(String value) {
+    _outputCalibration2 = value;
+  }
 
   Future<void> runIMUCommands2(Function updateState) async {
     if (await _createTempKeyFile()) {
       final shell1 = Shell();
       final shell2 = Shell();
+      final shell3 = Shell();
+      final shell4 = Shell();
+      final shell5 = Shell();
+      final shell6 = Shell();
+      final shell7 = Shell();
       String output = "";
       String output2 = "";
 
+
+
       try {
-        // In the first window, invoke "systemctl stop payload"
+     //  In the first window, invoke "systemctl stop payload"
         Future.delayed(Duration(seconds: 0), () async {
           try {
             print("======================= 1");
             var result = await shell1.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "systemctl stop payload"
           ''');
-            output = result.outText;
+            outputCalibration1=result.outText;
+            updateState();
           } catch (e) {
             output = "Command 1 failed: $e\n";
           }
-        //  print("======================= 1 => $output");
+
+          print("======================= 1 => $output");
         });
 
         // In the first window, invoke "hexdump -C /dev/ttymxc3"
         Future.delayed(Duration(seconds: 2), () async {
-          try {
+
             print("======================= 2");//| head -n 1000
             var result = await shell1.run('''
-            ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "timeout 2 hexdump -C /dev/ttymxc3"
+            ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "hexdump -C /dev/ttymxc3"
           ''');
-            output = result.outText;
-          } catch (e) {
-            output = "Command 2 failed: $e\n";
-          }
-        //  print("======================= 2 => $output");
+            _outputCalibration2=result.outText;
+            updateState();
+
+          print("======================= 2 => $output");
         });
 
-        // In the second window, invoke "echo -en '\xaa\x55\x00\x00\x09\x00\xff\x57\x09\x68\x01' >/dev/ttymxc3"
-        Future.delayed(Duration(seconds: 3), () async {
+
+      // In the second window, invoke "echo -en '\xaa\x55\x00\x00\x09\x00\xff\x57\x09\x68\x01' >/dev/ttymxc3"
+        Future.delayed(Duration(seconds: 4), () async {
           try {
             print("======================= 3");
             var result2 = await shell2.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"
           ''');
-            output2 = result2.outText;
+            //outputCalibration2=result2.outText;
+            updateState();
           } catch (e) {
-            output2 = "Command 3 failed: $e\n";
+           // output2 = "Command 3 failed: $e\n";
           }
-        //  print("======================= 3 => $output2");
+          print("======================= 3 => $output2");
         });
 
         // In the second window, invoke "stty -F /dev/ttymxc3 921600"
-        Future.delayed(Duration(seconds: 4), () async {
-          try {
+        Future.delayed(Duration(seconds: 6), () async {
+
             print("======================= 4");
-            var result2 = await shell2.run('''
+            var result2 = await shell3.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "stty -F /dev/ttymxc3 921600"
           ''');
-            output2 = result2.outText;
-          } catch (e) {
-            output2 = "Command 4 failed: $e\n";
-          }
-         // print("======================= 4 => $output2");
+            outputCalibration3=result2.outText;
+            updateState();
+
+          print("======================= 4 => $output2");
         });
 
-        // In the second window, invoke "echo -en '\xA5\xA5\x02\x04\x0A\x02\x01\x00\x5D\xFB' >/dev/ttymxc3"
-       //  Future.delayed(Duration(seconds: 5), () async {
-       //    try {
-       //      print("======================= 5");
-       //      var result2 = await shell2.run('''
-       //      ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"
-       //    ''');
-       //      output2 = result2.outText;
-       //    } catch (e) {
-       //      output2 = "Command 5 failed: $e\n";
-       //    }
-       // //   print("======================= 5 => $output2");
-       //  });
+      //  In the second window, invoke "echo -en '\xA5\xA5\x02\x04\x0A\x02\x01\x00\x5D\xFB' >/dev/ttymxc3"
+        Future.delayed(Duration(seconds: 8), () async {
+          try {
+            print("======================= 5");
+            var result2 = await shell4.run('''
+            ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"
+          ''');
+            outputCalibration4=result2.outText;
+            updateState();
+          } catch (e) {
+            output2 = "Command 5 failed: $e\n";
+          }
+         print("======================= 5 => $output2");
+        });
 
-        Future.delayed(Duration(seconds: 6), () async {
+        Future.delayed(Duration(seconds: 10), () async {
           try {
         print("======================= 6");
-        var result2 = await shell1.run('''
+        var result2 = await shell5.run('''
       ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
       ''');
-        output2 = result2.outText;
+        outputCalibration5=result2.outText;
+        updateState();
       } catch (e) {
         output2 = "Command 6 failed: $e\n";
       }
-     // print("======================= 6 => $output2");
+      print("======================= 6 => $output2");
 
     });
-        Future.delayed(Duration(seconds: 7), () async {
+        Future.delayed(Duration(seconds: 11), () async {
           try {
             print("======================= 7");
-            var result2 = await shell1.run('''
+            var result2 = await shell6.run('''
       ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
       ''');
-            output2 = result2.outText;
+            outputCalibration6=result2.outText;
+            updateState();
           } catch (e) {
             output2 = "Command 7 failed: $e\n";
           }
           print("======================= 7 => $output2");
-        //  print("======================= 6.2 => $output");
-          print("======================= 6.2 => ${output}");
-         // outputCalibration = "$output";
+
         });
-
-        // Final output
-
-        //print("=====> $output2");
-       // print("=====> $output");
       } catch (e) {
-        // output = "Failed to run IMU commands: $e";
       } finally {
-        //await _deleteTempKeyFile();
       }
-     // print("=====> $output2");
-     // print("=====> $output");
     } else {
       outputCalibration = "Failed to create key file.";
     }
 
-    updateState();
+   // updateState();
   }
 
 
