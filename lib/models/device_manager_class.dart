@@ -218,4 +218,54 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
     }
     updateState();
   }
+  Future<void> getDeviceInfo(Function updateState) async {
+    if (await _createTempKeyFile()) {
+      final shell = Shell();
+      outputCalibration = "Procedure started............";
+      updateState();
+      String output = "";
+      try {
+        var brandNow = await shell.run('''
+          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
+          ''');
+        var passphraseNow = await shell.run('''
+          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/passphrase"
+          ''');
+        var ssidNow = await shell.run('''
+          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/hostname"
+          ''');
+        var receiverNow = await shell.run('''
+          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/receiver"
+          ''');
+        var scannerNow = await shell.run('''
+          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/scanner"
+          ''');
+        var firmwareNow = await shell.run('''
+  ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "head -n 1 /etc/release_notes"
+''');
+
+        ////
+        // await shell.run('''
+        //   ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${brandNow.outText}' > /etc/brand && exit"
+        //   ''');
+        // const calibrationAssetPath = 'assets/calibration';
+        // await shell.run('''
+        // ${_pscpPath} -i "$keyPath" -P 22 "$calibrationAssetPath" root@192.168.12.1:/etc/payload/calibration
+        // ''');
+        /////////////////
+        output =
+        " Brand: ${brandNow.outText}\n Password: ${passphraseNow.outText}\n SSID: ${ssidNow.outText}\n Reciever: ${receiverNow.outText}\n Scanner: ${scannerNow.outText}\n Firmware: ${firmwareNow.outText}";
+        /////////////////
+      } catch (e) {
+        output =
+        "Failed to copy calibration file: check all conditions before start $e";
+      } finally {
+        await _deleteTempKeyFile();
+      }
+      outputCalibration = output;
+    } else {
+      outputCalibration = "Procedure failed";
+    }
+    updateState();
+  }
 }

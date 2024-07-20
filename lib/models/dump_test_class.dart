@@ -81,13 +81,13 @@ class TestClass {
 
 
       try {
-       // Future.delayed(Duration(seconds: 0), () async {
-          print("======================= 1");
-            shell1.run('''
+        // Future.delayed(Duration(seconds: 0), () async {
+        print("======================= 1");
+        shell1.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "systemctl stop payload"
           ''');
-          print("======================= 1 End");
-       // });
+        print("======================= 1 End");
+        // });
 
         Future.delayed(Duration(seconds: 1), () async {
           print("======================= 2");
@@ -95,10 +95,8 @@ class TestClass {
             var result2 = await shell1.run('''
               ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "hexdump -C /dev/ttymxc3"
             ''');
-            out=result2.outText;
             if (result2.isNotEmpty) {
               unitResponse = _processUnitResponse(result2.outText);
-             // print("======================= 2 => $unitResponse END");
               updateState(); // Call updateState here
             } else {
               print("No output from shell2.run");
@@ -108,7 +106,7 @@ class TestClass {
           }
         });
 
-        Future.delayed(Duration(seconds: 4), () async {
+        Future.delayed(Duration(seconds: 2), () async {
           print("======================= 3");
           await shell3.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"
@@ -116,7 +114,7 @@ class TestClass {
           print("======================= 3 => END");
         });
 
-        Future.delayed(Duration(seconds: 6), () async {
+        Future.delayed(Duration(seconds: 4), () async {
           print("======================= 4");
           await shell3.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "stty -F /dev/ttymxc3 921600"
@@ -124,7 +122,7 @@ class TestClass {
           print("======================= 4 => END");
         });
 
-        Future.delayed(Duration(seconds: 8), () async {
+        Future.delayed(Duration(seconds: 6), () async {
           print("======================= 5");
           await shell3.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"
@@ -132,7 +130,7 @@ class TestClass {
           print("======================= 5 => END");
         });
 
-        Future.delayed(Duration(seconds: 15), () async {
+        Future.delayed(Duration(seconds: 10), () async {
           print("======================= 6");
           await shell3.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
@@ -140,22 +138,21 @@ class TestClass {
           print("======================= 6 => END");
         });
 
-          Future.delayed(Duration(seconds: 17), () async {
-            print("======================= 6");
-            await shell3.run('''
+        Future.delayed(Duration(seconds: 11), () async {
+          print("======================= 6");
+          await shell3.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
           ''');
-            print("======================= 6 => END");
-            print("======================= 6 => $unitResponse END");
-          });
+          print("======================= 6 => END");
+        });
 
-        Future.delayed(Duration(seconds: 18), () async {
+        Future.delayed(Duration(seconds: 15), () async {
           print("======================= 7");
           await shell3.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3 && exit"
           ''');
           print("======================= 7 => END");
-          print("======================= 7 => ${unitResponse} END");
+          print("======================= 7 => $unitResponse END");
           print("======================= 7 => $out END");
           updateState(); // Call updateState here
           await _deleteTempKeyFile();
