@@ -83,15 +83,18 @@ flutter:
   # http://unicode.org/Public/emoji/1.0/emoji-data.txt
   uses-material-design: true
   assets:
-   - temp/
-   - assets/
-   - assets/plink.exe
+    - temp/
+    - assets/
+    - assets/plink.exe
   # - assets/putty.exe
-   - assets/pscp.exe
-   - assets/open_folder/
-   - assets/open_folder/_internal/
-   - assets/wifi_search/
-   - assets/wifi_search/_internal/
+    - assets/pscp.exe
+    - assets/open_folder/
+    - assets/open_folder/_internal/
+    - assets/wifi_search/
+    - assets/wifi_search/_internal/
+    - assets/fill_atc/
+    - assets/fill_atc/atc_template/
+    - assets/fill_atc/atc_template/logo_img_atc/
 
   # To add assets to your application, add an assets section, like this:
   #assets:
