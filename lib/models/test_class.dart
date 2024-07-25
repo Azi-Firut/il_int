@@ -1,4 +1,7 @@
 
+
+
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:io';
@@ -19,8 +22,8 @@ class TestClass {
   String calibrationPath = '';
   String decodedString = "";
   var unitResponse='';
-  List<ProcessResult> out=[];
-  var out2='';
+   List<ProcessResult> out=[];
+   List<ProcessResult> out2=[];
   final shell1 = Shell();
   final shell2 = Shell();
   final shell3 = Shell();
@@ -79,28 +82,22 @@ class TestClass {
     }
   }
 
-  Future<void>  fun1() async {
-  Future.delayed(Duration(seconds: 1), () async {
-
-  shell1.run('''
+   fun1() async {
+    var resultShell = await shell1.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "systemctl stop payload"
           ''');
+    out2=resultShell;
   print("======================= 1 => END");
-  });}
+  }
 
-  Future<String>  fun2(updateState) async {
-    Future.delayed(Duration(seconds: 2), () async {
+  fun2(Function updateState) async {
       print("======================= 2");
        var resultShell1 =await shell1.run('''
               ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "hexdump -C /dev/ttymxc3"
-            ''');
-      out2=resultShell1[0].stdout.toString();
+            ''');;
       out=resultShell1;
-      unitResponse=resultShell1[0].stdout;
-     // unitResponse = _processUnitResponse(resultShell1.outText);
+      unitResponse = _processUnitResponse(resultShell1[0].stdout);
       updateState();
-    });
-    return unitResponse;
     }
 
   void fun3() {
@@ -143,36 +140,51 @@ class TestClass {
       print("======================= 7 => END");
     });}
 
-  void fun8(updateState) {
+  Future<void> fun8(updateState) async {
     Future.delayed(Duration(seconds: 15), () async {
-      var resultShell1 = shell3.run('''
+      var result = await shell3.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
           ''');
-      out2=_processUnitResponse(resultShell1.asStream().toString());
+      out=result;
+      //out2=_processUnitResponse(resultShell1.asStream().toString());
       print("======================= 8 => END");
     });}
 
   void fun9(updateState) {
     Future.delayed(Duration(seconds: 16), () async {
-      // var receiverNow = await shell2.run('''
-      //     ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /dev/ttymxc3"
-      //     ''');
-      print("--------out--------------");
-      print(out);
+      print("======================= 9");
+      var resultShell1 =await shell3.run('''
+              ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "hexdump -C /dev/ttymxc3"
+            ''');
+      shell1.kill();
+       shell3.kill();
+      out=resultShell1;
+      unitResponse = _processUnitResponse(resultShell1[0].stdout);
+      updateState();
+
+      print("-------------out--------------");
+
+      print(out.toString());
+      print(out.outText);
+      print(out.length);
+      // print(out);
+      // print(out[0]);
+      print("-------------out2--------------");
       print(out2.toString());
       print(out2.length);
-      print(out2);
-     print(out2[2]);
-      print(out[0]);
-      print(out[1]);
-      print(out[2]);
-      print(out[3]);
+      print(out2.outText);
+      print(out2[0].stdout);
+
+      // print(out2[0].outLines);
+      // print(out2[0].stdout);
+      // print(out2[0]);
+      // print(out2[0]);
      // unitResponse = shell1.toString();
      // unitResponse = _processUnitResponse(shell1.toString());
       print(unitResponse);
-     // print(resultShell1[0].stdout);
-      shell1.kill();
-      shell3.kill();
+
+     // shell1.kill();
+    //  shell3.kill();
       updateState();
       _deleteTempKeyFile();
       print("======================= 9 => END");
@@ -180,7 +192,11 @@ class TestClass {
 
   Future<void> funRunImuParse(Function updateState) async {
     _createTempKeyFile();
-    fun1();
+    allrun(updateState);
+   }
+
+  void allrun(updateState) {
+    Future.delayed(Duration(seconds: 2), () async{fun1();
     fun2(updateState);
     fun3();
     fun4();
@@ -189,8 +205,8 @@ class TestClass {
     fun7(updateState);
     fun8(updateState);
     fun9(updateState);
-      print("======================= START");
-   }
+    print("======================= START");
+    });   }
 
   String _processUnitResponse(String response) {
     // Remove ".|" from the response
@@ -198,7 +214,7 @@ class TestClass {
 
     // Split response into lines and get the last 10 lines
     List<String> lines = response.split('\n');
-    int start = lines.length > 100 ? lines.length - 100 : 0;
+    int start = lines.length > 10 ? lines.length - 10 : 0;
     return lines.sublist(start).join('\n');
   }
 
