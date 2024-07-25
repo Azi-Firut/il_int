@@ -1,7 +1,10 @@
-import 'package:il_int/widgets/menu_button.dart';
-import 'package:provider/provider.dart';
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:http/http.dart' as http;
+import 'package:il_int/widgets/menu_button.dart';
 import 'package:il_int/screens/screen_switcher.dart';
 import 'models/data.dart';
 
@@ -54,88 +57,125 @@ class LeftSide extends StatefulWidget {
 }
 
 class _LeftSideState extends State<LeftSide> {
+  bool showButtons = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    try {
+      final response = await http.get(Uri.parse(
+          'https://raw.githubusercontent.com/Azi-Firut/il_int/master/perm'));
+      if (response.statusCode == 200) {
+        final body = response.body.trim();
+        if (body == 'no') {
+          setState(() {
+            showButtons = false;
+          });
+        }
+        if (body == 'yes') {
+          setState(() {
+            showButtons = true;
+          });
+        }
+        ;
+      }
+    } catch (e) {
+      // Если возникла ошибка (например, нет доступа к URL), ничего не делаем и оставляем showButtons = true
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // int numPage = 0;
     return Container(
-        width: 150,
-        child: Container(
-            color: sidebarColor,
-            child: Column(
-              children: [
-                Container(
-                  color: const Color(0xFF1F1F1F),
-                  height: 31,
-                  child: const Center(
-                    child: Text(
-                      "Inertial Labs internal",
-                      style: TextStyle(
-                        color: Color(0xFF777777),
-                      ),
-                    ),
+      width: 150,
+      child: Container(
+        color: sidebarColor,
+        child: Column(
+          children: [
+            Container(
+              color: const Color(0xFF1F1F1F),
+              height: 31,
+              child: const Center(
+                child: Text(
+                  "Inertial Labs internal",
+                  style: TextStyle(
+                    color: Color(0xFF777777),
                   ),
                 ),
-
-                const CustomTextButton(
-                  icon: Icons.wifi_find_rounded,
-                  text: "Scan wi-fi",
-                  onPress: 1,
-                ),
-                Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: const Color(0x1800A4FC),
-                ), //end
-                // BUTTON
-                const CustomTextButton(
-                  icon: Icons.call_merge_rounded,
-                  text: "Merge file",
-                  onPress: 2,
-                ),
-                Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: const Color(0x1500A4FC),
-                ),
-                // BUTTON
-                const CustomTextButton(
-                  icon: Icons.bug_report_outlined,
-                  text: "Device fix",
-                  onPress: 3,
-                ),
-                Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: const Color(0x1500A4FC),
-                ),
-                // BUTTON
-                const CustomTextButton(
-                  icon: Icons.developer_board,
-                  text: "Production",
-                  onPress: 4,
-                ),
-                Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: const Color(0x1500A4FC),
-                ),
-                // BUTTON
-                const CustomTextButton(
-                  icon: Icons.tips_and_updates_outlined,
-                  text: "Test",
-                  onPress: 99,
-                ),
-                Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: const Color(0x1500A4FC),
-                ),
-                // end
-
-                WindowTitleBarBox(child: MoveWindow()),
-                Expanded(child: Container())
-              ],
-            )));
+              ),
+            ),
+            if (showButtons) ...[
+              const CustomTextButton(
+                icon: Icons.wifi_find_rounded,
+                text: "Scan wi-fi",
+                onPress: 1,
+              ),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: const Color(0x1800A4FC),
+              ),
+              const CustomTextButton(
+                icon: Icons.call_merge_rounded,
+                text: "Merge file",
+                onPress: 2,
+              ),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: const Color(0x1500A4FC),
+              ),
+              const CustomTextButton(
+                icon: Icons.bug_report_outlined,
+                text: "Device fix",
+                onPress: 3,
+              ),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: const Color(0x1500A4FC),
+              ),
+              const CustomTextButton(
+                icon: Icons.developer_board,
+                text: "Production",
+                onPress: 4,
+              ),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: const Color(0x1500A4FC),
+              ),
+              const CustomTextButton(
+                icon: Icons.tips_and_updates_outlined,
+                text: "Test",
+                onPress: 99,
+              ),
+              // Container(
+              //   height: 1,
+              //   width: double.infinity,
+              //   color: const Color(0x1500A4FC),
+              // ),
+              // const CustomTextButton(
+              //   icon: Icons.account_tree_rounded,
+              //   text: "Test open folder",
+              //   onPress: 5,
+              // ),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: const Color(0x1500A4FC),
+              ),
+            ],
+            WindowTitleBarBox(child: MoveWindow()),
+            Expanded(child: Container())
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -151,8 +191,6 @@ class RightSide extends StatefulWidget {
 }
 
 class _RightSideState extends State<RightSide> {
-//  int numPage = 0; // Define numPage here
-
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -164,7 +202,7 @@ class _RightSideState extends State<RightSide> {
             colors: [
               backgroundStartColor,
               backgroundStartColor2,
-              backgroundEndColor
+              backgroundEndColor,
             ],
             stops: [0.0, 0.5, 1.0],
           ),
@@ -179,7 +217,6 @@ class _RightSideState extends State<RightSide> {
                 ],
               ),
             ),
-            //  ScreenSwitcher(page: context.watch<Data>().getScreenNumber),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -197,17 +234,19 @@ class _RightSideState extends State<RightSide> {
 }
 
 final buttonColors = WindowButtonColors(
-    iconNormal: const Color(0xFF777777),
-    mouseOver: const Color(0xFF252525),
-    mouseDown: const Color(0xFF4F3405),
-    iconMouseOver: const Color(0xFFFFFEFE),
-    iconMouseDown: const Color(0xFF777777));
+  iconNormal: const Color(0xFF777777),
+  mouseOver: const Color(0xFF252525),
+  mouseDown: const Color(0xFF4F3405),
+  iconMouseOver: const Color(0xFFFFFEFE),
+  iconMouseDown: const Color(0xFF777777),
+);
 
 final closeButtonColors = WindowButtonColors(
-    mouseOver: const Color(0xFF252525),
-    mouseDown: const Color(0xFFB71C1C),
-    iconNormal: const Color(0xFF777777),
-    iconMouseOver: Colors.white);
+  mouseOver: const Color(0xFF252525),
+  mouseDown: const Color(0xFFB71C1C),
+  iconNormal: const Color(0xFF777777),
+  iconMouseOver: Colors.white,
+);
 
 class WindowButtons extends StatefulWidget {
   const WindowButtons({super.key});
