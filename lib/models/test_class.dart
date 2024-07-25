@@ -1,6 +1,8 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:process_run/shell.dart';
 import '../constant.dart';
 
@@ -16,8 +18,13 @@ class TestClass {
   String keyPath = '';
   String calibrationPath = '';
   String decodedString = "";
-  String unitResponse = "";
-  var out;
+  var unitResponse='';
+  List<ProcessResult> out=[];
+  var out2='';
+  final shell1 = Shell();
+  final shell2 = Shell();
+  final shell3 = Shell();
+  //var resultShell1;
 
 
   // Переменные для путей к plink и pscp
@@ -72,102 +79,118 @@ class TestClass {
     }
   }
 
-  /// IMU ///
-  Future<void> runIMUCommands2(Function updateState) async {
-    if (await _createTempKeyFile()) {
-      final shell1 = Shell();
-      final shell2 = Shell();
-      final shell3 = Shell();
+  Future<void>  fun1() async {
+  Future.delayed(Duration(seconds: 1), () async {
 
-
-      try {
-       // Future.delayed(Duration(seconds: 0), () async {
-          print("======================= 1");
-            shell1.run('''
+  shell1.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "systemctl stop payload"
           ''');
-          print("======================= 1 End");
-       // });
+  print("======================= 1 => END");
+  });}
 
-        Future.delayed(Duration(seconds: 1), () async {
-          print("======================= 2");
-          try {
-            var result2 = await shell1.run('''
+  Future<String>  fun2(updateState) async {
+    Future.delayed(Duration(seconds: 2), () async {
+      print("======================= 2");
+       var resultShell1 =await shell1.run('''
               ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "hexdump -C /dev/ttymxc3"
             ''');
-            out=result2.outText;
-            if (result2.isNotEmpty) {
-              unitResponse = _processUnitResponse(result2.outText);
-             // print("======================= 2 => $unitResponse END");
-              updateState(); // Call updateState here
-            } else {
-              print("No output from shell2.run");
-            }
-          } catch (e) {
-            print("Error running shell2: $e");
-          }
-        });
+      out2=resultShell1[0].stdout.toString();
+      out=resultShell1;
+      unitResponse=resultShell1[0].stdout;
+     // unitResponse = _processUnitResponse(resultShell1.outText);
+      updateState();
+    });
+    return unitResponse;
+    }
 
-        Future.delayed(Duration(seconds: 4), () async {
-          print("======================= 3");
-          await shell3.run('''
+  void fun3() {
+    Future.delayed(Duration(seconds: 4), () async {
+      await shell3.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"
           ''');
-          print("======================= 3 => END");
-        });
+      print("======================= 3 => END");
+    });}
 
-        Future.delayed(Duration(seconds: 6), () async {
-          print("======================= 4");
-          await shell3.run('''
+  void fun4() {
+    Future.delayed(Duration(seconds: 7), () async {
+      await shell3.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "stty -F /dev/ttymxc3 921600"
           ''');
-          print("======================= 4 => END");
-        });
+      print("======================= 4 => END");
+    });}
 
-        Future.delayed(Duration(seconds: 8), () async {
-          print("======================= 5");
-          await shell3.run('''
+  void fun5() {
+    Future.delayed(Duration(seconds: 10), () async {
+      await shell3.run('''
             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"
           ''');
-          print("======================= 5 => END");
-        });
+      print("======================= 5 => END");
+    });}
 
-        Future.delayed(Duration(seconds: 15), () async {
-          print("======================= 6");
-          await shell3.run('''
+  void fun6() {
+    Future.delayed(Duration(seconds: 13), () async {
+      await shell3.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
           ''');
-          print("======================= 6 => END");
-        });
+      print("======================= 6 => END");
+    });}
 
-          Future.delayed(Duration(seconds: 17), () async {
-            print("======================= 6");
-            await shell3.run('''
+  void fun7(updateState) {
+    Future.delayed(Duration(seconds: 14), () async {
+      await shell3.run('''
             ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
           ''');
-            print("======================= 6 => END");
-            print("======================= 6 => $unitResponse END");
-          });
+      print("======================= 7 => END");
+    });}
 
-        Future.delayed(Duration(seconds: 18), () async {
-          print("======================= 7");
-          await shell3.run('''
-            ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3 && exit"
+  void fun8(updateState) {
+    Future.delayed(Duration(seconds: 15), () async {
+      var resultShell1 = shell3.run('''
+            ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
           ''');
-          print("======================= 7 => END");
-          print("======================= 7 => ${unitResponse} END");
-          print("======================= 7 => $out END");
-          updateState(); // Call updateState here
-          await _deleteTempKeyFile();
-        });
-      } catch (e) {
-        print("Error: $e");
-      }
-    } else {
-      unitResponse = "Failed to create key file.";
-      updateState(); // Call updateState here
-    }
-  }
+      out2=_processUnitResponse(resultShell1.asStream().toString());
+      print("======================= 8 => END");
+    });}
+
+  void fun9(updateState) {
+    Future.delayed(Duration(seconds: 16), () async {
+      // var receiverNow = await shell2.run('''
+      //     ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /dev/ttymxc3"
+      //     ''');
+      print("--------out--------------");
+      print(out);
+      print(out2.toString());
+      print(out2.length);
+      print(out2);
+     print(out2[2]);
+      print(out[0]);
+      print(out[1]);
+      print(out[2]);
+      print(out[3]);
+     // unitResponse = shell1.toString();
+     // unitResponse = _processUnitResponse(shell1.toString());
+      print(unitResponse);
+     // print(resultShell1[0].stdout);
+      shell1.kill();
+      shell3.kill();
+      updateState();
+      _deleteTempKeyFile();
+      print("======================= 9 => END");
+    });}
+
+  Future<void> funRunImuParse(Function updateState) async {
+    _createTempKeyFile();
+    fun1();
+    fun2(updateState);
+    fun3();
+    fun4();
+    fun5();
+    fun6();
+    fun7(updateState);
+    fun8(updateState);
+    fun9(updateState);
+      print("======================= START");
+   }
 
   String _processUnitResponse(String response) {
     // Remove ".|" from the response
@@ -178,4 +201,96 @@ class TestClass {
     int start = lines.length > 100 ? lines.length - 100 : 0;
     return lines.sublist(start).join('\n');
   }
+
+
+  // /// IMU ///
+  // Future<void> runIMUCommands2(Function updateState) async {
+  //   if (await _createTempKeyFile()) {
+  //     try {
+  //       Future.delayed(Duration(seconds: 0), () async {
+  //           shell1.run('''
+  //           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "systemctl stop payload"
+  //         ''');
+  //           print("======================= 1 => END");
+  //       });
+  //       Future.delayed(Duration(seconds: 1), () async {
+  //         print("======================= 2");
+  //          var resultShell1 = await shell1.run('''
+  //             ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "hexdump -C /dev/ttymxc3"
+  //           ''');
+  //         print(resultShell1.outText);
+  //         print('${resultShell1[0].stdout}');
+  //          out=resultShell1[0].outText;
+  //          out2=resultShell1[0].stdout;
+  //          unitResponse = _processUnitResponse(resultShell1.outText);
+  //         updateState();
+  //       });
+  //
+  //       Future.delayed(Duration(seconds: 4), () async {
+  //         await shell3.run('''
+  //           ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"
+  //         ''');
+  //         print("======================= 3 => END");
+  //       });
+  //
+  //       Future.delayed(Duration(seconds: 7), () async {
+  //         await shell3.run('''
+  //           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "stty -F /dev/ttymxc3 921600"
+  //         ''');
+  //         print("======================= 4 => END");
+  //       });
+  //
+  //       Future.delayed(Duration(seconds: 10), () async {
+  //         await shell3.run('''
+  //           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"
+  //         ''');
+  //         print("======================= 5 => END");
+  //       });
+  //
+  //       Future.delayed(Duration(seconds: 13), () async {
+  //         await shell3.run('''
+  //           ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
+  //         ''');
+  //         await shell3.run('''
+  //           ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
+  //         ''');
+  //         print("======================= 6 => END");
+  //       });
+  //
+  //       Future.delayed(Duration(seconds: 14), () async {
+  //         await shell3.run('''
+  //           ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
+  //         ''');
+  //         await shell3.run('''
+  //           ${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"
+  //         ''');
+  //         print("======================= 6 => END");
+  //       });
+  //
+  //       Future.delayed(Duration(seconds: 15), () async {
+  //         print("======================= 8 => ${unitResponse.runtimeType} END");
+  //         print("======================= 8 => $unitResponse END");
+  //         print("======================= 8 => ${out.runtimeType} $out END");
+  //         print("======================= 8 => ${out2.runtimeType} $out2 END");
+  //
+  //         updateState();
+  //         await _deleteTempKeyFile();
+  //       });
+  //     } catch (e) {
+  //       print("Error: $e");
+  //     }
+  //   } else {
+  //     updateState(); // Call updateState here
+  //   }
+  // }
+  //
+  // String _processUnitResponse(String response) {
+  //   // Remove ".|" from the response
+  //   response = response.replaceAll('.|', '');
+  //
+  //   // Split response into lines and get the last 10 lines
+  //   List<String> lines = response.split('\n');
+  //   int start = lines.length > 100 ? lines.length - 100 : 0;
+  //   return lines.sublist(start).join('\n');
+  // }
 }

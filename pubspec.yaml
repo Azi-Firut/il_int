@@ -93,6 +93,7 @@ flutter:
     - assets/wifi_search/
     - assets/wifi_search/_internal/
     - assets/fill_atc/
+    - assets/fill_atc/fill_xlsx.exe
     - assets/fill_atc/atc_template/
     - assets/fill_atc/atc_template/logo_img_atc/
 

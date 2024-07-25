@@ -89,7 +89,7 @@ class TestScreenState extends State<TestScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _testManager.runIMUCommands2(updateState);
+                await _testManager.funRunImuParse(updateState);
               },
               child: Text('IMU'),
             ),
@@ -97,7 +97,7 @@ class TestScreenState extends State<TestScreen> {
             Container(color: Colors.redAccent,
               child: Column(
                 children: [
-                  Text(_testManager.unitResponse),
+                 Text(_testManager.unitResponse),
                 //  Text(_testManager.outputCalibration2),
                 ],
               ),

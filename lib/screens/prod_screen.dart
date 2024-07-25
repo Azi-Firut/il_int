@@ -57,7 +57,7 @@ class _ProdScreenState extends State<ProdScreen> {
           ElevatedButton(
             onPressed: () async {
 
-               _genAtc.parseFolder(_folderOpener.searchUserFolders(_controller.text.trim()));
+               _genAtc.parseFolder(_folderOpener.searchUserFolders(_controller.text.trim()),updateState);
               // await _folderOpener.openFolder(_controller.text.trim());
               // setState(() {}); // Update UI with the new status message
             },
@@ -114,7 +114,13 @@ class _ProdScreenState extends State<ProdScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            _folderOpener.statusMessage,
+            _folderOpener.statusOutput,
+            style: const TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+          Text(
+            _genAtc.statusOutput,
             style: const TextStyle(
               color: Colors.grey,
             ),

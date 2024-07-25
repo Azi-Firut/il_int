@@ -10,7 +10,7 @@ class FolderOpener {
   }
   FolderOpener._internal();
 
-  String statusMessage = '';
+  String statusOutput = '';
 
   Future<String?> searchFolderInIsolate(SearchParams params) async {
     return compute(_searchFolder, params);
@@ -56,10 +56,10 @@ class FolderOpener {
 
   Future<void> openFolder(String folderName) async {
     if (folderName.isEmpty) {
-      statusMessage = 'Please enter a folder name.';
+      statusOutput = 'Please enter a folder name.';
       return;
     }
-    statusMessage = 'Searching for the folder...';
+    statusOutput = 'Searching for the folder...';
 
     String? folderPath = await searchUserFolders(folderName);
     if (folderPath == null) {
@@ -70,12 +70,12 @@ class FolderOpener {
       var shell = Shell();
       try {
         await shell.run('explorer "${p.normalize(folderPath)}"');
-        statusMessage = 'Folder opened successfully.';
+        statusOutput = 'Folder opened successfully.';
       } catch (e) {
-        statusMessage = 'Error opening the folder: $e';
+        statusOutput = 'Error opening the folder: $e';
       }
     } else {
-      statusMessage = 'Folder not found.';
+      statusOutput = 'Folder not found.';
     }
   }
 }
