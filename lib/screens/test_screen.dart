@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:process_run/shell.dart';
 import '../models/device_manager_class.dart';
 import '../models/test_class.dart';
 
@@ -89,7 +90,7 @@ class TestScreenState extends State<TestScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _testManager.funRunImuParse(updateState);
+                await _testManager.getI(updateState);
               },
               child: Text('IMU'),
             ),
