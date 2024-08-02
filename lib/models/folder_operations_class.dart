@@ -54,12 +54,13 @@ class FolderOpener {
     return null;
   }
 
-  Future<void> openFolder(String folderName) async {
+  Future<void> openFolder(String folderName,updateState) async {
     if (folderName.isEmpty) {
       statusOutput = 'Please enter a folder name.';
       return;
     }
     statusOutput = 'Searching for the folder...';
+    updateState();
 
     String? folderPath = await searchUserFolders(folderName);
     if (folderPath == null) {
@@ -72,11 +73,12 @@ class FolderOpener {
         await shell.run('explorer "${p.normalize(folderPath)}"');
         statusOutput = 'Folder opened successfully.';
       } catch (e) {
-        statusOutput = 'Error opening the folder: $e';
+       // statusOutput = 'Error opening the folder: $e';
       }
     } else {
       statusOutput = 'Folder not found.';
     }
+    updateState();
   }
 }
 

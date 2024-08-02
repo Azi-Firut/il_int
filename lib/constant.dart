@@ -9,3 +9,14 @@ const String key =
 const String ftpPath = "N:\\!Factory_calibrations_and_tests\\RESEPI\\";
 String templateAtcPath = 'assets/fill_atc/atc_template/ATC_TEMP_32.xlsx';
 String addressToFolder = '';
+
+const Map brandImagesAtc = {'WINGTRA':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\WINGTRA.png',
+  'FLIGHTS':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\FLIGHTS.png',
+  'MARSS':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\MARSS.png',
+  'ML':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\ML.png',
+  'PHOENIX':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\PHOENIX.png',
+  'RESEPI':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\RESEPI.png',
+  'STONEX':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\STONEX.png',
+  'TERSUS':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\TERSUS.png',
+  'TRIDAR':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\TRIDAR.png',
+};

@@ -37,7 +37,7 @@ class _ProdScreenState extends State<ProdScreen> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () async {
-              await _folderOpener.openFolder(_controller.text.trim());
+              await _folderOpener.openFolder(_controller.text.trim(),updateState);
               // setState(() {}); // Update UI with the new status message
             },
             style: ElevatedButton.styleFrom(
