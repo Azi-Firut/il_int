@@ -192,7 +192,7 @@ class AtcGenerator {
     }
   }
 
-/// 2
+  /// 2
   Future<void> parsePpkFiles(String baseAddress) async {
     print('== 2 parsePpkFiles');
     Directory boresightDir = Directory(p.join(baseAddress, 'Boresight\\'));
@@ -204,19 +204,38 @@ class AtcGenerator {
         if (entity is Directory) {
           await for (var subEntity in entity.list(recursive: false)) {
             print('== 2 $subEntity');
-            if (subEntity is File && p.basename(subEntity.path) == 'ppk') {
+            List<String> offsets;
+            List<List<double>> lidarOffsetsList;
+            List<String> filters;
+            List<List<double>> filtersList;
+            List<List<double>> combinedList;
+
+            if (subEntity is File && p.basename(subEntity.path) == 'ppk.pcmp') {
               print('Processing file: ${subEntity.path}');
               // Parse the `ppk` file content here
-              List<String> offsets = await extractTagContent(subEntity, 'Offsets'); // => 3
-              List<List<double>> lidarOffsetsList = await parseTagContent(offsets);
+              offsets = await extractTagContent(subEntity, 'Offsets'); // => 3
+              lidarOffsetsList = await parseTagContent(offsets);
 
-              List<String> filters = await extractTagContent(subEntity, 'Filters'); // => 3
-              List<List<double>> filtersList = await parseTagContent(filters);
+              filters = await extractTagContent(subEntity, 'Filters'); // => 3
+              filtersList = await parseTagContent(filters);
 
-              List<List<double>> combinedList = [...lidarOffsetsList, ...filtersList];
+              combinedList = [...lidarOffsetsList, ...filtersList];
 
               print('Offsets: $lidarOffsetsList');
+              print('Offsets: ${lidarOffsetsList.length}');
               print('Filters: $filtersList');
+              print('Combined: $combinedList');
+            }
+            if (subEntity is File && p.basename(subEntity.path) == 'ppk.pcpp') {
+              print('Processing file: ${subEntity.path}');
+              // Parse the `ppk` file content here
+              offsets = await extractTagContent(subEntity, 'Offsets'); // => 3
+              lidarOffsetsList = await parseTagContent(offsets);
+
+              combinedList = [...lidarOffsetsList];
+
+              print('Offsets: $lidarOffsetsList');
+              print('Offsets: ${lidarOffsetsList.length}');
               print('Combined: $combinedList');
             }
           }
@@ -227,7 +246,7 @@ class AtcGenerator {
     }
   }
 
-/// 3
+  /// 3
   Future<List<String>> extractTagContent(File file, String tagName) async {
     List<String> tagContent = [];
     List<String> lines = await file.readAsLines();

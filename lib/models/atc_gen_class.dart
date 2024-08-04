@@ -5,8 +5,9 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../constant.dart';
-import 'data.dart';
-import 'package:xml/xml.dart';
+// import 'data.dart';
+// import 'package:xml/xml.dart';
+
 class AtcGenerator {
   static final AtcGenerator _instance = AtcGenerator._internal();
   factory AtcGenerator() {
@@ -23,8 +24,9 @@ class AtcGenerator {
   String pathToImg =
       '\\assets\\fill_atc\\atc_template\\logo_img_atc\\RESEPI.png';
 
+  /// 1
   void parseFolder(address, updateState) async {
-    print('parseFolder');
+    print('== 1 parseFolder');
     appDirectory = Directory.current.path;
     print('Il_int work directory => $appDirectory');
     var _address = await address;
@@ -41,7 +43,7 @@ class AtcGenerator {
     }
     if (targetTxtFile != null) {
       // Parse PPK files
-      await parsePpkFiles(_address);
+      await parsePpkFiles(_address); // ==> 2
       List<String> lines = await targetTxtFile.readAsLines();
       listContentTxt = lines.map((line) {
         int colonIndex = line.indexOf(':');
@@ -60,100 +62,99 @@ class AtcGenerator {
         'D11': listContentTxt.length > 5 ? listContentTxt[3] : '',
         'D12': listContentTxt.length > 5 ? listContentTxt[5] : '',
         // Offset val
-        'J25': '${lidarOffsetsList[0][0]}',
-        'J26': '${lidarOffsetsList[0][1]}',
-        'J27': '${lidarOffsetsList[0][2]}',
-        'J28': '${lidarOffsetsList[1][0]}',
-        'J29': '${lidarOffsetsList[1][1]}',
-        'J30': '${lidarOffsetsList[1][2]}',
+        'J25': lidarOffsetsList.isNotEmpty ? '${lidarOffsetsList[0][0]}' : '',
+        'J26': lidarOffsetsList.isNotEmpty ? '${lidarOffsetsList[0][1]}' : '',
+        'J27': lidarOffsetsList.isNotEmpty ? '${lidarOffsetsList[0][2]}' : '',
+        'J28': lidarOffsetsList.length > 1 ? '${lidarOffsetsList[1][0]}' : '',
+        'J29': lidarOffsetsList.length > 1 ? '${lidarOffsetsList[1][1]}' : '',
+        'J30': lidarOffsetsList.length > 1 ? '${lidarOffsetsList[1][2]}' : '',
         // Lidar val
-    'I33': '${lidarOffsetsList[4][1]}',
-    'J33': '${lidarOffsetsList[4][2]}',
-    'I34': '${lidarOffsetsList[5][1]}',
-    'J34': '${lidarOffsetsList[5][2]}',
-    'I35': '${lidarOffsetsList[6][1]}',
-    'J35': '${lidarOffsetsList[6][2]}',
-    'I36': '${lidarOffsetsList[7][1]}',
-    'J36': '${lidarOffsetsList[7][2]}',
-    'I37': '${lidarOffsetsList[8][1]}',
-    'J37': '${lidarOffsetsList[8][2]}',
-    'I38': '${lidarOffsetsList[9][1]}',
-    'J38': '${lidarOffsetsList[9][2]}',
-    'I39': '${lidarOffsetsList[10][1]}',
-    'J39': '${lidarOffsetsList[10][2]}',
-    'I40': '${lidarOffsetsList[11][1]}',
-    'J40': '${lidarOffsetsList[11][2]}',
-    'I41': '${lidarOffsetsList[12][1]}',
-    'J41': '${lidarOffsetsList[12][2]}',
-    'I42': '${lidarOffsetsList[13][1]}',
-    'J42': '${lidarOffsetsList[13][2]}',
-    'I43': '${lidarOffsetsList[14][1]}',
-    'J43': '${lidarOffsetsList[14][2]}',
-    'I44': '${lidarOffsetsList[15][1]}',
-    'J44': '${lidarOffsetsList[15][2]}',
-    'I45': '${lidarOffsetsList[14][1]}',
-    'J45': '${lidarOffsetsList[14][2]}',
-    'I46': '${lidarOffsetsList[15][1]}',
-    'J46': '${lidarOffsetsList[15][2]}',
-    'I47': '${lidarOffsetsList[16][1]}',
-    'J47': '${lidarOffsetsList[16][2]}',
-    'I48': '${lidarOffsetsList[17][1]}',
-    'J48': '${lidarOffsetsList[17][2]}',
-    'I49': '${lidarOffsetsList[18][1]}',
-    'J49': '${lidarOffsetsList[18][2]}',
-    'I50': '${lidarOffsetsList[19][1]}',
-    'J50': '${lidarOffsetsList[19][2]}',
-    'I51': '${lidarOffsetsList[20][1]}',
-    'J51': '${lidarOffsetsList[20][2]}',
-    'I52': '${lidarOffsetsList[21][1]}',
-    'J52': '${lidarOffsetsList[21][2]}',
-    'I53': '${lidarOffsetsList[22][1]}',
-    'J53': '${lidarOffsetsList[22][2]}',
-    'I54': '${lidarOffsetsList[23][1]}',
-    'J54': '${lidarOffsetsList[23][2]}',
-    'I55': '${lidarOffsetsList[24][1]}',
-    'J55': '${lidarOffsetsList[24][2]}',
-    'I56': '${lidarOffsetsList[25][1]}',
-    'J56': '${lidarOffsetsList[25][2]}',
-    'I57': '${lidarOffsetsList[26][1]}',
-    'J57': '${lidarOffsetsList[26][2]}',
-    'I58': '${lidarOffsetsList[27][1]}',
-    'J58': '${lidarOffsetsList[27][2]}',
-    'I59': '${lidarOffsetsList[28][1]}',
-    'J59': '${lidarOffsetsList[28][2]}',
-    'I60': '${lidarOffsetsList[29][1]}',
-    'J60': '${lidarOffsetsList[29][2]}',
-    'I61': '${lidarOffsetsList[30][1]}',
-    'J61': '${lidarOffsetsList[30][2]}',
-    'I62': '${lidarOffsetsList[31][1]}',
-    'J62': '${lidarOffsetsList[31][2]}',
-    'I63': '${lidarOffsetsList[32][1]}',
-    'J63': '${lidarOffsetsList[32][2]}',
-    'I64': '${lidarOffsetsList[33][1]}',
-    'J64': '${lidarOffsetsList[33][2]}',
-    //
-    'E6': '$appDirectory${brandImagesAtc['${listContentTxt[0]}']}',
+        'I33': lidarOffsetsList.length > 4 ? '${lidarOffsetsList[4][1]}' : '',
+        'J33': lidarOffsetsList.length > 4 ? '${lidarOffsetsList[4][2]}' : '',
+        'I34': lidarOffsetsList.length > 5 ? '${lidarOffsetsList[5][1]}' : '',
+        'J34': lidarOffsetsList.length > 5 ? '${lidarOffsetsList[5][2]}' : '',
+        'I35': lidarOffsetsList.length > 6 ? '${lidarOffsetsList[6][1]}' : '',
+        'J35': lidarOffsetsList.length > 6 ? '${lidarOffsetsList[6][2]}' : '',
+        'I36': lidarOffsetsList.length > 7 ? '${lidarOffsetsList[7][1]}' : '',
+        'J36': lidarOffsetsList.length > 7 ? '${lidarOffsetsList[7][2]}' : '',
+        'I37': lidarOffsetsList.length > 8 ? '${lidarOffsetsList[8][1]}' : '',
+        'J37': lidarOffsetsList.length > 8 ? '${lidarOffsetsList[8][2]}' : '',
+        'I38': lidarOffsetsList.length > 9 ? '${lidarOffsetsList[9][1]}' : '',
+        'J38': lidarOffsetsList.length > 9 ? '${lidarOffsetsList[9][2]}' : '',
+        'I39': lidarOffsetsList.length > 10 ? '${lidarOffsetsList[10][1]}' : '',
+        'J39': lidarOffsetsList.length > 10 ? '${lidarOffsetsList[10][2]}' : '',
+        'I40': lidarOffsetsList.length > 11 ? '${lidarOffsetsList[11][1]}' : '',
+        'J40': lidarOffsetsList.length > 11 ? '${lidarOffsetsList[11][2]}' : '',
+        'I41': lidarOffsetsList.length > 12 ? '${lidarOffsetsList[12][1]}' : '',
+        'J41': lidarOffsetsList.length > 12 ? '${lidarOffsetsList[12][2]}' : '',
+        'I42': lidarOffsetsList.length > 13 ? '${lidarOffsetsList[13][1]}' : '',
+        'J42': lidarOffsetsList.length > 13 ? '${lidarOffsetsList[13][2]}' : '',
+        'I43': lidarOffsetsList.length > 14 ? '${lidarOffsetsList[14][1]}' : '',
+        'J43': lidarOffsetsList.length > 14 ? '${lidarOffsetsList[14][2]}' : '',
+        'I44': lidarOffsetsList.length > 15 ? '${lidarOffsetsList[15][1]}' : '',
+        'J44': lidarOffsetsList.length > 15 ? '${lidarOffsetsList[15][2]}' : '',
+        'I45': lidarOffsetsList.length > 14 ? '${lidarOffsetsList[14][1]}' : '',
+        'J45': lidarOffsetsList.length > 14 ? '${lidarOffsetsList[14][2]}' : '',
+        'I46': lidarOffsetsList.length > 15 ? '${lidarOffsetsList[15][1]}' : '',
+        'J46': lidarOffsetsList.length > 15 ? '${lidarOffsetsList[15][2]}' : '',
+        'I47': lidarOffsetsList.length > 16 ? '${lidarOffsetsList[16][1]}' : '',
+        'J47': lidarOffsetsList.length > 16 ? '${lidarOffsetsList[16][2]}' : '',
+        'I48': lidarOffsetsList.length > 17 ? '${lidarOffsetsList[17][1]}' : '',
+        'J48': lidarOffsetsList.length > 17 ? '${lidarOffsetsList[17][2]}' : '',
+        'I49': lidarOffsetsList.length > 18 ? '${lidarOffsetsList[18][1]}' : '',
+        'J49': lidarOffsetsList.length > 18 ? '${lidarOffsetsList[18][2]}' : '',
+        'I50': lidarOffsetsList.length > 19 ? '${lidarOffsetsList[19][1]}' : '',
+        'J50': lidarOffsetsList.length > 19 ? '${lidarOffsetsList[19][2]}' : '',
+        'I51': lidarOffsetsList.length > 20 ? '${lidarOffsetsList[20][1]}' : '',
+        'J51': lidarOffsetsList.length > 20 ? '${lidarOffsetsList[20][2]}' : '',
+        'I52': lidarOffsetsList.length > 21 ? '${lidarOffsetsList[21][1]}' : '',
+        'J52': lidarOffsetsList.length > 21 ? '${lidarOffsetsList[21][2]}' : '',
+        'I53': lidarOffsetsList.length > 22 ? '${lidarOffsetsList[22][1]}' : '',
+        'J53': lidarOffsetsList.length > 22 ? '${lidarOffsetsList[22][2]}' : '',
+        'I54': lidarOffsetsList.length > 23 ? '${lidarOffsetsList[23][1]}' : '',
+        'J54': lidarOffsetsList.length > 23 ? '${lidarOffsetsList[23][2]}' : '',
+        'I55': lidarOffsetsList.length > 24 ? '${lidarOffsetsList[24][1]}' : '',
+        'J55': lidarOffsetsList.length > 24 ? '${lidarOffsetsList[24][2]}' : '',
+        'I56': lidarOffsetsList.length > 25 ? '${lidarOffsetsList[25][1]}' : '',
+        'J56': lidarOffsetsList.length > 25 ? '${lidarOffsetsList[25][2]}' : '',
+        'I57': lidarOffsetsList.length > 26 ? '${lidarOffsetsList[26][1]}' : '',
+        'J57': lidarOffsetsList.length > 26 ? '${lidarOffsetsList[26][2]}' : '',
+        'I58': lidarOffsetsList.length > 27 ? '${lidarOffsetsList[27][1]}' : '',
+        'J58': lidarOffsetsList.length > 27 ? '${lidarOffsetsList[27][2]}' : '',
+        'I59': lidarOffsetsList.length > 28 ? '${lidarOffsetsList[28][1]}' : '',
+        'J59': lidarOffsetsList.length > 28 ? '${lidarOffsetsList[28][2]}' : '',
+        'I60': lidarOffsetsList.length > 29 ? '${lidarOffsetsList[29][1]}' : '',
+        'J60': lidarOffsetsList.length > 29 ? '${lidarOffsetsList[29][2]}' : '',
+        'I61': lidarOffsetsList.length > 30 ? '${lidarOffsetsList[30][1]}' : '',
+        'J61': lidarOffsetsList.length > 30 ? '${lidarOffsetsList[30][2]}' : '',
+        'I62': lidarOffsetsList.length > 31 ? '${lidarOffsetsList[31][1]}' : '',
+        'J62': lidarOffsetsList.length > 31 ? '${lidarOffsetsList[31][2]}' : '',
+        'I63': lidarOffsetsList.length > 32 ? '${lidarOffsetsList[32][1]}' : '',
+        'J63': lidarOffsetsList.length > 32 ? '${lidarOffsetsList[32][2]}' : '',
+        'I64': lidarOffsetsList.length > 33 ? '${lidarOffsetsList[33][1]}' : '',
+        'J64': lidarOffsetsList.length > 33 ? '${lidarOffsetsList[33][2]}' : '',
+        //
+        'E6': '$appDirectory${brandImagesAtc['${listContentTxt[0]}']}',
         'E14': listContentTxt.length > 2 ? listContentTxt[1] : '',
         'I88': 'Inertial Labs Calibration Team',
         'I89':
         '${dateToday.month.toString()}/${dateToday.day.toString()}/${dateToday.year.toString()}',
       };
       print('List strings from Readme.txt => $listContentTxt');
-      await copyExcelFile(targetTxtFile.parent.path,updateState);
+      await copyExcelFile(targetTxtFile.parent.path, updateState);
       // Serialize mapListContent to JSON and pass it to the Python script
       String jsonData = jsonEncode(mapListContent);
 
       // Fill exel file
       await runPythonScript(jsonData);
-
-
     } else {
       print('Text file not found.');
       statusOutput = '... Text file not found ...';
     }
     updateState();
   }
-  Future<void> copyExcelFile(String saveDirectory,updateState) async {
+
+  Future<void> copyExcelFile(String saveDirectory, updateState) async {
     print('copyExcelFile');
     var file = File(excelFilePath);
     if (await file.exists()) {
@@ -170,6 +171,7 @@ class AtcGenerator {
     }
     updateState();
   }
+
   Future<void> runPythonScript(String jsonData) async {
     print('runPythonScript');
     // Assuming the exe file is located at 'assets/python_script.exe'
@@ -190,24 +192,53 @@ class AtcGenerator {
     }
   }
 
+  /// 2
   Future<void> parsePpkFiles(String baseAddress) async {
-    print('parsePpkFiles');
+    print('== 2 parsePpkFiles');
     Directory boresightDir = Directory(p.join(baseAddress, 'Boresight\\'));
-    print('parsePpkFiles => $boresightDir');
+    print('== 2 parsePpkFiles => $boresightDir');
+
     if (await boresightDir.exists()) {
-      await for (var entity in boresightDir.list(recursive: true)) {
-        if (entity is File && entity.path.endsWith('pcmp')) {
-          List<String> offsets = await extractTagContent(entity, 'Offsets');
-          lidarOffsetsList = parseTagContent(offsets);
+      await for (var entity in boresightDir.list(recursive: false)) {
+        print('== 2 $entity');
+        if (entity is Directory) {
+          await for (var subEntity in entity.list(recursive: false)) {
+            print('== 2 $subEntity');
+            List<String> offsets;
+            List<List<double>> lidarOffsetsList;
+            List<String> filters;
+            List<List<double>> filtersList;
+            List<List<double>> combinedList;
 
-          List<String> filters = await extractTagContent(entity, 'Filters');
-          List<List<double>> filtersList = parseTagContent(filters);
+            if (subEntity is File && p.basename(subEntity.path) == 'ppk.pcmp') {
+              print('Processing file: ${subEntity.path}');
+              // Parse the `ppk` file content here
+              offsets = await extractTagContent(subEntity, 'Offsets'); // => 3
+              lidarOffsetsList = await parseTagContent(offsets);
 
-          List<List<double>> combinedList = [...lidarOffsetsList, ...filtersList];
+              filters = await extractTagContent(subEntity, 'Filters'); // => 3
+              filtersList = await parseTagContent(filters);
 
-          print('Offsets: $lidarOffsetsList');
-          print('Filters: $filtersList');
-          print('Combined: $combinedList');
+              combinedList = [...lidarOffsetsList, ...filtersList];
+
+              print('Offsets: $lidarOffsetsList');
+              print('Offsets: ${lidarOffsetsList.length}');
+              print('Filters: $filtersList');
+              print('Combined: $combinedList');
+            }
+            if (subEntity is File && p.basename(subEntity.path) == 'ppk.pcpp') {
+              print('Processing file: ${subEntity.path}');
+              // Parse the `ppk` file content here
+              offsets = await extractTagContent(subEntity, 'Offsets'); // => 3
+              lidarOffsetsList = await parseTagContent(offsets);
+
+              combinedList = [...lidarOffsetsList];
+
+              print('Offsets: $lidarOffsetsList');
+              print('Offsets: ${lidarOffsetsList.length}');
+              print('Combined: $combinedList');
+            }
+          }
         }
       }
     } else {
@@ -215,6 +246,7 @@ class AtcGenerator {
     }
   }
 
+  /// 3
   Future<List<String>> extractTagContent(File file, String tagName) async {
     List<String> tagContent = [];
     List<String> lines = await file.readAsLines();
@@ -246,7 +278,4 @@ class AtcGenerator {
 
     return result;
   }
-
-
-
 }
