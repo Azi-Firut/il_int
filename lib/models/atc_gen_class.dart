@@ -5,8 +5,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../constant.dart';
-// import 'data.dart';
-// import 'package:xml/xml.dart';
+import 'data.dart';
+import 'package:xml/xml.dart';
 
 class AtcGenerator {
   static final AtcGenerator _instance = AtcGenerator._internal();
@@ -21,8 +21,6 @@ class AtcGenerator {
   Map<String, String> mapListContent = {};
   List<List<double>> lidarOffsetsList = [];
   var appDirectory;
-  String pathToImg =
-      '\\assets\\fill_atc\\atc_template\\logo_img_atc\\RESEPI.png';
 
   /// 1
   void parseFolder(address, updateState) async {
@@ -44,6 +42,7 @@ class AtcGenerator {
     if (targetTxtFile != null) {
       // Parse PPK files
       await parsePpkFiles(_address); // ==> 2
+
       List<String> lines = await targetTxtFile.readAsLines();
       listContentTxt = lines.map((line) {
         int colonIndex = line.indexOf(':');
@@ -145,6 +144,7 @@ class AtcGenerator {
       // Serialize mapListContent to JSON and pass it to the Python script
       String jsonData = jsonEncode(mapListContent);
 
+
       // Fill exel file
       await runPythonScript(jsonData);
     } else {
@@ -202,40 +202,44 @@ class AtcGenerator {
       await for (var entity in boresightDir.list(recursive: false)) {
         print('== 2 $entity');
         if (entity is Directory) {
+          List<List<double>> lidarOffsetsList = [];
+          List<List<double>> filtersList = [];
+          List<List<double>> combinedList = [];
+
           await for (var subEntity in entity.list(recursive: false)) {
             print('== 2 $subEntity');
-            List<String> offsets;
-            List<List<double>> lidarOffsetsList;
-            List<String> filters;
-            List<List<double>> filtersList;
-            List<List<double>> combinedList;
 
             if (subEntity is File && p.basename(subEntity.path) == 'ppk.pcmp') {
               print('Processing file: ${subEntity.path}');
               // Parse the `ppk` file content here
-              offsets = await extractTagContent(subEntity, 'Offsets'); // => 3
+              List<String> offsets = await extractTagContent(subEntity, 'Offsets');
               lidarOffsetsList = await parseTagContent(offsets);
 
-              filters = await extractTagContent(subEntity, 'Filters'); // => 3
+              List<String> filters = await extractTagContent(subEntity, 'Filters');
               filtersList = await parseTagContent(filters);
 
               combinedList = [...lidarOffsetsList, ...filtersList];
 
               print('Offsets: $lidarOffsetsList');
-              print('Offsets: ${lidarOffsetsList.length}');
+              print('Offsets length: ${lidarOffsetsList.length}');
               print('Filters: $filtersList');
               print('Combined: $combinedList');
             }
+          }
+
+          // Process ppk.pcpp files after ppk.pcmp files
+          await for (var subEntity in entity.list(recursive: false)) {
             if (subEntity is File && p.basename(subEntity.path) == 'ppk.pcpp') {
               print('Processing file: ${subEntity.path}');
               // Parse the `ppk` file content here
-              offsets = await extractTagContent(subEntity, 'Offsets'); // => 3
-              lidarOffsetsList = await parseTagContent(offsets);
+              List<String> offsets = await extractTagContent(subEntity, 'Offsets');
+              List<List<double>> newOffsets = await parseTagContent(offsets);
 
-              combinedList = [...lidarOffsetsList];
+              lidarOffsetsList.addAll(newOffsets);
+              combinedList.addAll(newOffsets);
 
               print('Offsets: $lidarOffsetsList');
-              print('Offsets: ${lidarOffsetsList.length}');
+              print('Offsets length: ${lidarOffsetsList.length}');
               print('Combined: $combinedList');
             }
           }
@@ -245,8 +249,9 @@ class AtcGenerator {
       print('Boresight directory not found.');
     }
   }
+  ///
 
-  /// 3
+  /// 4
   Future<List<String>> extractTagContent(File file, String tagName) async {
     List<String> tagContent = [];
     List<String> lines = await file.readAsLines();
@@ -254,7 +259,7 @@ class AtcGenerator {
     bool isTagSection = false;
 
     for (String line in lines) {
-      if (line.contains('<$tagName>')) {
+      if (line.contains('<$tagName')) {
         isTagSection = true;
       } else if (line.contains('</$tagName>')) {
         isTagSection = false;
@@ -265,7 +270,7 @@ class AtcGenerator {
 
     return tagContent;
   }
-
+/// 3
   List<List<double>> parseTagContent(List<String> content) {
     List<List<double>> result = [];
 
