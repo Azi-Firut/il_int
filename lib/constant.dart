@@ -24,19 +24,19 @@ const Map brandImagesAtc = {'WINGTRA':'\\assets\\fill_atc\\atc_template\\logo_im
   'MARSS':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\MARSS.png',
   'ML':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\ML.png',
   'PHOENIX':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\PHOENIX.png',
-  'RESEPI':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\RESEPI.png',
+  'Inertial Labs':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\RESEPI.png',
   'STONEX':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\STONEX.png',
   'TERSUS':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\TERSUS.png',
   'TRIDAR':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\TRIDAR.png',
 };
 /////////////////////////////////////////
 
-Map<String, String> mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,appDirectory,dateToday){
+Map<String, String> mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,appDirectory,dateToday,ssidFromFolderName,ssidNumberFromFolderName){
   Map<String, String> setupForAtc;
 
  Map<String, String> setup32={
-'adressXLSX': '$_address\\ATC_${listContentTxt[1]}.xlsx',
-'D4': listContentTxt.length > 2 ? 'ATC_${listContentTxt[1]}' : '',
+'adressXLSX': '$_address\\ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx',
+'D4': listContentTxt.length > 2 ? 'ATC_${listContentTxt[0]}-${listContentTxt[1]}' : '',
 'D5': listContentTxt.length > 2 ? listContentTxt[0] : '',
 'D6': listContentTxt.length > 2 ? listContentTxt[2] : '',
 'D7': listContentTxt.length > 3 ? listContentTxt[1] : '',
@@ -45,6 +45,8 @@ Map<String, String> mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,ap
 'D10': listContentTxt.length > 5 ? listContentTxt[8] : '',
 'D11': listContentTxt.length > 5 ? listContentTxt[3] : '',
 'D12': listContentTxt.length > 5 ? listContentTxt[5] : '',
+   'D13': ssidFromFolderName,
+   'D14': 'F8DC7A$ssidNumberFromFolderName',
 // Offset val
 'J25': lidarOffsetsList.isNotEmpty ? '${lidarOffsetsList[0][0]}' : '',
 'J26': lidarOffsetsList.isNotEmpty ? '${lidarOffsetsList[0][1]}' : '',
@@ -141,8 +143,8 @@ Map<String, String> mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,ap
 
   if(lidarOffsetsList.length>50){
     Map<String, String> setup64={
-      'adressXLSX': '$_address\\ATC_${listContentTxt[1]}.xlsx',
-      'D4': listContentTxt.length > 2 ? 'ATC_${listContentTxt[1]}' : '',
+      'adressXLSX': '$_address\\ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx',
+      'D4': listContentTxt.length > 2 ? 'ATC_${listContentTxt[0]}-${listContentTxt[1]}' : '',
       'D5': listContentTxt.length > 2 ? listContentTxt[0] : '',
       'D6': listContentTxt.length > 2 ? listContentTxt[2] : '',
       'D7': listContentTxt.length > 3 ? listContentTxt[1] : '',
@@ -151,6 +153,8 @@ Map<String, String> mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,ap
       'D10': listContentTxt.length > 5 ? listContentTxt[8] : '',
       'D11': listContentTxt.length > 5 ? listContentTxt[3] : '',
       'D12': listContentTxt.length > 5 ? listContentTxt[5] : '',
+      'D13': ssidFromFolderName,
+      'D14': 'F8DC7A$ssidNumberFromFolderName',
 // Offset val
       'J25': lidarOffsetsList.isNotEmpty ? '${lidarOffsetsList[0][0]}' : '',
       'J26': lidarOffsetsList.isNotEmpty ? '${lidarOffsetsList[0][1]}' : '',
