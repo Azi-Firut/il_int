@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import '../constant.dart';
-import '../models/device_manager_class.dart';
+import '../models/device_fix_class.dart';
 
 class DeviceFixScreen extends StatefulWidget {
   const DeviceFixScreen({Key? key}) : super(key: key);
@@ -11,13 +11,13 @@ class DeviceFixScreen extends StatefulWidget {
 
 class DeviceFixScreenState extends State<DeviceFixScreen> {
 
-  final DeviceManager _deviceManager = DeviceManager();
+  final DeviceFix _deviceFixFunctionKit = DeviceFix();
 
   @override
   void initState() {
     super.initState();
-    _deviceManager.init();
-    _deviceManager.checkCalibrationFile(updateState);
+    _deviceFixFunctionKit.init();
+    _deviceFixFunctionKit.checkCalibrationFile(updateState);
 
   }
   void updateState() {
@@ -85,7 +85,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
           ),
           child: DropdownButton<String?>(
             dropdownColor: Colors.orange,
-            value: _deviceManager.selectedBrand,
+            value: _deviceFixFunctionKit.selectedBrand,
             hint: const Text(
               'Select Brand',
               style: TextStyle(
@@ -99,10 +99,10 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
             underline: SizedBox(),
             onChanged: (String? newValue) {
               setState(() {
-                _deviceManager.selectedBrand = newValue;
+                _deviceFixFunctionKit.selectedBrand = newValue;
               });
             },
-            items: _deviceManager.brandsList.map<DropdownMenuItem<String?>>((String value) {
+            items: _deviceFixFunctionKit.brandsList.map<DropdownMenuItem<String?>>((String value) {
               return DropdownMenuItem<String?>(
                 value: value,
                 child: Text(
@@ -120,7 +120,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
           padding: const EdgeInsets.only(top: 18.0),
           child: ElevatedButton(
             onPressed: ()async {
-              await _deviceManager.changeBrand(updateState);
+              await _deviceFixFunctionKit.changeBrand(updateState);
               },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF02567E),
@@ -145,7 +145,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
               Flexible(
                 fit: FlexFit.loose,
                 child: Text(
-                  _deviceManager.outputBrand,
+                  _deviceFixFunctionKit.outputBrand,
                   style: TextStyle(
                     color: textColorGray,
                   ),
@@ -174,7 +174,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: ElevatedButton(
-            onPressed:()async{await _deviceManager.deleteCalibration(updateState);
+            onPressed:()async{await _deviceFixFunctionKit.deleteCalibration(updateState);
               },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF02567E),
@@ -193,7 +193,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 18.0),
           child: ElevatedButton(
-            onPressed: () async{await _deviceManager.restoreCalibration(updateState);
+            onPressed: () async{await _deviceFixFunctionKit.restoreCalibration(updateState);
               },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF02567E),
@@ -212,7 +212,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            _deviceManager.outputCalibration,
+            _deviceFixFunctionKit.statusOutput,
             style: TextStyle(
               color: textColorGray,
             ),

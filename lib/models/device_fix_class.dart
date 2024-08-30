@@ -4,14 +4,14 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:process_run/shell.dart';
 import '../constant.dart';
 
-class DeviceManager {
-  static final DeviceManager _instance = DeviceManager._internal();
+class DeviceFix {
+  static final DeviceFix _instance = DeviceFix._internal();
 
-  factory DeviceManager() {
+  factory DeviceFix() {
     return _instance;
   }
 
-  DeviceManager._internal();
+  DeviceFix._internal();
 
   final List<String> brandsList = [
     "ROCK",
@@ -28,7 +28,7 @@ class DeviceManager {
   ];
 
   String? selectedBrand;
-  String outputCalibration = "";
+  String statusOutput = "";
   String outputBrand = "";
   String keyPath = '';
   String brand = "";
@@ -98,6 +98,7 @@ class DeviceManager {
     }
   }
 
+
   Future<void> changeBrand(Function updateState) async {
     if (selectedBrand != null) {
       if (await _createTempKeyFile()) {
@@ -139,7 +140,7 @@ class DeviceManager {
   Future<void> deleteCalibration(Function updateState) async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
-      outputCalibration = "Procedure started............";
+      statusOutput = "Procedure started............";
       updateState();
       String output = "";
       try {
@@ -153,17 +154,99 @@ class DeviceManager {
       } finally {
         await _deleteTempKeyFile();
       }
-      outputCalibration = output;
+      statusOutput = output;
     } else {
-      outputCalibration = "Procedure failed";
+      statusOutput = "Procedure failed";
     }
     updateState();
   }
 
+  // Future<void> deleteWpaSSid(Function updateState) async {
+  //   if (await _createTempKeyFile()) {
+  //     final shell = Shell();
+  //     outputCalibration = "Procedure started............";
+  //     updateState();
+  //     String output = "";
+  //     try {
+  //       await shell.run('''
+  //       ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && rm -rf wpa_supplicant-wlan0.conf / && exit"
+  //       ''');
+  //       output = "Calibration file successfully deleted.";
+  //     } catch (e) {
+  //       output =
+  //       "Failed to delete calibration: check all conditions before start";
+  //     } finally {
+  //       await _deleteTempKeyFile();
+  //     }
+  //     outputCalibration = output;
+  //   } else {
+  //     outputCalibration = "Procedure failed";
+  //   }
+  //   updateState();
+  // }
+  //
+  // Future<void> restoreWpaSSid(Function updateState) async {
+  //   if (await _createTempKeyFile()) {
+  //     final shell = Shell();
+  //     outputCalibration = "Procedure started............";
+  //     updateState();
+  //     String output = "";
+  //     try {
+  //       const ssetPath = 'assets/wpa_supplicant-default.conf';
+  //       await shell.run('''
+  //       ${_pscpPath} -i "$keyPath" -P 22 "$ssetPath" root@192.168.12.1:/etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+  //       ''');
+  //
+  //       output = "Calibration file copied successfully.";
+  //     } catch (e) {
+  //       print(e);
+  //       output =
+  //       "Failed to copy calibration file: check all conditions before start $e";
+  //     } finally {
+  //       await _deleteTempKeyFile();
+  //     }
+  //     outputCalibration = output;
+  //   } else {
+  //     outputCalibration = "Procedure failed";
+  //   }
+  //   updateState();
+  // }
+
+  // Future<void> addCustomSSiD(newSSiDname,Function updateState) async {
+  //   if (await newSSiDname.toString().isNotEmpty) {
+  //     await _deleteTempKeyFile();
+  //     if (await _createTempKeyFile()) {
+  //       final shell = Shell();
+  //       final name = '\"\'"$newSSiDname"\'\" #our_ssid';
+  //       outputCalibration = "Procedure started............";
+  //       updateState();
+  //       String output = "";
+  //       try {
+  //         await shell.run('''
+  //      ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && sed -i 's/^ssid=\".*\"/ssid=$name/' wpa_supplicant-wlan0.conf && exit"
+  //       ''');
+  //         output = "SSID successfully updated.";
+  //       } catch (e) {
+  //         output =
+  //         "Failed to update SSID: check all conditions before start";
+  //       } finally {
+  //         await _deleteTempKeyFile();
+  //       }
+  //       outputCalibration = output;
+  //     } else {
+  //       outputCalibration = "Procedure failed";
+  //     }
+  //   }else{
+  //
+  //   }
+  //   updateState();
+  // }
+
+
   Future<void> checkCalibrationFile(Function updateState) async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
-      outputCalibration = "... Looking for the device calibration file ...";
+      statusOutput = "... Looking for the device calibration file ...";
       updateState();
       String output = "";
       try {
@@ -181,9 +264,9 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
       } finally {
         await _deleteTempKeyFile();
       }
-      outputCalibration = output;
+      statusOutput = output;
     } else {
-      outputCalibration = "Procedure failed";
+      statusOutput = "Procedure failed";
     }
     updateState();
   }
@@ -191,7 +274,7 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
   Future<void> restoreCalibration(Function updateState) async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
-      outputCalibration = "Procedure started............";
+      statusOutput = "Procedure started............";
       updateState();
       String output = "";
       try {
@@ -208,55 +291,15 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
         output = "Calibration file copied successfully.";
       } catch (e) {
         output =
-            "Failed to copy calibration file: check all conditions before start";
+        "Failed to copy calibration file: check all conditions before start";
       } finally {
         await _deleteTempKeyFile();
       }
-      outputCalibration = output;
+      statusOutput = output;
     } else {
-      outputCalibration = "Procedure failed";
+      statusOutput = "Procedure failed";
     }
     updateState();
   }
-  Future<void> getDeviceInfo(Function updateState) async {
-    if (await _createTempKeyFile()) {
-      final shell = Shell();
-      outputCalibration = "Procedure started............";
-      updateState();
-      String output = "";
-      try {
-        var brandNow = await shell.run('''
-          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
-          ''');
-        var passphraseNow = await shell.run('''
-          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/passphrase"
-          ''');
-        var ssidNow = await shell.run('''
-          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/hostname"
-          ''');
-        var receiverNow = await shell.run('''
-          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/receiver"
-          ''');
-        var scannerNow = await shell.run('''
-          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/scanner"
-          ''');
-        var firmwareNow = await shell.run('''
-           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "head -n 1 /etc/release_notes"
-          ''');
 
-        output =
-        " Brand: ${brandNow.outText}\n Password: ${passphraseNow.outText}\n SSID: ${ssidNow.outText}\n Reciever: ${receiverNow.outText}\n Scanner: ${scannerNow.outText}\n Firmware: ${firmwareNow.outText}";
-        /////////////////
-      } catch (e) {
-        output =
-        "Failed to copy calibration file: check all conditions before start $e";
-      } finally {
-        await _deleteTempKeyFile();
-      }
-      outputCalibration = output;
-    } else {
-      outputCalibration = "Procedure failed";
-    }
-    updateState();
-  }
 }

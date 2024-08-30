@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import '../models/device_manager_class.dart';
+import '../models/device_fix_class.dart';
 import 'device_fix_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +19,7 @@ class WiFiaddState extends State<WiFiadd> {
   var output;
   var _output2="";
   String brand = "";
-  final DeviceManager _deviceManager = DeviceManager();
+  final DeviceFix _deviceFixFunctionKit = DeviceFix();
 
   void updateState() {
     setState(() {});
@@ -56,8 +56,8 @@ class WiFiaddState extends State<WiFiadd> {
     print(result[0].outText);
 
     if (output != null && output.isNotEmpty && output[0].stdout != null){
-      _deviceManager.checkCalibrationFile(updateState);
-      if(_deviceManager.outputCalibration=="Calibration file does not exist"){_deviceManager.restoreCalibration(updateState);
+      _deviceFixFunctionKit.checkCalibrationFile(updateState);
+      if(_deviceFixFunctionKit.statusOutput=="Calibration file does not exist"){_deviceFixFunctionKit.restoreCalibration(updateState);
       setState(() {
 
       });
@@ -96,7 +96,7 @@ class WiFiaddState extends State<WiFiadd> {
                   ),
                 ),
                 Text(
-                  "${_deviceManager.outputCalibration}",
+                  "${_deviceFixFunctionKit.statusOutput}",
                   style: TextStyle(
                     color: textColorGray,
                   ),

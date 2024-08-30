@@ -19,12 +19,9 @@ class TestClass {
   String calibrationPath = '';
   String decodedString = "";
    String unitResponse='';
-   List<ProcessResult> out=[];
-   List<ProcessResult> out2=[];
-   //var f2;
-  final shell1 = Shell();
-  final shell2 = Shell();
-  final shell3 = Shell();
+ //late var out;
+  var wrapShellRun;
+
   //var resultShell1;
 
 
@@ -80,82 +77,75 @@ class TestClass {
     }
   }
 
+
+  String macTo32BitHex(String mac) {
+    // Удаляем все незначащие символы (например, дефисы и двоеточия)
+    mac = mac.replaceAll(RegExp(r'[^0-9A-Fa-f]'), '');
+
+    // Проверяем, что длина строки корректная для 6 байтов
+    if (mac.length != 6) {
+      throw ArgumentError('MAC-адрес должен состоять из 6 байтов в формате 12 символов шестнадцатеричного кода.');
+    }
+
+    // Преобразуем строку в целое число
+    int value = int.parse(mac, radix: 16);
+
+    // Добавляем старший байт (например, 0x7A)
+    int result = (0x7A << 24) | value;
+
+    // Преобразуем значение в строку в шестнадцатеричном формате
+    String hexString = '0x${result.toRadixString(16).toUpperCase()}';
+
+    return hexString;
+  }
+
+
+
   Future<void> getI(Function updateState) async {
     if (await _createTempKeyFile()) {
-      final shell = Shell();
-      final shell2 = Shell();
-     // unitResponse = "Procedure started............";
-      updateState();
+      // var out;
+      // var out2;
+      final shellWindow1 = Shell();
+      final shellWindow2 = Shell();
+      final shellWindow3 = Shell();
+      final shellW = Shell().options.stdout;
       try {
         Future.delayed(Duration(seconds: 0), () async {
-          //await shell.run
-          await Shell().run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "systemctl stop payload"''');
-          try {
-            List<ProcessResult> f2 = await Shell().run(
+          shellWindow1.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "systemctl stop payload"''');
+
+              var out= await shellWindow3.run(
                 '''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "hexdump -C /dev/ttymxc3"''');
-            unitResponse= await _processUnitResponse(f2.outText);
-                updateState();
-          }catch(e){
-          }finally{
-            //unitResponse=_processUnitResponse(f2.toString());
-            updateState();
-          }
+              // out2= await shellWindow2.run(
+              //    '''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /dev/ttymxc3"''');
+
+              print("${_processUnitResponse(out.outText)}");
+             // print("${out2}");
+              unitResponse=_processUnitResponse(out.outText);
+             // updateState();
+
         });
 
-        // Future.delayed(Duration(seconds: 2), () async {
-        //   unitResponse="Fun2 Started";
-        //   f2 = await shell.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "hexdump -C /dev/ttymxc3"''');
-        //  // unitResponse=_processUnitResponse(f2.toString());
-        //   updateState();
-        // });
         Future.delayed(Duration(seconds: 3), () async {
-         // await shell2.run
-          await Shell().run('''${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"''');
-          await Shell().run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "stty -F /dev/ttymxc3 921600"''');
-          await Shell().run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"''');
-          Shell().run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"''');
-          Shell().run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"''');
-          Shell().run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"''');
-          Shell().run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"''');
+          await shellWindow2.run('''${_plinkPath} -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"''');
         });
-        // Future.delayed(Duration(seconds: 5), () async {
-        //   await shell2.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "stty -F /dev/ttymxc3 921600"''');
-        // });
-        // Future.delayed(Duration(seconds: 6), () async {
-        //   await shell2.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"''');
-        // });
-        // Future.delayed(Duration(seconds: 15), () async {
-        //   await shell2.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"''');
-        // });
-        // Future.delayed(Duration(seconds: 16), () async {
-        //   await shell2.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"''');
-        //  // print(f2.toString());
-        // });
-        Future.delayed(Duration(seconds: 10), () async {
-         // updateState();
-
-         // print(f2.toString());
-
-
-         // List<ProcessResult> results = await f2;
-         // print(results.length);
-         // print(results.outText);
-         //  ProcessResult res0 = await f2;
-         //  print(res0.stdout);
-         //  print(res0.outText);
-         //  print(res0.toString());
-         //  ProcessResult res1 = f2[1];
-         //  print(res1.stdout);
-         //  print(res1.outText);
-         //  print(res1.toString());
-
-
-          //updateState();
-         // await _deleteTempKeyFile();
+        Future.delayed(Duration(seconds: 4), () async {
+          await shellWindow2.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "stty -F /dev/ttymxc3 921600"''');
         });
+        Future.delayed(Duration(seconds: 5), () async {
+          await shellWindow2.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"''');
+          await shellWindow2.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"''');
+          await shellWindow2.run('''${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"''');
+          // unitResponse=_processUnitResponse(out.outText);
+
+          // print("${out[0].outText}");
+         // print("${out}");
+          print("${shellW}");
+          // updateState();
+        });
+
       } catch (e) {
       } finally {
-        updateState();
+
       }
     } else {
       unitResponse = "Procedure failed";

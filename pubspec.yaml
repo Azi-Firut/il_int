@@ -96,6 +96,8 @@ flutter:
     - assets/fill_atc/fill_xlsx.exe
     - assets/fill_atc/atc_template/
     - assets/fill_atc/atc_template/logo_img_atc/
+    - assets/wpa_supplicant-default.conf
+    - assets/wpa_supplicant-wlan0.conf
 
   # To add assets to your application, add an assets section, like this:
   #assets:

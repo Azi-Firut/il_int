@@ -1,7 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:process_run/shell.dart';
-import '../models/device_manager_class.dart';
+import '../models/device_fix_class.dart';
+import '../models/production_class.dart';
 import '../models/test_class.dart';
 
 class TestScreen extends StatefulWidget {
@@ -12,13 +13,14 @@ class TestScreen extends StatefulWidget {
 
 class TestScreenState extends State<TestScreen> {
   final TestClass _testManager = TestClass();
-  final DeviceManager _deviceManager = DeviceManager();
+  final DeviceFix _deviceFixFunctionKit = DeviceFix();
+  final Production _productionFunctionKit = Production();
 
   @override
   void initState() {
     super.initState();
     _testManager.init();
-    _deviceManager.init();
+    _deviceFixFunctionKit.init();
   }
 
   void updateState() {
@@ -36,13 +38,13 @@ class TestScreenState extends State<TestScreen> {
           children: [
             DropdownButton<String>(
               hint: Text("Select Brand"),
-              value: _deviceManager.selectedBrand,
+              value: _deviceFixFunctionKit.selectedBrand,
               onChanged: (String? newValue) {
                 setState(() {
-                  _deviceManager.selectedBrand = newValue;
+                  _deviceFixFunctionKit.selectedBrand = newValue;
                 });
               },
-              items: _deviceManager.brandsList.map((String brand) {
+              items: _deviceFixFunctionKit.brandsList.map((String brand) {
                 return DropdownMenuItem<String>(
                   value: brand,
                   child: Text(brand),
@@ -52,15 +54,28 @@ class TestScreenState extends State<TestScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.changeBrand(updateState);
+                await _deviceFixFunctionKit.changeBrand(updateState);
               },
               child: Text('Change Brand'),
             ),
-            Text(_deviceManager.outputBrand),
+            Text(_deviceFixFunctionKit.outputBrand),
+            //SizedBox(height: 20),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     await _deviceManager.addCustomSSiD(updateState);
+            //   },
+            //   child: Text('Rename SSid'),
+            // ),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     await _deviceManager.restoreWpaSSid(updateState);
+            //   },
+            //   child: Text('Restore SSid default'),
+            // ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.deleteCalibration(updateState);
+                await _deviceFixFunctionKit.deleteCalibration(updateState);
               },
               child: Text('Delete Calibration'),
             ),
@@ -68,7 +83,7 @@ class TestScreenState extends State<TestScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.checkCalibrationFile(updateState);
+                await _deviceFixFunctionKit.checkCalibrationFile(updateState);
               },
               child: Text('Check Calibration File'),
             ),
@@ -76,14 +91,14 @@ class TestScreenState extends State<TestScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.restoreCalibration(updateState);
+                await _deviceFixFunctionKit.restoreCalibration(updateState);
               },
               child: Text('Restore Calibration'),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceManager.getDeviceInfo(updateState);
+                await _productionFunctionKit.getDeviceInfo(updateState);
               },
               child: Text('Get device info'),
             ),
@@ -94,7 +109,7 @@ class TestScreenState extends State<TestScreen> {
               },
               child: Text('IMU'),
             ),
-            Container(child: Text(_deviceManager.outputCalibration),color: Colors.blueGrey,),
+            Container(child: Text(_deviceFixFunctionKit.statusOutput),color: Colors.blueGrey,),
             Container(color: Colors.redAccent,
               child: Column(
                 children: [

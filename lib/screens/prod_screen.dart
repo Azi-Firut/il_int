@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/atc_gen_class.dart';
-import '../models/folder_operations_class.dart';
+import 'package:il_int/models/device_fix_class.dart';
+import '../models/production_class.dart';
+
 
 class ProdScreen extends StatefulWidget {
   @override
@@ -8,11 +9,11 @@ class ProdScreen extends StatefulWidget {
 }
 
 class _ProdScreenState extends State<ProdScreen> {
-  final FolderOpener _folderOpener = FolderOpener();
-  final AtcGenerator _genAtc = AtcGenerator();
+  final Production _productionFunctionKit = Production();
   final TextEditingController _controller = TextEditingController();
+  final DeviceFix _deviceFixFunctionKit = DeviceFix();
 
-
+///
   void updateState() {
     setState(() {});
   }
@@ -37,7 +38,7 @@ class _ProdScreenState extends State<ProdScreen> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () async {
-              await _folderOpener.openFolder(_controller.text.trim(),updateState);
+              await _productionFunctionKit.openFolder(_controller.text.trim(),updateState);
               // setState(() {}); // Update UI with the new status message
             },
             style: ElevatedButton.styleFrom(
@@ -56,8 +57,27 @@ class _ProdScreenState extends State<ProdScreen> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () async {
+              await _productionFunctionKit.addCustomSSiD(_controller.text.trim(),updateState);
+              // setState(() {}); // Update UI with the new status message
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFAF7907),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            child: const Text(
+              'Add custom SSiD',
+              style: TextStyle(
+                color: Color(0xFFFFFFFF),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () async {
 
-               _genAtc.parseFolder(_folderOpener.searchUserFolders(_controller.text.trim()),updateState);
+              _productionFunctionKit.parseFolder(_productionFunctionKit.searchUserFolders(_controller.text.trim()),updateState);
               // await _folderOpener.openFolder(_controller.text.trim());
               // setState(() {}); // Update UI with the new status message
             },
@@ -113,14 +133,32 @@ class _ProdScreenState extends State<ProdScreen> {
             ),
           ),
           const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () async {
+              await _productionFunctionKit.getDeviceInfo(updateState);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFAF7907),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            child: const Text(
+              'Get Unit Information',
+              style: TextStyle(
+                color: Color(0xFFFFFFFF),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
           Text(
-            _folderOpener.statusOutput,
+            _productionFunctionKit.statusOutput,
             style: const TextStyle(
               color: Colors.grey,
             ),
           ),
           Text(
-            _genAtc.statusOutput,
+            _deviceFixFunctionKit.statusOutput,
             style: const TextStyle(
               color: Colors.grey,
             ),
