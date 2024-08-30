@@ -28,9 +28,9 @@ class TestClass {
   // Переменные для путей к plink и pscp
   final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
 
-  void init() {
-    decodedString = _decodeStringWithRandom(key);
-  }
+  // void init() {
+  //   decodedString = _decodeStringWithRandom(key);
+  // }
 
 
   String _decodeStringWithRandom(String input) {
@@ -46,6 +46,7 @@ class TestClass {
   }
 
   Future<bool> _createTempKeyFile() async {
+    decodedString = _decodeStringWithRandom(key);
     final appDir = Directory.current;
     final tempDir = Directory('${appDir.path}/temp');
     if (!await tempDir.exists()) {

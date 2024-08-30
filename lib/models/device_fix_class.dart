@@ -39,9 +39,7 @@ class DeviceFix {
   final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
   final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
 
-  void init() {
-    decodedString = _decodeStringWithRandom(key);
-  }
+  /// SSH KIT
 
   String _decodeStringWithRandom(String input) {
     StringBuffer cleaned = StringBuffer();
@@ -55,19 +53,8 @@ class DeviceFix {
     return decodedString;
   }
 
-  Future<void> loadCalibrationFile() async {
-    final appDir = Directory.current;
-    final tempDir = Directory('${appDir.path}/assets');
-    if (!await tempDir.exists()) {
-      await tempDir.create(recursive: true);
-    }
-    final calibrationFile = File('${tempDir.path}/calibration');
-    final calibrationData = await rootBundle.load('assets/calibration');
-    await calibrationFile.writeAsBytes(calibrationData.buffer.asUint8List());
-    calibrationPath = calibrationFile.path;
-  }
-
   Future<bool> _createTempKeyFile() async {
+    decodedString = _decodeStringWithRandom(key);
     final appDir = Directory.current;
     final tempDir = Directory('${appDir.path}/temp');
     if (!await tempDir.exists()) {
@@ -96,6 +83,20 @@ class DeviceFix {
         }
       }
     }
+  }
+  /// SSH KIT END
+
+
+  Future<void> loadCalibrationFile() async {
+    final appDir = Directory.current;
+    final tempDir = Directory('${appDir.path}/assets');
+    if (!await tempDir.exists()) {
+      await tempDir.create(recursive: true);
+    }
+    final calibrationFile = File('${tempDir.path}/calibration');
+    final calibrationData = await rootBundle.load('assets/calibration');
+    await calibrationFile.writeAsBytes(calibrationData.buffer.asUint8List());
+    calibrationPath = calibrationFile.path;
   }
 
 

@@ -19,8 +19,8 @@ class TestScreenState extends State<TestScreen> {
   @override
   void initState() {
     super.initState();
-    _testManager.init();
-    _deviceFixFunctionKit.init();
+    //_testManager.init();
+    //_deviceFixFunctionKit.init();
   }
 
   void updateState() {

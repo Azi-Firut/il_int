@@ -1,18 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as p;
-import '../constant.dart';
 import 'package:process_run/shell.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import '../constant.dart';
 
 class Production {
   static final Production _instance = Production._internal();
+
   factory Production() {
     return _instance;
   }
+
+  // void init() {
+  //   decodedString = _decodeStringWithRandom(key);
+  //   print('init decodedString');
+  // }
   Production._internal();
+
   String statusOutput = '';
-  String excelFilePath = templateAtcPath; // Exact path to Excel file
+ // String excelFilePath = templateAtcPath; // Exact path to Excel file
   String? unitNum;
   List<String> listContentTxt = [];
   Map<String, String> mapListContent = {};
@@ -26,6 +34,52 @@ class Production {
   final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
   var appDirectory;
 
+  /// SSH KIT
+
+  String _decodeStringWithRandom(String input) {
+    StringBuffer cleaned = StringBuffer();
+    for (int i = 0; i < input.length; i++) {
+      if (i % 3 != 2) {
+        cleaned.write(input[i]);
+      }
+    }
+    List<int> bytes = base64Decode(cleaned.toString());
+    String decodedString = utf8.decode(bytes);
+    return decodedString;
+  }
+
+  Future<bool> _createTempKeyFile() async {
+    decodedString = _decodeStringWithRandom(key);
+    final appDir = Directory.current;
+    final tempDir = Directory('${appDir.path}/temp');
+    if (!await tempDir.exists()) {
+      await tempDir.create(recursive: true);
+    }
+    final keyFile = File('${tempDir.path}/resepi_login.ppk');
+    await keyFile.writeAsString(decodedString);
+    keyPath = keyFile.path;
+    return await keyFile.exists();
+  }
+
+  Future<void> _deleteTempKeyFile() async {
+    final keyFile = File(keyPath);
+    if (await keyFile.exists()) {
+      try {
+        await keyFile.delete();
+        print("The procedure is completed.");
+      } catch (e) {
+        print("Failed : $e");
+        await Future.delayed(Duration(seconds: 1));
+        try {
+          await keyFile.delete();
+          print("Retry procedure.");
+        } catch (retryException) {
+          print("Procedure failed : $retryException");
+        }
+      }
+    }
+  }
+  /// SSH KIT END
 
   /// FOLDER SEARCHER
   Future<String?> searchFolderInIsolate(SearchParams params) async {
@@ -351,8 +405,11 @@ class Production {
           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && grep '^ssid=' wpa_supplicant-wlan0.conf | sed 's/^ssid=//' && exit"
         ''');
         var receiverNow = await shell.run('''
-          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/receiver"
-          ''');
+         ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /var/volatile && mount -o remount,rw / && grep 'Kernel receiver model =' payload.log | sed 's/^.*Kernel receiver model = //' && exit"
+        ''');
+        // var receiverNow = await shell.run('''
+        //  ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /var/volatile && mount -o remount,rw / && grep 'Kernel receiver model =' payload.log | sed 's/^.*Kernel receiver model = //' && exit"
+        // ''');
         var scannerNow = await shell.run('''
           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/scanner"
           ''');
@@ -361,7 +418,7 @@ class Production {
           ''');
         ///////////////// output
         output =
-        " Brand: ${brandNow.outText}\n Password: ${passphraseNow.outText}\n SSID default: ${ssidDef.outText.split(' ').first.replaceAll('"', '')}\n SSID now: ${ssidNow.outText.split(' ').first.replaceAll('"', '')}\n Reciever: ${receiverNow.outText}\n Scanner: ${scannerNow.outText}\n Firmware: ${firmwareNow.outText}";
+        " Brand: ${brandNow.outText}\n SSID default: ${ssidDef.outText.split(' ').first.replaceAll('"', '')}\n SSID now: ${ssidNow.outText.split(' ').first.replaceAll('"', '')}\n Password: ${passphraseNow.outText}\n Firmware: ${firmwareNow.outText}\n Reciever: ${receiverNow.outText}\n Reciever SN: ${receiverNow.outText.split(' ').last}\n Scanner: ${scannerNow.outText}";
       } catch (e) {
         output =
         "Failed to copy calibration file: check all conditions before start $e";
@@ -376,54 +433,7 @@ class Production {
   }
   /// GET UNIT INFO END
 
-  /// SSH KIT
-  void init() {
-    decodedString = _decodeStringWithRandom(key);
-  }
 
-  String _decodeStringWithRandom(String input) {
-    StringBuffer cleaned = StringBuffer();
-    for (int i = 0; i < input.length; i++) {
-      if (i % 3 != 2) {
-        cleaned.write(input[i]);
-      }
-    }
-    List<int> bytes = base64Decode(cleaned.toString());
-    String decodedString = utf8.decode(bytes);
-    return decodedString;
-  }
-
-  Future<bool> _createTempKeyFile() async {
-    final appDir = Directory.current;
-    final tempDir = Directory('${appDir.path}/temp');
-    if (!await tempDir.exists()) {
-      await tempDir.create(recursive: true);
-    }
-    final keyFile = File('${tempDir.path}/resepi_login.ppk');
-    await keyFile.writeAsString(decodedString);
-    keyPath = keyFile.path;
-    return await keyFile.exists();
-  }
-
-  Future<void> _deleteTempKeyFile() async {
-    final keyFile = File(keyPath);
-    if (await keyFile.exists()) {
-      try {
-        await keyFile.delete();
-        print("The procedure is completed.");
-      } catch (e) {
-        print("Failed : $e");
-        await Future.delayed(Duration(seconds: 1));
-        try {
-          await keyFile.delete();
-          print("Retry procedure.");
-        } catch (retryException) {
-          print("Procedure failed : $retryException");
-        }
-      }
-    }
-  }
-  /// SSH KIT END
 }
 
   /// PART OF FOLDER SEARCHER

@@ -16,7 +16,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
   @override
   void initState() {
     super.initState();
-    _deviceFixFunctionKit.init();
+   // _deviceFixFunctionKit.init();
     _deviceFixFunctionKit.checkCalibrationFile(updateState);
 
   }
@@ -193,7 +193,8 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 18.0),
           child: ElevatedButton(
-            onPressed: () async{await _deviceFixFunctionKit.restoreCalibration(updateState);
+            onPressed: () async {
+              await _deviceFixFunctionKit.restoreCalibration(updateState);
               },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF02567E),
