@@ -9,12 +9,12 @@ import 'package:il_int/screens/screen_switcher.dart';
 import 'models/data.dart';
 
 void main() {
-  appWindow.size = const Size(600, 600);
+  appWindow.size = const Size(600, 800);
   runApp(IlintGui());
   appWindow.hide();
   doWhenWindowReady(() {
     final win = appWindow;
-    const initialSize = Size(600, 600);
+    const initialSize = Size(600, 800);
     win.minSize = initialSize;
     win.size = initialSize;
     win.alignment = Alignment.topRight;

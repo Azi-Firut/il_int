@@ -105,15 +105,22 @@ class TestScreenState extends State<TestScreen> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _testManager.getI(updateState);
+                await _testManager.getImu(updateState);
               },
               child: Text('IMU'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _testManager.runUnit(updateState);
+              },
+              child: Text('run unit'),
             ),
             Container(child: Text(_deviceFixFunctionKit.statusOutput),color: Colors.blueGrey,),
             Container(color: Colors.redAccent,
               child: Column(
                 children: [
-                 Text(_testManager.unitResponse),
+                 Text(_testManager.test),
                 //  Text(_testManager.outputCalibration2),
                 ],
               ),
