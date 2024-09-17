@@ -5,8 +5,9 @@ import 'package:il_int/screens/merge_base_file_screen.dart';
 import 'package:il_int/screens/prod_screen.dart';
 import 'package:il_int/screens/test_screen.dart';
 
-import 'wifi_screen.dart';
+import 'engineering_screen.dart';
 import 'intro_screen.dart';
+import 'wifi_screen.dart';
 
 class ScreenSwitcher extends StatefulWidget {
   final int page;
@@ -30,10 +31,12 @@ class _ScreenSwitcherState extends State<ScreenSwitcher> {
       return DeviceFixScreen();
     } else if (widget.page == 4) {
       return ProdScreen();
+    } else if (widget.page == 5) {
+      return EngineeringScreen();
     } else if (widget.page == 99) {
       return TestScreen();
-    // } else if (widget.page == 5) {
-    //   return FolderOpener();
+      // } else if (widget.page == 5) {
+      //   return FolderOpener();
     } else {
       // Return some default widget if page number is not recognized
       return Container();

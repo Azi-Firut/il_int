@@ -1,11 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:il_int/widgets/menu_button.dart';
 import 'package:il_int/screens/screen_switcher.dart';
+import 'package:il_int/widgets/menu_button.dart';
+import 'package:provider/provider.dart';
+
 import 'models/data.dart';
 
 void main() {
@@ -52,6 +53,7 @@ const sidebarColor = Color(0xFF282A2C);
 
 class LeftSide extends StatefulWidget {
   const LeftSide({Key? key}) : super(key: key);
+
   @override
   _LeftSideState createState() => _LeftSideState();
 }
@@ -143,6 +145,16 @@ class _LeftSideState extends State<LeftSide> {
                 icon: Icons.developer_board,
                 text: "Production",
                 onPress: 4,
+              ),
+              Container(
+                height: 1,
+                width: double.infinity,
+                color: const Color(0x1500A4FC),
+              ),
+              const CustomTextButton(
+                icon: Icons.handyman_rounded,
+                text: "Engineering",
+                onPress: 5,
               ),
               Container(
                 height: 1,
