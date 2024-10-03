@@ -78,7 +78,7 @@ class WiFiaddState extends State<WiFiadd> {
     return Column(
       children: [
         if (output == null)
-          Text(
+          SelectableText(
             "Wait...",
             style: TextStyle(
               color: textColorGray,
@@ -89,7 +89,7 @@ class WiFiaddState extends State<WiFiadd> {
             padding: const EdgeInsets.only(top: 18.0),
             child: Column(
               children: [
-                Text(
+                SelectableText(
                   "${output[0].stdout}",
                   style: TextStyle(
                     color: textColorGray,

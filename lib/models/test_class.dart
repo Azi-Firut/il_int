@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:logger/logger.dart';
+
 import 'package:process_run/shell.dart';
 import '../constant.dart';
 

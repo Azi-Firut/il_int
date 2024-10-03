@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
+import 'package:il_int/models/init_calibration_class.dart';
 import 'package:process_run/shell.dart';
+import '../constant.dart';
 import '../models/device_fix_class.dart';
 import '../models/production_class.dart';
 import '../models/test_class.dart';
@@ -19,8 +21,6 @@ class TestScreenState extends State<TestScreen> {
   @override
   void initState() {
     super.initState();
-    //_testManager.init();
-    //_deviceFixFunctionKit.init();
   }
 
   void updateState() {
@@ -116,6 +116,10 @@ class TestScreenState extends State<TestScreen> {
               },
               child: Text('run unit'),
             ),
+            SizedBox(height: 20),
+///
+         //   FileListWidget(directoryPath: initialParamPath),
+///
             Container(child: Text(_deviceFixFunctionKit.statusOutput),color: Colors.blueGrey,),
             Container(color: Colors.redAccent,
               child: Column(

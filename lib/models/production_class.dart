@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../constant.dart';
 import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart';
 
 class Production {
   static final Production _instance = Production._internal();
@@ -34,6 +35,9 @@ class Production {
   final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
   final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
   var appDirectory;
+  var tempDir;
+  var pathToUnitFolder;
+  var pathToPPK;
 
   /// SSH KIT
 
@@ -52,7 +56,7 @@ class Production {
   Future<bool> _createTempKeyFile() async {
     decodedString = _decodeStringWithRandom(key);
     final appDir = Directory.current;
-    final tempDir = Directory('${appDir.path}/temp');
+    tempDir = Directory('${appDir.path}/temp');
     if (!await tempDir.exists()) {
       await tempDir.create(recursive: true);
     }
@@ -131,6 +135,8 @@ class Production {
     statusOutput = 'Searching for the folder...';
     updateState();
     String? folderPath = await searchUserFolders(folderName);
+    pathToUnitFolder = folderPath;
+     print('pathToUnitFolder = $pathToUnitFolder');
     if (folderPath == null) {
       folderPath = await searchFolderInIsolate(SearchParams(Directory('ftpPath'), folderName));
     }
@@ -138,7 +144,11 @@ class Production {
       var shell = Shell();
       try {
         await shell.run('explorer "${p.normalize(folderPath)}"');
+       // pathToUnitFolder=("${p.normalize(folderPath)}");
+       // shell.kill();
+       // print('pathToUnitFolder = $pathToUnitFolder');
         statusOutput = 'Folder opened successfully.';
+        updateState();
       } catch (e) {
         // statusOutput = 'Error opening the folder: $e';
       }
@@ -384,71 +394,79 @@ class Production {
     return result;
   }
   /// ATC GENERATOR END
-
+///
+  ///
+  ///
   /// GET UNIT INFO
+
   Future<void> getDeviceInfo(Function updateState) async {
     if (await _createTempKeyFile()) {
       final shell = Shell();
-      statusOutput = "Procedure started............";
-      updateState();
-
       String output = "";
+
       try {
-        statusOutput = "Data collection in progress";
-        await getImu(updateState);  // предполагается, что imuNumber будет инициализирован здесь
-        await getLidarSn(updateState); // Lidar SN
-        // Ожидание заполнения imuNumber
+        //output += "Data collection in progress\n";
 
+        // Получаем IMU
+        // await getImu(updateState);
+         output += "IMU SN: ${imuNumber}\n";
 
+        // Получаем Lidar SN
+        await getLidarSn(updateState);
+        output += "Lidar SN: ${lidarSerialNumber}\n";
+
+        // Информация по бренду
         var brandNow = await shell.run('''
         ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
-        ''');
+      ''');
+        output += "Brand: ${brandNow.outText}\n";
 
-        // Далее идет получение остальных данных
-
+        // Пароль
         var passphraseNow = await shell.run('''
         ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/passphrase"
-        ''');
+      ''');
+        output += "Password: ${passphraseNow.outText}\n";
 
+        // SSID по умолчанию
         var ssidDef = await shell.run('''
-        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && grep '^ssid=' wpa_supplicant-default.conf | sed 's/^ssid=//' && exit"
-        ''');
+        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "grep '^ssid=' /etc/wpa_supplicant/wpa_supplicant-default.conf | sed 's/^ssid=//' && exit"
+      ''');
+        output += "SSID default: ${ssidDef.outText.split(' ').first.replaceAll('"', '')}\n";
 
+        // Текущий SSID
         var ssidNow = await shell.run('''
-        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && grep '^ssid=' wpa_supplicant-wlan0.conf | sed 's/^ssid=//' && exit"
-        ''');
+        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "grep '^ssid=' /etc/wpa_supplicant/wpa_supplicant-wlan0.conf | sed 's/^ssid=//' && exit"
+      ''');
+        output += "SSID now: ${ssidNow.outText.split(' ').first.replaceAll('"', '')}\n";
 
+        // Информация о ресивере
         var receiverNow = await shell.run('''
-        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /var/volatile && mount -o remount,rw / && grep 'Kernel receiver model =' payload.log | sed 's/^.*Kernel receiver model = //' && exit"
-        ''');
-
-        var scannerNow = await shell.run('''
-        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/scanner"
-        ''');
-
+        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "grep 'Kernel receiver model =' /var/volatile/payload.log | sed 's/^.*Kernel receiver model = //' && exit"
+      ''');
+        output += "Receiver: ${receiverNow.outText}\n";
+         output += "Reciever SN: ${receiverNow.outText.split(' ').last}\n";
+        // Прошивка
         var firmwareNow = await shell.run('''
-         ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "head -n 1 /etc/release_notes"
-        ''');
-        while (imuNumber == null || imuNumber.isEmpty) {
-          await Future.delayed(Duration(milliseconds: 100)); // небольшая задержка
-        }
-        // Формирование строки после того, как все данные собраны
-        output =
-        " Brand: ${brandNow.outText}\n SSID default: ${ssidDef.outText.split(' ').first.replaceAll('"', '')}\n SSID now: ${ssidNow.outText.split(' ').first.replaceAll('"', '')}\n Password: ${passphraseNow.outText}\n Firmware: ${firmwareNow.outText}\n Reciever: ${receiverNow.outText}\n Reciever SN: ${receiverNow.outText.split(' ').last}\n IMU SN: ${imuNumber}\n Filter is: ${imuFilter}\n Lidar SN: ${lidarSerialNumber}\n Lidar model: ${lidarModel}\n Scanner: ${scannerNow.outText}";
-        updateState();
-
+        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "head -n 1 /etc/release_notes"
+      ''');
+        output += "Firmware: ${firmwareNow.outText}\n";
+        output += "IMU Filter: ${imuFilter}\n";
       } catch (e) {
-        output =
-        "Fail: check all conditions before start";
+        output = "Fail: check all conditions before start";
       } finally {
         await _deleteTempKeyFile();
       }
+
+      // Обновляем состояние только после завершения всей операции
       statusOutput = output;
+      updateState();
     } else {
       statusOutput = "Procedure failed";
+      updateState();
     }
-    updateState();
   }
+
+
 
   /// GET IMU NUMBER (PART OF UNIT INFO)
   var process;
@@ -456,7 +474,42 @@ class Production {
   var imuNumber='';
   var imuFilter='';
   var tempData='';
+  var counter= 5;
 
+
+
+
+  Future<void> formatUsb(updateState) async {
+    final url = Uri.parse('http://192.168.12.1:/cgi-bin/usb-format');
+    try {
+      final response = await http.get(url);
+      statusOutput = response.statusCode == 200
+          ? response.body
+          : 'Error: ${response.statusCode}';
+      updateState;
+    } catch (e) {
+      statusOutput = 'Error: $e';
+      updateState;
+    }
+  }
+
+  runGetUnitImu(updateState){
+    print("------- runGetUnitImu");
+   counter=5;
+   imuNumber='';
+   imuFilter='';
+   statusOutput="";
+   getImu(updateState);
+   updateState();
+  }
+
+  void decrementCounter(Function updateState) {
+    if (counter > 0) {
+      counter--;
+      print("------- counter $counter");
+      updateState;
+    }
+  }
 
   Future<void> runUnit(Function updateState) async {
     if (await _createTempKeyFile()) {
@@ -467,41 +520,57 @@ class Production {
         );
         await Future.delayed(Duration(seconds: 1), () async {
           processRunUnit.kill();
+          await _deleteTempKeyFile();
+          updateState();
         });
-      } catch (e) {
-      } finally {
-        await _deleteTempKeyFile();
-        updateState;
-      }
+      } catch (e) {}
+      finally {}
     }
   }
 
   Future<void> getImu(Function updateState) async {
+    statusOutput="Searching";
+    updateState();
     if (await _createTempKeyFile()) {
       try {
-        getImu2(updateState);
-        print("--------------------------------------------------   1  ");
+        print("--------------------------------------------------getImu   1  ");
         process = await Process.start(
           _plinkPath,
           ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "systemctl stop payload"],
         );
-        //fun1.kill();
+
+        var stderrStream = process.stderr.transform(utf8.decoder).listen((data) {
+          print('Stderr: $data');  // Log any errors here
+        });
+        int exitCode = await process.exitCode;
+        await stderrStream.cancel();
+        // Check exit code
+        if (exitCode == 0) {
+          getImu2(updateState);
+          print('Command executed successfully!');
+        } else {
+          statusOutput="Unit is not connected";
+          await _deleteTempKeyFile();
+          updateState();
+          print('Command failed with exit code: $exitCode');
+        }
+
         await Future.delayed(Duration(seconds: 1), () async {
-          print("--------------------------------------------------   2  ");
           StringBuffer outputBuffer = StringBuffer();
           process = await Process.start(
             _plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "hexdump -C /dev/ttymxc3"],
           );
-          //  Слушаем стандартный вывод (stdout)
           process.stdout.transform(utf8.decoder).listen((data) {
             outputBuffer.write(data);
+            tempData="";
             tempData=data;
+           // print("--------------------- data --\n${tempData}");
           });
-          // Слушаем ошибки (stderr)
           process.stderr.transform(utf8.decoder).listen((data) {
             print("Ошибка: $data");
           });
+
         });
       } finally {
         updateState();
@@ -513,9 +582,12 @@ class Production {
 
 
   Future<void> getImu2(Function updateState) async {
+
     if (await _createTempKeyFile()) {
+      print("--------------------------------------------------getImu   2  ");
       try {
         Future.delayed(Duration(seconds: 2), () async {
+          process2=null;
           process2 = await Process.start(
             _plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"],
@@ -534,7 +606,7 @@ class Production {
           );
           print("--------------------------------------------------   STOP  ");
         });
-        await Future.delayed(Duration(seconds: 4), () async {
+        await Future.delayed(Duration(seconds: 5), () async {
           print("--------------------------------------------------   DATA CALL  ");
           process2 = await Process.start(
               _plinkPath,
@@ -562,80 +634,87 @@ class Production {
               _plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x02\\x03\\x03\\x01\\x02\\x55\\x84' >/dev/ttymxc3"]);
 
-          print("--------------------------------------------------   DATA CALL  ");
-        });
 
-        Future.delayed(Duration(seconds: 6), () async {
-          await _deleteTempKeyFile();
-          await process2.kill();
-          updateState();
-          String result = _processUnitResponse(tempData).replaceAll('\n', '').replaceAll(' ', '');
-          print('================== BYTE search====================== |/\n${tempData}');
+          Future.delayed(Duration(seconds: 1), () async {
+            await _deleteTempKeyFile();
+            await process2.kill();
+            await process.kill();
+            String result = _processUnitResponse(tempData).replaceAll('\n', '').replaceAll(' ', '');
+            print('================== BYTE search====================== |/\n${tempData}');
+            String stringBytes = tempData
+                .replaceAllMapped(RegExp(r'^\S+\s+([\da-fA-F\s]+)\s+\|.*\|$', multiLine: true), (match) {
+              return match.group(1)?.replaceAll(RegExp(r'\s{2,}'), ' ').trim() ?? '';
+            })
+                .replaceAll('\n', ' ');
+            print('Найдено stringBytes: \n$stringBytes');
+            // Соединяем строки в одну строку
+            // Преобразуем строку в список байтов
+            List<String> bytes = stringBytes.split(' ');
+            // print('Найдено bytes: \n$bytes');
+            // Ищем комбинацию 83 01 и проверяем следующий байт
+            imuFilter='';
+            for (int i = 0; i < bytes.length - 2; i++) {
+              if (bytes[i] == '83' && bytes[i + 1] == '01') {
+                if (bytes[i + 2] == '00') {
+                  imuFilter='Correct';
+                  print('Найдено: 83 01 - следующее значение 00');
+                  updateState();
+                } if (bytes[i + 2] != '00') {
+                  imuFilter='Wrong';
+                  print('Найдено: 83 01 - следующее не 00');
+                  updateState();
+                }
+              }
+              updateState();
+            }
 
-          // Убираем левую колонку (адреса), правую колонку (символы в |...|), и двойные пробелы между байтами
-          String stringBytes = tempData
-              .replaceAllMapped(RegExp(r'^\S+\s+([\da-fA-F\s]+)\s+\|.*\|$', multiLine: true), (match) {
-            return match.group(1)?.replaceAll(RegExp(r'\s{2,}'), ' ').trim() ?? '';
-          })
-              .replaceAll('\n', ' ');
-          print('Найдено stringBytes: \n$stringBytes');
-          // Соединяем строки в одну строку
-          // Преобразуем строку в список байтов
-          List<String> bytes = stringBytes.split(' ');
-          print('Найдено bytes: \n$bytes');
-          // Ищем комбинацию 83 01 и проверяем следующий байт
-          for (int i = 0; i < bytes.length - 2; i++) {
-            if (bytes[i] == '83' && bytes[i + 1] == '01') {
-              if (bytes[i + 2] == '00') {
-                imuFilter='Correct';
-                print('Найдено: 83 01 - следующее значение 00');
+            print('================== UMU search  ===================== \\/\n${result}');
+
+            RegExp regExp = RegExp(r'\.([A-Za-z0-9]{5,})\.');
+            // Регулярное выражение для поиска номеров из букв и цифр длиной не менее 5 символов
+            RegExpMatch? match = regExp.firstMatch(result);
+            // Ищем все совпадения
+            print('================== Выводим найденные номера  ======= \\/\n${match}');
+            if(match==null || match.group(1)!.toString().length < 5 && counter !=0){
+              print('================== Номер не найден  ================= ');
+
+              statusOutput="No result, I'll try again $counter times ";
+              decrementCounter(updateState);
+              await runUnit(updateState);
+              Future.delayed(Duration(seconds: 3), () async {
+                await getImu(updateState);
+                print('==== $counter');
                 updateState();
-              } else {
-                print('Найдено: 83 01, но следующее значение не 00, а ${bytes[i + 2]}');
-                imuFilter='Wrong';
+            });
+            }
+            if(counter==0){
+              statusOutput="Not all data collected, please reboot the unit";
+              _deleteTempKeyFile();
+             await runUnit(updateState);
+            }
+            if (match != null && counter!=0) {// Выводим найденные номера
+              print('Найден номер: ${match.group(1)}');
+              String number = match.group(1)!;
+              imuNumber = "${number}";
+              print('Найден номер IMU 1: ${number}');
+              await getDeviceInfo(updateState);
+              await runUnit(updateState);
+              // Получаем номер
+              if (RegExp(r'[A-Za-z]$').hasMatch(number)) {// Проверяем, если последний символ - буква, удаляем его
+                number = number.substring(0, number.length - 1);// Проверяем, заканчивается ли строка на букву с помощью регулярного выражения
+                imuNumber = "${number}";
+                print('Найден номер IMU 2: ${number}');
+                await getDeviceInfo(updateState);
+                await runUnit(updateState);
+               // statusOutput=
                 updateState();
               }
-            }else{
+              updateState();
             }
-            updateState();
-          }
-
-
-          print('================== UMU search  ===================== \\/\n${result}');
-          // Регулярное выражение для поиска номеров из букв и цифр длиной не менее 5 символов
-          RegExp regExp = RegExp(r'\.([A-Za-z0-9]{5,})\.');
-          // Ищем все совпадения
-          RegExpMatch? match = regExp.firstMatch(result);
-          // Выводим найденные номера
-          if (match != null) {
-            print('Найден номер: ${match.group(1)}');
-            String number = match.group(1)!; // Получаем номер
-
-            // Проверяем, если последний символ - буква, удаляем его
-            if (RegExp(r'[A-Za-z]$').hasMatch(number)) {
-              // Проверяем, заканчивается ли строка на букву с помощью регулярного выражения
-              number = number.substring(0, number.length - 1);
-              imuNumber = "${number}";
-              updateState;
-              print('Найден номер IMU: ${number}');
-            }
-
-           // imuNumber="${match.group(1)}";
-            updateState;
-            runUnit(updateState);
-          } else {
-            print('Номер не найден');
-            await process.kill();
-            runUnit(updateState);
-            Future.delayed(Duration(seconds: 3), () async {
-              getImu(updateState);
-            });
-          }
-          await process.kill();
+          });
         });
-      } finally {
-      }
-    } else {
+
+      } finally {}
     }
   }
 
@@ -695,6 +774,427 @@ class Production {
 /// GET LIDAR SN END
 
   /// GET UNIT INFO END
+
+  /// UPLOAD CALIBRATION TO UNIT
+  Future<void> uploadCalibration(Function updateState) async {
+    if (await _createTempKeyFile()) {
+      final shell = Shell();
+      statusOutput = "Procedure started............";
+      updateState();
+      String output = "";
+      try {
+        const calibrationLaserPath = 'temp/boresight';
+        const calibrationCameraPath = 'temp/cameras';
+
+        await shell.run('''
+        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo 'OPEN TO EDIT' > /etc/payload/boresight && exit"
+        ''');
+
+        await shell.run('''
+        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/boresight"
+        ''');
+
+        await shell.run('''${_pscpPath} -i "$keyPath" -P 22 "$calibrationLaserPath" root@192.168.12.1:/etc/payload/boresight''');
+        await shell.run('''${_pscpPath} -i "$keyPath" -P 22 "$calibrationCameraPath" root@192.168.12.1:/etc/payload/cameras''');
+        output = "Boresight file copied successfully.";
+        shell.kill();
+      } catch (e) {
+        output = "Failed to copy calibration file: check all conditions before start";
+      } finally {
+        await _deleteTempKeyFile();
+      }
+      statusOutput = output;
+    } else {
+      statusOutput = "Procedure failed";
+    }
+    updateState();
+  }
+
+  Future<void> runCreatePreUploadLaserBoresightFile(_unitFolder, updateState) async {
+    print("=========== unit folder $_unitFolder");
+
+    await parseBoresight(_unitFolder);
+    statusOutput = "Searching data files";
+
+    if (_unitFolder == "N:\\!Factory_calibrations_and_tests\\RESEPI\\") {
+      statusOutput = "Enter Unit SN";
+      updateState();
+    }
+
+    // Чтение содержимого ppk.pcmp
+    final pcmpFileContent = File('${pathToPPK.path}\/ppk.pcmp').readAsStringSync();
+
+    // Проверяем, существует ли файл ppk.pcpp
+    String pcppFileContent = "";
+    if (File('${pathToPPK.path}\/ppk.pcpp').existsSync()) {
+      pcppFileContent = File('${pathToPPK.path}\/ppk.pcpp').readAsStringSync();
+      // Извлечение данных камер
+      final cameraOffsetsData = extractCameraData(pcppFileContent);
+      // Создание файла cameras
+      await createCameraFile('${Directory.current.path}\\temp\\cameras', cameraOffsetsData);
+    } else {
+      print("File ppk.pcpp not found. Skipping camera data extraction.");
+    }
+
+    // Извлечение данных лазеров
+    final laserData = extractLaserData(pcmpFileContent);
+    final offsetsData = extractOffsetsData(pcmpFileContent);
+
+    // Создание файла boresight
+    await createBoresightFile('${Directory.current.path}\\temp\\boresight', laserData, offsetsData);
+
+    // Продолжаем выполнение процедуры загрузки
+    await uploadCalibration(updateState);
+  }
+
+  Map<String, List<String>> extractCameraData(String xmlContent) {
+    final document = XmlDocument.parse(xmlContent);
+    final offsets = document.findAllElements('Offsets').first;
+    final serial = offsets.getAttribute('serial') ?? 'unknown_serial';
+
+    // Извлекаем атрибуты <linear>
+    final linear = offsets.findElements('linear').first;
+    final linearOffsets = '${serial} linear ${linear.getAttribute('x')} ${linear.getAttribute('y')} ${linear.getAttribute('z')}';
+
+    // Извлекаем атрибуты <angular>
+    final angular = offsets.findElements('angular').first;
+    final angularOffsets = '${serial} angular ${angular.getAttribute('yaw')} ${angular.getAttribute('pitch')} ${angular.getAttribute('roll')}';
+
+    // Извлекаем атрибуты <lens>
+    final lens = offsets.findElements('lens').first;
+    final lensAttributes = [
+      'Saturation', 'Blue', 'RatPolyDen', 'Green', 'Red', 'RatPolyNum',
+      'FOV', 'DeltaX', 'DeltaY', 'VignetteDen', 'VignetteNum', 'aspect'
+    ];
+
+    // Создаем список записей для каждого атрибута <lens>
+    final lensOffsets = lensAttributes.map((attribute) {
+      return '${serial} lens ${attribute} ${lens.getAttribute(attribute)}';
+    }).toList();
+
+    // Возвращаем карту с результатами
+    return {
+      'linear': [linearOffsets],
+      'angular': [angularOffsets],
+      'lens': lensOffsets,
+    };
+  }
+
+// Функция для создания нового файла cameras
+  Future<void> createCameraFile(String filePath, Map<String, List<String>> cameraData) async {
+    final boresightContent = StringBuffer();
+
+    // Проходим по всем элементам карты и записываем данные в файл
+    cameraData.forEach((key, values) {
+      for (var value in values) {
+        boresightContent.writeln(value);  // Значения уже содержат серийный номер
+      }
+    });
+
+    // Сохраняем данные в файл
+    await File(filePath).writeAsString(boresightContent.toString());
+  }
+
+  Map<String, String> extractOffsetsData(String xmlContent) {
+    final document = XmlDocument.parse(xmlContent);
+    final dataFromOffsets = document.findAllElements('Offsets').first;
+    statusOutput = "Extracting laser data ";
+
+    // Извлекаем атрибуты <linear>
+    final linear = dataFromOffsets.findElements('linear').first;
+    final linearOffsets = '${linear.getAttribute('x')} ${linear.getAttribute('y')} ${linear.getAttribute('z')}';
+
+    // Извлекаем атрибуты <angular>
+    final angular = dataFromOffsets.findElements('angular').first;
+    final angularOffsets = '${angular.getAttribute('yaw')} ${angular.getAttribute('pitch')} ${angular.getAttribute('roll')}';
+
+    // Извлекаем атрибуты <priAnt>
+    final priAnt = dataFromOffsets.findElements('priAnt').first;
+    final priAntOffsets = '${priAnt.getAttribute('x')} ${priAnt.getAttribute('y')} ${priAnt.getAttribute('z')}';
+
+    // Возвращаем в виде карты для удобства использования
+    return {
+      'linear': linearOffsets,
+      'angular': angularOffsets,
+      'priAnt': priAntOffsets,
+    };
+  }
+
+// Функция для извлечения данных лазеров из файла ppk.pcmp
+  List<Map<String, String>> extractLaserData(String xmlContent) {
+    final document = XmlDocument.parse(xmlContent);
+    statusOutput = "Extracting camera data ";
+
+    // Получаем первый элемент <Offsets>
+    final dataFromOffsets = document.findAllElements('Offsets').first;
+    final laserOffsets = dataFromOffsets.findAllElements('laser');
+
+    // Возвращаем данные лазеров
+    return laserOffsets.map((laser) {
+      return {
+        'number': laser.getAttribute('number') ?? '',
+        'azimuth': laser.getAttribute('azimuth') ?? '',
+        'elevation': laser.getAttribute('elevation') ?? '',
+      };
+    }).toList();
+  }
+
+// Функция для создания нового файла boresight
+  Future<void> createBoresightFile(String filePath, List<Map<String, String>> laserData, Map<String, String> offsetsData) async {
+    print('filePath == > $filePath');
+    final boresightContent = StringBuffer();
+    statusOutput = "Creating Boresight file to upload";
+
+    // Записываем параметры linear, angular и priAnt
+    boresightContent.writeln('linear ${offsetsData['linear']}');
+    boresightContent.writeln('angular ${offsetsData['angular']}');
+    boresightContent.writeln('priAnt ${offsetsData['priAnt']}');
+
+    for (var laser in laserData) {
+      boresightContent.writeln('laser ${laser['number']} ${laser['azimuth']} ${laser['elevation']}');
+    }
+
+    File(filePath).writeAsStringSync(boresightContent.toString());
+  }
+
+  Future<void> parseBoresight(String baseAddress) async {
+    statusOutput = "Reading content from\n$baseAddress";
+    print('parseBoresight $baseAddress');
+    Directory boresightDir = Directory(p.join(baseAddress, 'Boresight\\'));
+    print('boresightDir dir => $boresightDir');
+
+    if (await boresightDir.exists()) {
+      print('boresightDir dir exist');
+      await for (var entity in boresightDir.list(recursive: false)) {
+        pathToPPK = entity;
+        print('== 2 $entity');
+      }
+    } else {
+      print('Boresight directory not found.');
+    }
+  }
+
+//   Future<void> uploadCalibration(Function updateState) async {
+//     if (await _createTempKeyFile()) {
+//       final shell = Shell();
+//       statusOutput = "Procedure started............";
+//       updateState();
+//       String output = "";
+//       try {
+//         const calibrationLaserPath = 'temp/boresight';
+//         const calibrationCameraPath = 'temp/cameras';
+//
+//         await shell.run('''
+//           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo 'OPEN TO EDIT' > /etc/payload/boresight && exit"
+//           ''');
+//
+//         await shell.run('''
+//           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/boresight"
+//           ''');
+//         await shell.run('''${_pscpPath} -i "$keyPath" -P 22 "$calibrationLaserPath" root@192.168.12.1:/etc/payload/boresight''');
+//         await shell.run('''${_pscpPath} -i "$keyPath" -P 22 "$calibrationCameraPath" root@192.168.12.1:/etc/payload/cameras''');
+//         output = "Boresight file copied successfully.";
+//         shell.kill();
+//       } catch (e) {
+//         output =
+//         "Failed to copy calibration file: check all conditions before start";
+//       } finally {
+//         await _deleteTempKeyFile();
+//       }
+//       statusOutput = output;
+//     } else {
+//       statusOutput = "Procedure failed";
+//     }
+//     updateState();
+//   }
+//
+//   Future<void> runCreatePreUploadLaserBoresightFile(_unitFolder,updateState) async {
+//     print("=========== unit folder $_unitFolder");
+//
+//     //var _unitFolder=searchUserFolders(_controller.text.trim());
+//    await parseBoresight(_unitFolder);
+//    statusOutput = "Searching data files";
+//     if(_unitFolder == "N:\\!Factory_calibrations_and_tests\\RESEPI\\"){
+//       statusOutput = "Enter Unit SN";
+//       updateState();
+//     }
+//     // Чтение содержимого ppk.pcmp
+//     final pcmpFileContent = File('${pathToPPK.path}\/ppk.pcmp').readAsStringSync();
+//     final pcppFileContent = File('${pathToPPK.path}\/ppk.pcpp').readAsStringSync();
+//     // Извлечение данных лазеров
+//     final laserData = extractLaserData(pcmpFileContent);
+//     final offsetsData = extractOffsetsData(pcmpFileContent);
+//     final cameraOffsetsData = extractCameraData(pcppFileContent);
+//     // Создание нового файла boresight
+//     await createBoresightFile('${Directory.current.path}\\temp\\boresight',laserData,offsetsData);
+//     await createCameraFile('${Directory.current.path}\\temp\\cameras',cameraOffsetsData);
+//
+//
+//     await uploadCalibration(updateState);
+//   }
+//
+//   Map<String, List<String>> extractCameraData(String xmlContent) {
+//     final document = XmlDocument.parse(xmlContent);
+//     final offsets = document.findAllElements('Offsets').first;
+//     final serial = offsets.getAttribute('serial') ?? 'unknown_serial';
+//
+//     // Извлекаем атрибуты <linear>
+//     final linear = offsets.findElements('linear').first;
+//     final linearOffsets = '${serial} linear ${linear.getAttribute('x')} ${linear.getAttribute('y')} ${linear.getAttribute('z')}';
+//
+//     // Извлекаем атрибуты <angular>
+//     final angular = offsets.findElements('angular').first;
+//     final angularOffsets = '${serial} angular ${angular.getAttribute('yaw')} ${angular.getAttribute('pitch')} ${angular.getAttribute('roll')}';
+//
+//     // Извлекаем атрибуты <lens>
+//     final lens = offsets.findElements('lens').first;
+//     final lensAttributes = [
+//       'Saturation',
+//       'Blue','RatPolyDen','Green','Red','RatPolyNum',
+//       'FOV','DeltaX','DeltaY','VignetteDen','VignetteNum',
+//       'aspect'
+//     ];
+//
+//     // Создаем список записей для каждого атрибута <lens>
+//     final lensOffsets = lensAttributes.map((attribute) {
+//       return '${serial} lens ${attribute} ${lens.getAttribute(attribute)}';
+//     }).toList();
+//
+//     // Возвращаем карту с результатами
+//     return {
+//       'linear': [linearOffsets],
+//       'angular': [angularOffsets],
+//       'lens': lensOffsets,
+//     };
+//   }
+// // Функция для создания нового файла cameras
+//   Future<void> createCameraFile(String filePath, Map<String, List<String>> cameraData) async {
+//     final boresightContent = StringBuffer();
+//
+//     // Проходим по всем элементам карты и записываем данные в файл
+//     cameraData.forEach((key, values) {
+//       for (var value in values) {
+//         boresightContent.writeln(value);  // Значения уже содержат серийный номер
+//       }
+//     });
+//
+//     // Сохраняем данные в файл
+//     await File(filePath).writeAsString(boresightContent.toString());
+//   }
+//
+//
+//   Map<String, String> extractOffsetsData(String xmlContent) {
+//     final document = XmlDocument.parse(xmlContent);
+//     final dataFromOffsets = document.findAllElements('Offsets').first;
+//     statusOutput = "Extracting laser data ";
+//     // Извлекаем атрибуты <linear>
+//     final linear = dataFromOffsets.findElements('linear').first;
+//     final linearOffsets = '${linear.getAttribute('x')} ${linear.getAttribute('y')} ${linear.getAttribute('z')}';
+//
+//     // Извлекаем атрибуты <angular>
+//     final angular = dataFromOffsets.findElements('angular').first;
+//     final angularOffsets = '${angular.getAttribute('yaw')} ${angular.getAttribute('pitch')} ${angular.getAttribute('roll')}';
+//
+//     // Извлекаем атрибуты <orientation>
+//    // final orientation = dataFromOffsets.findElements('orientation').first;
+//    // final orientationOffsets = '${orientation.getAttribute('yaw')}, ${orientation.getAttribute('pitch')}, ${orientation.getAttribute('roll')}';
+//
+//     // Извлекаем атрибуты <priAnt>
+//     final priAnt = dataFromOffsets.findElements('priAnt').first;
+//     final priAntOffsets = '${priAnt.getAttribute('x')} ${priAnt.getAttribute('y')} ${priAnt.getAttribute('z')}';
+//
+//     // Возвращаем в виде карты для удобства использования
+//     return {
+//       'linear': linearOffsets,
+//       'angular': angularOffsets,
+//      // 'orientation': orientationOffsets,
+//       'priAnt': priAntOffsets,
+//     };
+//   }
+// // Функция для извлечения данных лазеров из файла ppk.pcmp
+//   List<Map<String, String>> extractLaserData(String xmlContent) {
+//     final document = XmlDocument.parse(xmlContent);
+//     statusOutput = "Extracting camera data ";
+//     // Получаем первый элемент <Offsets> (если их несколько, нужно адаптировать логику)
+//     final dataFromOffsets = document.findAllElements('Offsets').first;
+//
+//     final laserOffsets = dataFromOffsets.findAllElements('laser');
+//     // Печатаем для проверки
+//
+//     print('laserOffsets: $laserOffsets');
+//
+//     // Возвращаем данные лазеров
+//     return laserOffsets.map((laser) {
+//       return {
+//         'number': laser.getAttribute('number') ?? '',
+//         'azimuth': laser.getAttribute('azimuth') ?? '',
+//         'elevation': laser.getAttribute('elevation') ?? '',
+//       };
+//     }).toList();
+//   }
+//
+//
+// // Функция для создания нового файла boresight
+//   Future<void>  createBoresightFile(String filePath, List<Map<String, String>> laserData, Map<String, String> offsetsData) async {
+//     print('filePath == > $filePath');
+//     final boresightContent = StringBuffer();
+//     statusOutput = "Creating Boresight file to upload";
+//     // Записываем параметры linear, angular, orientation и priAnt
+//     boresightContent.writeln('linear ${offsetsData['linear']}');
+//     boresightContent.writeln('angular ${offsetsData['angular']}');
+//    // boresightContent.writeln('orientation ${offsetsData['orientation']}');
+//     boresightContent.writeln('priAnt ${offsetsData['priAnt']}');
+//     for (var laser in laserData) {
+//       boresightContent.writeln(
+//           'laser ${laser['number']} ${laser['azimuth']} ${laser['elevation']}');
+//     }
+//     File(filePath).writeAsStringSync(boresightContent.toString());
+//   }
+//
+//   Future<void> parseBoresight(String baseAddress) async {
+//     statusOutput = "Reading content from\n$baseAddress";
+//     print('parseBoresight $baseAddress');
+//     Directory boresightDir = Directory(p.join(baseAddress, 'Boresight\\'));
+//     print('boresightDir dir => $boresightDir');
+//
+//     if (await boresightDir.exists()) {
+//       print('boresightDir dir exist');
+//
+//       await for (var entity in boresightDir.list(recursive: false)) {
+//         pathToPPK=entity;
+//         print('== 2 $entity');
+//         // if (entity is Directory) {
+//         //   List<List<double>> combinedList = [];
+//         //
+//         //   await for (var subEntity in entity.list(recursive: false)) {
+//         //     print('искомая подпапка ==> $subEntity');
+//         //
+//         //     if (subEntity is File && p.basename(subEntity.path) == 'ppk.pcmp') {
+//         //       print('Processing file: ${subEntity.path}');
+//         //     }
+//         //   }
+//         //
+//         //   await for (var subEntity in entity.list(recursive: false)) {
+//         //     if (subEntity is File && p.basename(subEntity.path) == 'ppk.pcpp') {
+//         //       print('Processing file: ${subEntity.path}');
+//         //     }
+//         //   }
+//         // }
+//       }
+//     } else {
+//       print('Boresight directory not found.');
+//     }
+//   }
+
+/// UPLOAD CALIBRATION TO UNIT END
+///
+///
+///
+///
+///
+///
+///
+///
 }
 
   /// PART OF FOLDER SEARCHER

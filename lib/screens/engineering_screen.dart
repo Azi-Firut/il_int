@@ -3,6 +3,7 @@ import 'package:il_int/models/engineering_class.dart';
 
 import '../constant.dart';
 import '../models/device_fix_class.dart';
+import '../models/production_class.dart';
 
 class EngineeringScreen extends StatefulWidget {
   const EngineeringScreen({Key? key}) : super(key: key);
@@ -14,6 +15,7 @@ class EngineeringScreen extends StatefulWidget {
 class EngineeringScreenState extends State<EngineeringScreen> {
   final DeviceFix _deviceFixFunctionKit = DeviceFix();
   final Engineering _engineeringKit = Engineering();
+  final Production _productionFunctionKit = Production();
 
   @override
   void initState() {
@@ -346,6 +348,33 @@ class EngineeringScreenState extends State<EngineeringScreen> {
             ),
           ),
         ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: () async {
+            await _productionFunctionKit.getDeviceInfo(updateState);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFAF7907),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          child: const Text(
+            'Get Unit Information',
+            style: TextStyle(
+              color: Color(0xFFFFFFFF),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        SelectableText(
+          _productionFunctionKit.statusOutput,
+          style: const TextStyle(
+            color: Colors.grey,
+          ),
+        ),
+
+
         // Padding(
         //   padding: const EdgeInsets.all(8.0),
         //   child: Text(
