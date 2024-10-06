@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
-import '../models/device_fix_class.dart';
-import 'device_fix_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:process_run/process_run.dart';
+
 import '../constant.dart';
-import 'package:process_run/shell.dart';
+import '../models/device_fix_class.dart';
+
 ////////////////////////////////////////////////
 class WiFiadd extends StatefulWidget {
   const WiFiadd({Key? key}) : super(key: key);
@@ -16,8 +16,8 @@ class WiFiadd extends StatefulWidget {
 }
 
 class WiFiaddState extends State<WiFiadd> {
-  var output;
-  var _output2="";
+  var output = null;
+  var out = "";
   String brand = "";
   final DeviceFix _deviceFixFunctionKit = DeviceFix();
 
@@ -25,52 +25,94 @@ class WiFiaddState extends State<WiFiadd> {
     setState(() {});
   }
 
-
   @override
   void initState() {
     super.initState();
     wifiSearchPythonScript();
+  }
 
+  String connectedSsid = '';
+  Future<void> checkConnectedWifiWindows() async {
+    try {
+      // Execute 'netsh wlan show interfaces' to get the current WiFi connection details
+      ProcessResult result =
+          await Process.run('netsh', ['wlan', 'show', 'interfaces']);
+
+      if (result.exitCode == 0) {
+        // The command was successful, now process the output
+        String output = result.stdout;
+
+        // Look for the SSID line in the command output
+        RegExp ssidRegExp = RegExp(r"SSID\s*: (.+)");
+        Match? match = ssidRegExp.firstMatch(output);
+
+        if (match != null) {
+          String ssid = match.group(1)?.trim() ?? 'Unknown SSID';
+
+          print('Currently connected to: $ssid');
+          setState(() {
+            connectedSsid = ssid;
+          });
+        } else {
+          connectedSsid = 'No WiFi SSID found. Not connected to any WiFi.';
+          print('No WiFi SSID found. Not connected to any WiFi.');
+        }
+      } else {
+        print('Error executing command: ${result.stderr}');
+      }
+    } catch (e) {
+      print('Error retrieving WiFi SSID: $e');
+    }
   }
 
   Future<void> wifiSearchPythonScript() async {
-    final String jsonData = await rootBundle
-        .loadString('assets/ssids.json'); // Преобразуйте объект в JSON-строку
+    // Load JSON data from assets
+    final String rawJsonData = await rootBundle.loadString('assets/ssids.json');
 
+    // Convert the JSON to a single line string
+    final jsonData = json.encode(json.decode(rawJsonData));
     print(jsonData);
-    // final wifiExe = "assets/wifi_search.exe";
 
-    ///
-    final dataBytes =
-        Uint8List.fromList(utf8.encode(jsonData)); // Конвертация строки в байты
-    final stream =
-        Stream.fromIterable([dataBytes]); // Создание потока из байтов
-    final result = await run(
+    // Convert the JSON string to bytes
+    final dataBytes = Uint8List.fromList(utf8.encode(jsonData));
+
+    // Start the external process (your .exe)
+    final process = await Process.start(
         'data/flutter_assets/assets/wifi_search/wifi_search.exe',
-        // 'assets/wifi_search.exe',
-        //  wifiExe,
-        stdin: stream); // Путь к вашему EXE скрипту Python Для финальной сборки
+        [] // Arguments if needed
+        );
 
-    print(result[0].stderr);
-    print(result[0].stdout);
-    print(result[0].outText);
+    // Write to the process input
+    process.stdin.add(dataBytes);
+    await process.stdin.close(); // Close the input stream after writing
 
-    if (output != null && output.isNotEmpty && output[0].stdout != null){
+    // Collect the output from stdout
+    String out = await process.stdout.transform(utf8.decoder).join();
+    // Process and filter duplicates
+    List<String> outputLines = out.split('\n');
+    Set<String> uniqueLines = {}; // Use a set to store unique lines
+
+    for (String line in outputLines) {
+      line = line.trim(); // Trim spaces/newlines
+      if (line.isNotEmpty && !uniqueLines.contains(line)) {
+        uniqueLines.add(line); // Add to set if it's not a duplicate
+      }
+    }
+    if (out.isNotEmpty) {
+      checkConnectedWifiWindows();
       _deviceFixFunctionKit.checkCalibrationFile(updateState);
-      if(_deviceFixFunctionKit.statusOutput=="Calibration file does not exist"){_deviceFixFunctionKit.restoreCalibration(updateState);
-      setState(() {
-
-      });
+      if (_deviceFixFunctionKit.statusOutput ==
+          "Calibration file does not exist") {
+        _deviceFixFunctionKit.restoreCalibration(updateState);
+        setState(() {});
       }
     }
 
-
-
     setState(() {
-      output = result;
+      output = uniqueLines.join('\n');
+      print('Output: $output');
+      print('Output length: ${output.length}');
     });
-    //checkCalibrationFile();
-    // print(result.stderr);
   }
 
   @override
@@ -84,19 +126,22 @@ class WiFiaddState extends State<WiFiadd> {
               color: textColorGray,
             ),
           ),
-        if (output != null && output.isNotEmpty && output[0].stdout != null)
+        if (output != null && output.isNotEmpty && output != null)
           Padding(
             padding: const EdgeInsets.only(top: 18.0),
             child: Column(
               children: [
                 SelectableText(
-                  "${output[0].stdout}",
+                  "${output}\n\nConnected to $connectedSsid",
                   style: TextStyle(
                     color: textColorGray,
                   ),
                 ),
+                const SizedBox(
+                  height: 10,
+                ),
                 Text(
-                  "${_deviceFixFunctionKit.statusOutput}",
+                  _deviceFixFunctionKit.statusOutput,
                   style: TextStyle(
                     color: textColorGray,
                   ),
@@ -112,7 +157,7 @@ class WiFiaddState extends State<WiFiadd> {
                       // Call the method to scan again
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF02567E),
+                      backgroundColor: const Color(0xFF02567E),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3),
                       ),
