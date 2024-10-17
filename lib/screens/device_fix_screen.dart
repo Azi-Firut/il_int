@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../constant.dart';
 import '../models/device_fix_class.dart';
+import '../widgets/answer_from_unit.dart';
 
 class DeviceFixScreen extends StatefulWidget {
   const DeviceFixScreen({Key? key}) : super(key: key);
@@ -210,15 +211,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            _deviceFixFunctionKit.statusOutput,
-            style: TextStyle(
-              color: textColorGray,
-            ),
-          ),
-        ),
+        UnitResponse(),
         // Padding(
         //   padding: const EdgeInsets.all(8.0),
         //   child: Text(

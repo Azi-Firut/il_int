@@ -1,24 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:il_int/models/device_fix_class.dart';
 import 'package:il_int/models/final_calibration_class.dart';
+import 'package:il_int/widgets/answer_from_unit.dart';
+import 'package:provider/provider.dart';
 import '../constant.dart';
+import '../models/data.dart';
 import '../models/init_calibration_class.dart';
 import '../models/production_class.dart';
 
 
 class ProdScreen extends StatefulWidget {
+  const ProdScreen({super.key});
+
   @override
-  _ProdScreenState createState() => _ProdScreenState();
+  ProdScreenState createState() => ProdScreenState();
 }
 
-class _ProdScreenState extends State<ProdScreen> {
+class ProdScreenState extends State<ProdScreen> {
+
   final Production _productionFunctionKit = Production();
   final TextEditingController _controller = TextEditingController();
   final DeviceFix _deviceFixFunctionKit = DeviceFix();
-
+var statusOutput= "";
 ///
   void updateState() {
-    setState(() {});
+    setState(() {
+      var test = unitResponse;
+      test;
+    });
   }
 
   @override
@@ -117,26 +126,7 @@ class _ProdScreenState extends State<ProdScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            InitialParamListWidget(directoryPath: initialParamPath,updateState: updateState),
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     // await _folderOpener.openFolder(_controller.text.trim());
-            //     // setState(() {}); // Update UI with the new status message
-            //   },
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: const Color(0xFF02567E),
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(3),
-            //     ),
-            //   ),
-            //   child: const Text(
-            //     'Initial Parameters',
-            //     style: TextStyle(
-            //       color: Color(0xFFFFFFFF),
-            //     ),
-            //   ),
-            // ),
-            //const SizedBox(height: 20),
+            InitialParamListWidget(directoryPath: initialParamPath),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
@@ -157,7 +147,7 @@ class _ProdScreenState extends State<ProdScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            FinalParamListWidget(directoryPath: finalParamPath, updateState: updateState),
+            FinalParamListWidget(directoryPath: finalParamPath),
             // ElevatedButton(
             //   onPressed: () async {
             //     // await _folderOpener.openFolder(_controller.text.trim());
@@ -197,22 +187,17 @@ class _ProdScreenState extends State<ProdScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            ///
-
-            ///
+            /// OPERATION TEXT
+            UnitResponse(),
             const SizedBox(height: 20),
+
             SelectableText(
-              _productionFunctionKit.statusOutput,
+                ("${context.watch<Data>().getUnitResponse}"),
               style: const TextStyle(
                 color: Colors.grey,
               ),
             ),
-            Text(
-              _deviceFixFunctionKit.statusOutput,
-              style: const TextStyle(
-                color: Colors.grey,
-              ),
-            ),
+
           ],
         ),
       ),

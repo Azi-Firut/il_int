@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+Map unitResponse = {'step':null,'text':null};
+String keyPath = '';
 String dragAndDropMessage = "Select two files and drop here";
 Color textColorGray = Color(0xFFA9A9A9);
 const String hostKey =
@@ -306,17 +308,17 @@ Map<String, String> mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,ap
       'I64': lidarOffsetsList.length > 33 ? '${lidarOffsetsList[35][1]}' : '',
       'J64': lidarOffsetsList.length > 33 ? '${lidarOffsetsList[35][2]}' : '',
 // Camera offsets
-      'J68': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[36][0]}' : '',
-      'J69': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[36][1]}' : '',
-      'J70': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[36][2]}' : '',
+      'J68': lidarOffsetsList.length > 35 ? '${lidarOffsetsList[36][0]}' : '',
+      'J69': lidarOffsetsList.length > 35 ? '${lidarOffsetsList[36][1]}' : '',
+      'J70': lidarOffsetsList.length > 35 ? '${lidarOffsetsList[36][2]}' : '',
       'J71': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[37][0]}' : '',
       'J72': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[37][1]}' : '',
       'J73': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[37][2]}' : '',
-      'J74': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[39][0]}' : '',
-      'J75': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[39][5]}' : '',
-      'I75': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[39][4]}' : '',
-      'J76': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[39][3]}' : '',
-      'I76': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[39][2]}' : '',
+      'J74': lidarOffsetsList.length > 37 ? '${lidarOffsetsList[39][0]}' : '',
+      'J75': lidarOffsetsList.length > 37 ? '${lidarOffsetsList[39][5]}' : '',
+      'I75': lidarOffsetsList.length > 37 ? '${lidarOffsetsList[39][4]}' : '',
+      'J76': lidarOffsetsList.length > 37 ? '${lidarOffsetsList[39][3]}' : '',
+      'I76': lidarOffsetsList.length > 37 ? '${lidarOffsetsList[39][2]}' : '',
 // Brand logo
       'E6': '$appDirectory${brandImagesAtc['${listContentTxt[0]}']}',
       'E14': listContentTxt.length > 2 ? listContentTxt[1] : '',

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../constant.dart';
 import '../models/device_fix_class.dart';
+import '../widgets/answer_from_unit.dart';
 
 ////////////////////////////////////////////////
 class WiFiadd extends StatefulWidget {
@@ -101,7 +102,7 @@ class WiFiaddState extends State<WiFiadd> {
     if (out.isNotEmpty) {
       checkConnectedWifiWindows();
       _deviceFixFunctionKit.checkCalibrationFile(updateState);
-      if (_deviceFixFunctionKit.statusOutput ==
+      if (unitResponse['text'] ==
           "Calibration file does not exist") {
         _deviceFixFunctionKit.restoreCalibration(updateState);
         setState(() {});
@@ -126,6 +127,31 @@ class WiFiaddState extends State<WiFiadd> {
               color: textColorGray,
             ),
           ),
+        if (output.toString().length==0)
+          Padding(
+            padding: const EdgeInsets.only(top: 18.0),
+            child: ElevatedButton(
+              onPressed: () {
+                wifiSearchPythonScript();
+                setState(() {
+                  output = null;
+                });
+                // Call the method to scan again
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF02567E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                'Scan again',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+          ),
         if (output != null && output.isNotEmpty && output != null)
           Padding(
             padding: const EdgeInsets.only(top: 18.0),
@@ -140,11 +166,9 @@ class WiFiaddState extends State<WiFiadd> {
                 const SizedBox(
                   height: 10,
                 ),
-                Text(
-                  _deviceFixFunctionKit.statusOutput,
-                  style: TextStyle(
-                    color: textColorGray,
-                  ),
+                Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: UnitResponse(),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 18.0),

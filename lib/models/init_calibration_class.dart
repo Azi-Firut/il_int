@@ -1,85 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:il_int/models/ssh.dart';
+import 'package:il_int/screens/prod_screen.dart';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import '../constant.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../widgets/answer_from_unit.dart';
+import 'data.dart';
 
 
 class InitialParamListWidget extends StatefulWidget {
   final String directoryPath;
-  final Function updateState;
 
-  const InitialParamListWidget({Key? key, required this.directoryPath, required this.updateState}) : super(key: key);
+  const InitialParamListWidget({Key? key, required this.directoryPath}) : super(key: key);
 
   @override
   _InitialParamListWidgetState createState() => _InitialParamListWidgetState();
 }
 
 class _InitialParamListWidgetState extends State<InitialParamListWidget> {
-  String statusOutput = '';
   List<FileSystemEntity> _files = [];
   String? _selectedFile; // Для хранения пути выбранного файла
   bool _showFileList = false; // Управляет показом списка файлов
 
-  /// SSH KIT
-  String decodedString = "";
-  var tempDir;
-  String keyPath = '';
-  final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
-  final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
 
-  String _decodeStringWithRandom(String input) {
-    StringBuffer cleaned = StringBuffer();
-    for (int i = 0; i < input.length; i++) {
-      if (i % 3 != 2) {
-        cleaned.write(input[i]);
-      }
-    }
-    List<int> bytes = base64Decode(cleaned.toString());
-    String decodedString = utf8.decode(bytes);
-    return decodedString;
-  }
-
-  Future<bool> _createTempKeyFile() async {
-    decodedString = await _decodeStringWithRandom(key);
-    final appDir = Directory.current;
-    tempDir = Directory('${appDir.path}/temp');
-    if (!await tempDir.exists()) {
-      await tempDir.create(recursive: true);
-    }
-    final keyFile = File('${tempDir.path}/resepi_login.ppk');
-    await keyFile.writeAsString(decodedString);
-    keyPath = keyFile.path;
-    print("== $keyPath ==");
-    return await keyFile.exists();
-  }
-
-  Future<void> _deleteTempKeyFile() async {
-    final keyFile = File(keyPath);
-    if (await keyFile.exists()) {
-      try {
-        await keyFile.delete();
-        print("The procedure is completed.");
-      } catch (e) {
-        print("Failed : $e");
-        await Future.delayed(Duration(seconds: 1));
-        try {
-          await keyFile.delete();
-          print("Retry procedure.");
-        } catch (retryException) {
-          print("Procedure failed : $retryException");
-        }
-      }
-    }
-  }
-  /// SSH KIT END
 
 
   @override
   void initState() {
     super.initState();
     _listFiles(); // Загружаем файлы при инициализации
+  }
+  void updateState() {
+    setState(() {});
   }
 
   Future<void> _listFiles() async {
@@ -94,6 +48,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
       setState(() {
         _files = [];
       });
+      context.read<Data>().pushResponse("Directory does not exist");
       print('Directory does not exist');
     }
   }
@@ -104,6 +59,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
       final file = File(path);
       return await file.readAsString();
     } catch (e) {
+      context.read<Data>().pushResponse("File does not exist");
       return 'Ошибка при чтении файла.';
     }
   }
@@ -138,6 +94,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
         print(line);
       }
     } catch (e) {
+      context.read<Data>().pushResponse("Error read file");
       print('Ошибка при чтении файла: $e');
     }
   }
@@ -175,35 +132,60 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
         print('Ответ сервера: ${response.body}');
       }
     } catch (e) {
-      print('Ошибка при чтении файла: $e');
+        print('Ошибка при чтении файла: $e');
     }
   }
+void trowToGui(step,text)async{
+   await pushUnitResponse(step,text,updateState);
+}
 
   void uploadInitialToUnit(List<String> lines) async {
+
+    pushUnitResponse(0,"The procedure started",updateState);
+    updateState();
+    trowToGui(0, "TEST");
+
     if (await lines.isNotEmpty) {
-      //await _deleteTempKeyFile();
-      if (await _createTempKeyFile()) {
-        String output = "";
-       // print(lines);
+      pushUnitResponse(0,"The procedure started",updateState);
+      updateState();
+      if (await createTempKeyFile()) {
         try {
           print('===[1]=== ${lines.length}');
 
           var process = await Process.start(
-            _plinkPath,
+            plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[4]}\n${lines[5]}' > cameras && exit"],
           );
            process = await Process.start(
-            _plinkPath,
+            plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[3]}\n' > boresight && exit"],
           );
           process = await Process.start(
-            _plinkPath,
+            plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[2]}\n' > FOV && exit"],
           );
           process = await Process.start(
-            _plinkPath,
+            plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[6]}\n${lines[7]}\n${lines[8]}\n${lines[9]}\n${lines[10]}\n' > config && exit"],
           );
+
+          Future<void> restartUnit() async {
+            if (await createTempKeyFile()) {
+              pushUnitResponse(1,"Initial parameters uploaded\nThe unit will be rebooted",updateState);
+              updateState();
+              try {
+                var processRestartUnit = await Process.start(
+                  plinkPath,
+                  ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "systemctl restart payload"],
+                );
+                await Future.delayed(Duration(seconds: 1), () async {
+                  processRestartUnit.kill();
+                  await deleteTempKeyFile();
+                });
+              } catch (e) {}
+              finally {}
+            }
+          }
 
           try {
             if (lines.length >= 12 && lines[12].split(' ').first.trim() == "WINGTRA") {
@@ -225,32 +207,26 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
           // Вывод стандартной ошибки процесса
           process.stderr.transform(SystemEncoding().decoder).listen((data) {
             print('stderr: $data');
-            statusOutput = data;
-            widget.updateState;
+            context.read<Data>().pushResponse(data);
           });
 
           // Ожидание завершения процесса
           var exitCode = await process.exitCode;
           print('Process exited with code $exitCode');
-
-
-        //  Ищет и заменяет
-        //      await shell.run('''
-        //   ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/payload && mount -o remount,rw / && sed -i 's/^${lines[4].split(' ')[1]}\".*\"/${lines[5]}/' cameras && exit"
-        //    ''');
-          output = "Initial parameters uploaded";
-          statusOutput = output;
+          if(exitCode == 1){
+            pushUnitResponse(2,"Failed to upload initial parameters:\ncheck all conditions before start",updateState);
+            updateState();
+          }else{
+            restartUnit();
+            process.kill();
+          }
         } catch (e) {
-          output =
-          "Failed to upload initial parameters: check all conditions before start";
-          statusOutput = output;
         } finally {
-          widget.updateState;
-         await _deleteTempKeyFile();
+         await deleteTempKeyFile();
         }
-       // statusOutput = output;
       } else {
-       // statusOutput = "Procedure failed";
+        pushUnitResponse(2,"Procedure failed",updateState);
+        updateState();
       }
     }else{
     }
@@ -263,10 +239,9 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
         _files.clear(); // Очищаем список файлов
         _selectedFile = null; // Сбрасываем выбор файла
         _showFileList = false; // Скрываем список
-        statusOutput = "Initial parameters uploaded";
-      });
+     });
     } else {
-      // Здесь можно добавить обработку ошибки, если файл не выбран
+      context.read<Data>().pushResponse("Parameter file not selected");
       print('Файл не выбран');
     }
   }

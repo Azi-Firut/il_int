@@ -6,6 +6,7 @@ import '../constant.dart';
 import '../models/device_fix_class.dart';
 import '../models/production_class.dart';
 import '../models/test_class.dart';
+import '../widgets/answer_from_unit.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({Key? key}) : super(key: key);
@@ -120,7 +121,7 @@ class TestScreenState extends State<TestScreen> {
 ///
          //   FileListWidget(directoryPath: initialParamPath),
 ///
-            Container(child: Text(_deviceFixFunctionKit.statusOutput),color: Colors.blueGrey,),
+            Container(child: UnitResponse(),),
             Container(color: Colors.redAccent,
               child: Column(
                 children: [

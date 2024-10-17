@@ -25,5 +25,14 @@ class Data with ChangeNotifier {
     _unitAddressForAtc = address;
     notifyListeners();
   }
+  /// Answer for user from unit operations
+  String _unitResponse = '';
+  String get getUnitResponse => _unitResponse; // возврат данных через гетер
+  void pushResponse(String response) {
+    _unitResponse = response;
+    notifyListeners();
+  }
+
+
 //////////////////////////////////////////////////////////////
 }

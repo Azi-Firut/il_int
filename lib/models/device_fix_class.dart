@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:il_int/models/ssh.dart';
 import 'package:process_run/shell.dart';
 import '../constant.dart';
+import '../widgets/answer_from_unit.dart';
 
 class DeviceFix {
   static final DeviceFix _instance = DeviceFix._internal();
@@ -28,9 +30,9 @@ class DeviceFix {
   ];
 
   String? selectedBrand;
-  String statusOutput = "";
+
   String outputBrand = "";
-  String keyPath = '';
+
   String brand = "";
   String calibrationPath = '';
   String decodedString = "";
@@ -39,52 +41,7 @@ class DeviceFix {
   final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
   final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
 
-  /// SSH KIT
 
-  String _decodeStringWithRandom(String input) {
-    StringBuffer cleaned = StringBuffer();
-    for (int i = 0; i < input.length; i++) {
-      if (i % 3 != 2) {
-        cleaned.write(input[i]);
-      }
-    }
-    List<int> bytes = base64Decode(cleaned.toString());
-    String decodedString = utf8.decode(bytes);
-    return decodedString;
-  }
-
-  Future<bool> _createTempKeyFile() async {
-    decodedString = _decodeStringWithRandom(key);
-    final appDir = Directory.current;
-    final tempDir = Directory('${appDir.path}/temp');
-    if (!await tempDir.exists()) {
-      await tempDir.create(recursive: true);
-    }
-    final keyFile = File('${tempDir.path}/resepi_login.ppk');
-    await keyFile.writeAsString(decodedString);
-    keyPath = keyFile.path;
-    return await keyFile.exists();
-  }
-
-  Future<void> _deleteTempKeyFile() async {
-    final keyFile = File(keyPath);
-    if (await keyFile.exists()) {
-      try {
-        await keyFile.delete();
-        print("The procedure is completed.");
-      } catch (e) {
-        print("Failed : $e");
-        await Future.delayed(Duration(seconds: 1));
-        try {
-          await keyFile.delete();
-          print("Retry procedure.");
-        } catch (retryException) {
-          print("Procedure failed : $retryException");
-        }
-      }
-    }
-  }
-  /// SSH KIT END
 
 
   Future<void> loadCalibrationFile() async {
@@ -102,7 +59,7 @@ class DeviceFix {
 
   Future<void> changeBrand(Function updateState) async {
     if (selectedBrand != null) {
-      if (await _createTempKeyFile()) {
+      if (await createTempKeyFile()) {
         outputBrand = "Procedure started............";
         updateState();
         final shell = Shell();
@@ -127,7 +84,7 @@ class DeviceFix {
           outputBrand =
               "Failed to change brand: check all conditions before start";
         } finally {
-          await _deleteTempKeyFile();
+          await deleteTempKeyFile();
         }
       } else {
         outputBrand = "Procedure failed";
@@ -139,35 +96,34 @@ class DeviceFix {
   }
 
   Future<void> deleteCalibration(Function updateState) async {
-    if (await _createTempKeyFile()) {
+    if (await createTempKeyFile()) {
       final shell = Shell();
-      statusOutput = "Procedure started............";
-      updateState();
-      String output = "";
+      pushUnitResponse(0,"Procedure started",updateState);
+
       try {
         await shell.run('''
         ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
         ''');
-        output = "Calibration file successfully deleted.";
+        pushUnitResponse(1,"Calibration file successfully deleted",updateState);
+
       } catch (e) {
-        output =
-            "Failed to delete calibration: check all conditions before start";
+        pushUnitResponse(2,"Failed to delete calibration: check all conditions before start",updateState);
       } finally {
-        await _deleteTempKeyFile();
+        await deleteTempKeyFile();
       }
-      statusOutput = output;
+
     } else {
-      statusOutput = "Procedure failed";
+      pushUnitResponse(2,"Procedure failed",updateState);
+
     }
     updateState();
   }
 
   Future<void> checkCalibrationFile(Function updateState) async {
-    if (await _createTempKeyFile()) {
+    if (await createTempKeyFile()) {
       final shell = Shell();
-      statusOutput = "... Looking for the device calibration file ...";
-      updateState();
-      String output = "";
+      pushUnitResponse(0,"Looking for the device calibration file",updateState);
+
       try {
         var result = await shell.run('''
 ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist';)"
@@ -177,25 +133,25 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
           restoreCalibration(updateState);
         }
         ////////////////////////////////////////////
-        output = result.outText;
+        pushUnitResponse(1,result.outText,updateState);
+
       } catch (e) {
-        output = "! Failed to retrieve data from device !";
+        pushUnitResponse(2,"Failed to retrieve data from device",updateState);
+
       } finally {
-        await _deleteTempKeyFile();
+        await deleteTempKeyFile();
       }
-      statusOutput = output;
     } else {
-      statusOutput = "Procedure failed";
+      pushUnitResponse(2,"Procedure failed",updateState);
     }
     updateState();
   }
 
   Future<void> restoreCalibration(Function updateState) async {
-    if (await _createTempKeyFile()) {
+    if (await createTempKeyFile()) {
       final shell = Shell();
-      statusOutput = "Procedure started............";
-      updateState();
-      String output = "";
+      pushUnitResponse(0,"Procedure started",updateState);
+
       try {
         var brandNow = await shell.run('''
           ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
@@ -207,16 +163,15 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
         await shell.run('''
         ${_pscpPath} -i "$keyPath" -P 22 "$calibrationAssetPath" root@192.168.12.1:/etc/payload/calibration 
         ''');
-        output = "Calibration file copied successfully.";
+        pushUnitResponse(1,"Calibration file copied successfully",updateState);
       } catch (e) {
-        output =
-        "Failed to copy calibration file: check all conditions before start";
+        pushUnitResponse(2,"Failed to copy calibration file:\ncheck all conditions before start",updateState);
+
       } finally {
-        await _deleteTempKeyFile();
+        await deleteTempKeyFile();
       }
-      statusOutput = output;
     } else {
-      statusOutput = "Procedure failed";
+      pushUnitResponse(2,"Procedure failed",updateState);
     }
     updateState();
   }

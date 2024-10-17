@@ -1,85 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:il_int/models/ssh.dart';
+import 'package:il_int/screens/prod_screen.dart';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import '../constant.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../widgets/answer_from_unit.dart';
+import 'data.dart';
 
 
 class FinalParamListWidget extends StatefulWidget {
   final String directoryPath;
-  final Function updateState;
 
-  const FinalParamListWidget({Key? key, required this.directoryPath, required this.updateState}) : super(key: key);
+  const FinalParamListWidget({Key? key, required this.directoryPath}) : super(key: key);
 
   @override
   _FinalParamListWidgetState createState() => _FinalParamListWidgetState();
 }
 
 class _FinalParamListWidgetState extends State<FinalParamListWidget> {
-  String statusOutput = '';
+
   List<FileSystemEntity> _files = [];
   String? _selectedFile; // Для хранения пути выбранного файла
   bool _showFileList = false; // Управляет показом списка файлов
-
-  /// SSH KIT
-  String decodedString = "";
-  var tempDir;
-  String keyPath = '';
-  final String _plinkPath = 'data/flutter_assets/assets/plink.exe';
-  final String _pscpPath = 'data/flutter_assets/assets/pscp.exe';
-
-  String _decodeStringWithRandom(String input) {
-    StringBuffer cleaned = StringBuffer();
-    for (int i = 0; i < input.length; i++) {
-      if (i % 3 != 2) {
-        cleaned.write(input[i]);
-      }
-    }
-    List<int> bytes = base64Decode(cleaned.toString());
-    String decodedString = utf8.decode(bytes);
-    return decodedString;
-  }
-
-  Future<bool> _createTempKeyFile() async {
-    decodedString = await _decodeStringWithRandom(key);
-    final appDir = Directory.current;
-    tempDir = Directory('${appDir.path}/temp');
-    if (!await tempDir.exists()) {
-      await tempDir.create(recursive: true);
-    }
-    final keyFile = File('${tempDir.path}/resepi_login.ppk');
-    await keyFile.writeAsString(decodedString);
-    keyPath = keyFile.path;
-    print("== $keyPath ==");
-    return await keyFile.exists();
-  }
-
-  Future<void> _deleteTempKeyFile() async {
-    final keyFile = File(keyPath);
-    if (await keyFile.exists()) {
-      try {
-        await keyFile.delete();
-        print("The procedure is completed.");
-      } catch (e) {
-        print("Failed : $e");
-        await Future.delayed(Duration(seconds: 1));
-        try {
-          await keyFile.delete();
-          print("Retry procedure.");
-        } catch (retryException) {
-          print("Procedure failed : $retryException");
-        }
-      }
-    }
-  }
-  /// SSH KIT END
 
 
   @override
   void initState() {
     super.initState();
     _listFiles(); // Загружаем файлы при инициализации
+  }
+  void updateState() {
+    setState(() {});
   }
 
   Future<void> _listFiles() async {
@@ -94,6 +47,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
       setState(() {
         _files = [];
       });
+      context.read<Data>().pushResponse("Directory does not exist");
       print('Directory does not exist');
     }
   }
@@ -104,6 +58,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
       final file = File(path);
       return await file.readAsString();
     } catch (e) {
+      context.read<Data>().pushResponse("Error reading file: $e");
       return 'Ошибка при чтении файла.';
     }
   }
@@ -126,10 +81,10 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   }
 
   void parseFinalTxt(filePathToInitFile) async {
+
     // Путь к файлу
     String filePath = filePathToInitFile;
-
-    try {
+      try {
       // Чтение файла и получение списка строк
       List<String> lines = await File(filePath).readAsLines();
       uploadFinalToUnit(lines);
@@ -138,7 +93,30 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
         print(line);
       }
     } catch (e) {
+      context.read<Data>().pushResponse("Error reading file: $e");
       print('Ошибка при чтении файла: $e');
+    }
+  }
+
+  Future<void> restartUnit() async {
+    if (await createTempKeyFile()) {
+      print('Рестарт');
+           pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState);
+      updateState();
+      try {
+        var processRestartUnit = await Process.start(
+          plinkPath,
+          ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "systemctl restart payload"],
+        );
+        await Future.delayed(Duration(seconds: 1), () async {
+          processRestartUnit.kill();
+          await deleteTempKeyFile();
+        });
+      } catch (e) {}
+      finally {
+        pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState);
+        updateState();
+      }
     }
   }
 
@@ -180,53 +158,52 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   // }
 
   void uploadFinalToUnit(List<String> lines) async {
-    if (await lines.isNotEmpty) {
-      //await _deleteTempKeyFile();
-      if (await _createTempKeyFile()) {
-        String output = "";
-        var process;
-        // print(lines);
+    pushUnitResponse(0,"The procedure started11111",updateState);
+    updateState();
+       if (await lines.isNotEmpty) {
+           if (await createTempKeyFile()) {
+            var process;
         try {
-          print('===[1]=== ${lines.length}');
-          print('===[1]=== ${lines[3].split(' ').first}');
+          print('uploadFinalToUnit => ${lines.length}');
+          print('uploadFinalToUnit => ${lines[3].split(' ').first}');
           if(lines[2].trim() != '#'){
            process = await Process.start(
-            _plinkPath,
+            plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[2]}\n' > FOV && exit"],
           );}
           if(lines[3].trim() != '#'){
            process = await Process.start(
-            _plinkPath,
+            plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, 'cd /etc/payload && mount -o remount,rw / && sed -i \'s/^' + lines[3].split(' ').first + '.*/' + lines[3] + '/\' boresight && exit'],
           );}
           if(lines[4].trim() != '#'){
             process = await Process.start(
-              _plinkPath,
+              plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[4]}\n${lines[5]}' > cameras && exit"],
             );}
           if(lines[6].trim() != '#'){
             process = await Process.start(
-              _plinkPath,
+              plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, 'cd /etc/payload && mount -o remount,rw / && sed -i \'s/^' + lines[6].split(' ').first + '.*/' + lines[6] + '/\' config && exit'],
             );}
           if(lines[7].trim() != '#'){
             process = await Process.start(
-              _plinkPath,
+              plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, 'cd /etc/payload && mount -o remount,rw / && sed -i \'s/^' + lines[7].split(' ').first + '.*/' + lines[7] + '/\' config && exit'],
             );}
           if(lines[8].trim() != '#'){
             process = await Process.start(
-              _plinkPath,
+              plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, 'cd /etc/payload && mount -o remount,rw / && sed -i \'s/^' + lines[8].split(' ').first + '.*/' + lines[8] + '/\' config && exit'],
             );}
           if(lines[9].trim() != '#'){
             process = await Process.start(
-              _plinkPath,
+              plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, 'cd /etc/payload && mount -o remount,rw / && sed -i \'s/^' + lines[9].split(' ').first + '.*/' + lines[9] + '/\' config && exit'],
             );}
           if(lines[10].trim() != '#'){
             process = await Process.start(
-              _plinkPath,
+              plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, 'cd /etc/payload && mount -o remount,rw / && sed -i \'s/^' + lines[10].split(' ').first + '.*/' + lines[10] + '/\' config && exit'],
             );}
 
@@ -242,57 +219,63 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
           //   print("Error: $e");
           // }
 
+
           // Вывод стандартного вывода процесса
           process.stdout.transform(SystemEncoding().decoder).listen((data) {
             print('stdout: $data');
           });
-
           // Вывод стандартной ошибки процесса
           process.stderr.transform(SystemEncoding().decoder).listen((data) {
-            print('stderr: $data');
-            statusOutput = data;
-            widget.updateState;
+            context.read<Data>().pushResponse(data);
           });
-
           // Ожидание завершения процесса
           var exitCode = await process.exitCode;
           print('Process exited with code $exitCode');
-
-
-          //  Ищет и заменяет
-          //      await shell.run('''
-          //   ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/payload && mount -o remount,rw / && sed -i 's/^${lines[4].split(' ')[1]}\".*\"/${lines[5]}/' cameras && exit"
-          //    ''');
-          output = "Initial parameters uploaded";
-          statusOutput = output;
+          if(exitCode == 1){
+            pushUnitResponse(2,"Failed to upload final parameters:\ncheck all conditions before start",updateState);
+            updateState();
+          }else if(exitCode == 0){
+            pushUnitResponse(1,"Final parameters uploaded",updateState);
+            updateState();
+            restartUnit();
+            process.kill();
+          }
+          else{
+            process.kill();
+          }
         } catch (e) {
-          output =
-          "Failed to upload initial parameters: check all conditions before start";
-          statusOutput = output;
-        } finally {
-          widget.updateState;
-          await _deleteTempKeyFile();
+      } finally {
+          await deleteTempKeyFile();
         }
-        // statusOutput = output;
       } else {
-        // statusOutput = "Procedure failed";
+        pushUnitResponse(2,"Procedure failed",updateState);
+        updateState();
       }
     }else{
     }
   }
 
   void uploadFile() {
+    pushUnitResponse(0,"The procedure started1",updateState);
+  //  updateState();
     if (_selectedFile != null) {
+      pushUnitResponse(0,"The procedure started2",updateState);
+   //   updateState();
       parseFinalTxt(_selectedFile);
+      pushUnitResponse(0,"The procedure started3",updateState);
+   //   updateState();
       setState(() {
         _files.clear(); // Очищаем список файлов
         _selectedFile = null; // Сбрасываем выбор файла
         _showFileList = false; // Скрываем список
-        statusOutput = "Initial parameters uploaded";
-      });
+        pushUnitResponse(0,"The procedure started4",updateState);
+    //    updateState();
+       });
+      pushUnitResponse(0,"The procedure started5",updateState);
+     // updateState();
     } else {
-      // Здесь можно добавить обработку ошибки, если файл не выбран
-      print('Файл не выбран');
+      pushUnitResponse(3,"Parameter file not selected",updateState);
+   // updateState();
     }
   }
 
@@ -384,6 +367,8 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
                               onPressed: () {
                                 // Загружаем выбранный файл
                                 uploadFile();
+                                pushUnitResponse(0,"The procedure started",updateState);
+                               // updateState();
                                 Navigator.of(context).pop(); // Закрываем диалог
                               },
                               style: ElevatedButton.styleFrom(
@@ -405,7 +390,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
               : Container(),
           if (_showFileList)
             ElevatedButton(
-              onPressed: uploadFile, // Вызов общего метода
+              onPressed:() {uploadFile();}, // Вызов общего метода
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3F941B),
                 shape: RoundedRectangleBorder(

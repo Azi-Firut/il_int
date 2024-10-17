@@ -4,6 +4,7 @@ import 'package:il_int/models/engineering_class.dart';
 import '../constant.dart';
 import '../models/device_fix_class.dart';
 import '../models/production_class.dart';
+import '../widgets/answer_from_unit.dart';
 
 class EngineeringScreen extends StatefulWidget {
   const EngineeringScreen({Key? key}) : super(key: key);
@@ -264,24 +265,7 @@ class EngineeringScreenState extends State<EngineeringScreen> {
             ),
           ),
         ),
-        Padding(
-          padding:
-              const EdgeInsets.only(left: 8.0, right: 8, bottom: 16, top: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                fit: FlexFit.loose,
-                child: Text(
-                  _engineeringKit.outputScanner,
-                  style: TextStyle(
-                    color: textColorGray,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+
         ///////////////////////////////////////////////////////////////////////
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -339,15 +323,7 @@ class EngineeringScreenState extends State<EngineeringScreen> {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            _deviceFixFunctionKit.statusOutput,
-            style: TextStyle(
-              color: textColorGray,
-            ),
-          ),
-        ),
+
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: () async {
@@ -367,12 +343,7 @@ class EngineeringScreenState extends State<EngineeringScreen> {
           ),
         ),
         const SizedBox(height: 20),
-        SelectableText(
-          _productionFunctionKit.statusOutput,
-          style: const TextStyle(
-            color: Colors.grey,
-          ),
-        ),
+        UnitResponse(),
 
 
         // Padding(
