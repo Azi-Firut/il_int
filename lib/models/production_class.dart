@@ -411,7 +411,7 @@ class Production {
 
         // Получаем IMU
         // await getImu(updateState);
-         output += "IMU SN: ${imuNumber}\n";
+        output += "IMU SN: ${imuNumber}\n";
 
         // Получаем Lidar SN
         await getLidarSn(updateState);
@@ -446,7 +446,7 @@ class Production {
         ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "grep 'Kernel receiver model =' /var/volatile/payload.log | sed 's/^.*Kernel receiver model = //' && exit"
       ''');
         output += "Receiver: ${receiverNow.outText}\n";
-         output += "Reciever SN: ${receiverNow.outText.split(' ').last}\n";
+        output += "Reciever SN: ${receiverNow.outText.split(' ').last}\n";
         // Прошивка
         var firmwareNow = await shell.run('''
         ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "head -n 1 /etc/release_notes"
@@ -472,12 +472,12 @@ class Production {
   /// GET IMU NUMBER (PART OF UNIT INFO)
   var process;
   var process2;
+  var process3;
+  var process4;
   var imuNumber='';
   var imuFilter='';
   var tempData='';
   var counter= 5;
-
-
 
   Future<void> formatUsb(updateState) async {
     pushUnitResponse(0,"Formatting started",updateState);
@@ -513,14 +513,37 @@ class Production {
     finally {updateState();}
   }
 
+  /// Restart unit
+  Future<void> restartUnit() async {
+    if (await createTempKeyFile()) {
+      print('Рестарт');
+     // pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState);
+
+      try {
+        var processRestartUnit = await Process.start(
+          plinkPath,
+          ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "systemctl restart payload"],
+        );
+        await Future.delayed(Duration(seconds: 1), () async {
+          processRestartUnit.kill();
+          await deleteTempKeyFile();
+        });
+      } catch (e) {}
+      finally {
+       // pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState);
+
+      }
+    }
+  }
+
   runGetUnitImu(updateState){
     print("------- runGetUnitImu");
-   counter=5;
-   imuNumber='';
-   imuFilter='';
+    counter=5;
+    imuNumber='';
+    imuFilter='';
     pushUnitResponse(10,"",updateState);
-   getImu(updateState);
-   updateState();
+    getImu(updateState);
+    updateState();
   }
 
   void decrementCounter(Function updateState) {
@@ -549,17 +572,20 @@ class Production {
   }
 
   Future<void> getImu(Function updateState) async {
+    process2=null;
+    process3=null;
+    process4=null;
+    process=null;
     if ( counter == 0) {
       imuNumber='Not identified';
       imuFilter='Not identified';
       getDeviceInfo(updateState);
     }
-    if ( counter != 0) {
+    else if ( counter != 0) {
       if (await createTempKeyFile()) {
         pushUnitResponse(0,"Searching",updateState);
         try {
-          print(
-              "--------------------------------------------------getImu   1  ");
+          print("----------getImu   1  ");
           process = await Process.start(
             plinkPath,
             [
@@ -571,24 +597,16 @@ class Production {
               "systemctl stop payload"
             ],
           );
-
           var stderrStream = process.stderr.transform(utf8.decoder).listen((
               data) {
             print('Stderr: $data'); // Log any errors here
           });
           int exitCode = await process.exitCode;
           await stderrStream.cancel();
+          print('Command executed successfully! #1');
           // Check exit code
           if (exitCode == 0) {
-            getImu2(updateState);
-            print('Command executed successfully!');
-          } else {
-            pushUnitResponse(3,"Unit is not connected",updateState);
-            await deleteTempKeyFile();
-            print('Command failed with exit code: $exitCode');
-          }
-
-          await Future.delayed(Duration(seconds: 1), () async {
+            print('Command #1 exitCode: 0');
             StringBuffer outputBuffer = StringBuffer();
             process = await Process.start(
               plinkPath,
@@ -605,17 +623,21 @@ class Production {
               outputBuffer.write(data);
               tempData = "";
               tempData = data;
+              //print("-------- getImu 1 data $data");
             });
             process.stderr.transform(utf8.decoder).listen((data) {
               print("Ошибка: $data");
             });
-          });
-        } finally {
-          updateState();
-        }
-      } else {
-        updateState();
-      }
+            ///
+            getImu2(updateState);
+          } else {
+            pushUnitResponse(3,"Unit is not connected",updateState);
+            await deleteTempKeyFile();
+            print('Command failed with exit code: $exitCode');
+            restartUnit();
+            //// restart!!
+          }
+        } finally {}} else {}
     }
   }
 
@@ -626,7 +648,7 @@ class Production {
       print("--------------------------------------------------getImu   2  ");
       try {
         Future.delayed(Duration(seconds: 2), () async {
-          process2=null;
+
           process2 = await Process.start(
             plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"],
@@ -653,10 +675,19 @@ class Production {
           process2 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-          process2 = await Process.start(
+          process3 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-          process2 = await Process.start(
+          process3 = await Process.start(
+              plinkPath,
+              ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
+          process4 = await Process.start(
+              plinkPath,
+              ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
+          process4 = await Process.start(
+              plinkPath,
+              ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
+          process4 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
           /////
@@ -675,11 +706,10 @@ class Production {
 
 
           Future.delayed(Duration(seconds: 1), () async {
-            await deleteTempKeyFile();
-            await process2.kill();
-            await process.kill();
+
             String result = _processUnitResponse(tempData).replaceAll('\n', '').replaceAll(' ', '');
-            print('================== BYTE search ====================== \n${tempData}');
+
+            print('================== Result search ==================== \n${result}');
             String stringBytes = tempData
                 .replaceAllMapped(RegExp(r'^\S+\s+([\da-fA-F\s]+)\s+\|.*\|$', multiLine: true), (match) {
               return match.group(1)?.replaceAll(RegExp(r'\s{2,}'), ' ').trim() ?? '';
@@ -721,15 +751,15 @@ class Production {
                 await getImu(updateState);
                 print('==== $counter');
                 updateState();
-            });
+              });
             }
-            if(counter == 0){
+            else if(counter == 0){
               print('============ Counter 0 = $counter');
               pushUnitResponse(2,"Not all data collected, please reboot the unit",updateState);
               deleteTempKeyFile();
-             await runUnit(updateState);
+              await runUnit(updateState);
             }
-            if (match != null && counter!= 0) {// Выводим найденные номера
+            else if (match != null && counter!= 0) {// Выводим найденные номера
               print('Найден номер: ${match.group(1)}');
               String number = match.group(1)!;
               imuNumber = "${number}";
@@ -747,10 +777,18 @@ class Production {
               }
               updateState();
             }
+            // test = tempData;
+            await deleteTempKeyFile();
+            print('========== TEST  $tempData');
+            await process2.kill();
+            await process3.kill();
+            await process4.kill();
+            await process.kill();
+
           });
         });
 
-      } finally {}
+      } finally { }
     }
   }
 
@@ -777,9 +815,9 @@ class Production {
       return match?.group(1) ?? '';
     }).join('\n');
   }
-/// GET IMU NUMBER (PART OF UNIT INFO) END
+  /// GET IMU NUMBER (PART OF UNIT INFO) END
 
-/// GET LIDAR SN
+  /// GET LIDAR SN
   var lidarSerialNumber;
   var lidarModel;
   var urlToLidar ='http://192.168.12.1:8001/pandar.cgi?action=get&object=device_info';
@@ -790,10 +828,10 @@ class Production {
     try {
       final response = await http.get(url);
       stringFromLidar = response.statusCode == 200
-            ? response.body
-            : 'Error: ${response.statusCode}';
+          ? response.body
+          : 'Error: ${response.statusCode}';
       print("======== Lidar SN: ${stringFromLidar.runtimeType}");
-        print("======== Lidar SN: $stringFromLidar");
+      print("======== Lidar SN: $stringFromLidar");
       // Преобразуем строку JSON в объект Dart (Map)
       Map<String, dynamic> jsonMap = jsonDecode(stringFromLidar);
       // Получаем значение поля SN
@@ -807,9 +845,10 @@ class Production {
     }
 
   }
-/// GET LIDAR SN END
+  /// GET LIDAR SN END
 
   /// GET UNIT INFO END
+
 
   /// UPLOAD CALIBRATION TO UNIT
   Future<void> uploadCalibration(Function updateState) async {

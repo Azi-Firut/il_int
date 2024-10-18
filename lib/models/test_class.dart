@@ -21,21 +21,6 @@ class TestClass {
 
   TestClass._internal();
 
-  // String? unitNum;
-  // List<String> listContentTxt = [];
-  // Map<String, String> mapListContent = {};
-  // List<List<double>> lidarOffsetsList = [];
-  // List<List<double>> filtersList = [];
-  // String ssidFromFolderName='';
-  // String ssidNumberFromFolderName='';
-
-  // String keyPath = '';
-
-  // var appDirectory;
-  // var tempDir;
-  // var pathToUnitFolder;
-  // var pathToPPK;
-  String test="";
 
 
   /// GET UNIT INFO
@@ -111,11 +96,46 @@ class TestClass {
   /// GET IMU NUMBER (PART OF UNIT INFO)
   var process;
   var process2;
+  var process3;
+  var process4;
   var imuNumber='';
   var imuFilter='';
   var tempData='';
   var counter= 5;
 
+  Future<void> formatUsb(updateState) async {
+    pushUnitResponse(0,"Formatting started",updateState);
+    final url = Uri.parse('http://192.168.12.1:/cgi-bin/usb-format');
+    try {
+      final response = await http.get(url);
+      var error = response.statusCode == 200
+          ? response.body
+          : 'Error: ${response.statusCode}';
+      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState);
+      responseUsb(updateState);
+    } catch (e) {
+      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState);
+    }
+    finally {updateState();}
+  }
+
+  Future<void> responseUsb(updateState) async {
+    final url = Uri.parse('http://192.168.12.1:/cgi-bin/usb-status');
+    try {
+      final response = await http.get(url);
+      print(response.toString().length);
+      var error = response.statusCode == 200
+          ? response.body
+          : 'Error: ${response.statusCode}';
+      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState);
+      if(response.toString().length > 15){
+        pushUnitResponse(1,"Formatting complete",updateState);
+      }
+    } catch (e) {
+      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState);
+    }
+    finally {updateState();}
+  }
 
   runGetUnitImu(updateState){
     print("------- runGetUnitImu");
@@ -153,6 +173,10 @@ class TestClass {
   }
 
   Future<void> getImu(Function updateState) async {
+    process2=null;
+    process3=null;
+    process4=null;
+    process=null;
     if ( counter == 0) {
       imuNumber='Not identified';
       imuFilter='Not identified';
@@ -211,6 +235,7 @@ class TestClass {
             pushUnitResponse(3,"Unit is not connected",updateState);
             await deleteTempKeyFile();
             print('Command failed with exit code: $exitCode');
+            //// restart!!
           }
         } finally {}} else {}
     }
@@ -223,7 +248,7 @@ class TestClass {
       print("--------------------------------------------------getImu   2  ");
       try {
         Future.delayed(Duration(seconds: 2), () async {
-          process2=null;
+
           process2 = await Process.start(
             plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"],
@@ -250,23 +275,21 @@ class TestClass {
           process2 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-          process2 = await Process.start(
+          process3 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-          process2 = await Process.start(
+          process3 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-          process2 = await Process.start(
+          process4 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-          process2 = await Process.start(
+          process4 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-          process2 = await Process.start(
+          process4 = await Process.start(
               plinkPath,
               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-
-
           /////
           process2 = await Process.start(
               plinkPath,
@@ -283,11 +306,10 @@ class TestClass {
 
 
           Future.delayed(Duration(seconds: 1), () async {
-            // await deleteTempKeyFile();
-            // await process2.kill();
-            // await process.kill();
-            String result = _processUnitResponse(tempData).replaceAll('\n', '').replaceAll(' ', '');
-            print('================== BYTE search ====================== \n${tempData}');
+
+          String result = _processUnitResponse(tempData).replaceAll('\n', '').replaceAll(' ', '');
+
+            print('================== Result search ==================== \n${result}');
             String stringBytes = tempData
                 .replaceAllMapped(RegExp(r'^\S+\s+([\da-fA-F\s]+)\s+\|.*\|$', multiLine: true), (match) {
               return match.group(1)?.replaceAll(RegExp(r'\s{2,}'), ' ').trim() ?? '';
@@ -331,7 +353,7 @@ class TestClass {
                 updateState();
               });
             }
-            if(counter == 0){
+            else if(counter == 0){
               print('============ Counter 0 = $counter');
               pushUnitResponse(2,"Not all data collected, please reboot the unit",updateState);
               deleteTempKeyFile();
@@ -359,6 +381,8 @@ class TestClass {
             await deleteTempKeyFile();
             print('========== TEST  $tempData');
             await process2.kill();
+            await process3.kill();
+            await process4.kill();
             await process.kill();
 
           });
