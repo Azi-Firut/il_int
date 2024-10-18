@@ -15,9 +15,8 @@ class TestScreen extends StatefulWidget {
 }
 
 class TestScreenState extends State<TestScreen> {
-  final TestClass _testManager = TestClass();
-  final DeviceFix _deviceFixFunctionKit = DeviceFix();
-  final Production _productionFunctionKit = Production();
+
+  final TestClass _testClassKit = TestClass();
 
   @override
   void initState() {
@@ -31,105 +30,34 @@ class TestScreenState extends State<TestScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.grey,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButton<String>(
-              hint: Text("Select Brand"),
-              value: _deviceFixFunctionKit.selectedBrand,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _deviceFixFunctionKit.selectedBrand = newValue;
-                });
-              },
-              items: _deviceFixFunctionKit.brandsList.map((String brand) {
-                return DropdownMenuItem<String>(
-                  value: brand,
-                  child: Text(brand),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _deviceFixFunctionKit.changeBrand(updateState);
+                await _testClassKit.runGetUnitImu(updateState);
               },
-              child: Text('Change Brand'),
-            ),
-            Text(_deviceFixFunctionKit.outputBrand),
-            //SizedBox(height: 20),
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     await _deviceManager.addCustomSSiD(updateState);
-            //   },
-            //   child: Text('Rename SSid'),
-            // ),
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     await _deviceManager.restoreWpaSSid(updateState);
-            //   },
-            //   child: Text('Restore SSid default'),
-            // ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _deviceFixFunctionKit.deleteCalibration(updateState);
-              },
-              child: Text('Delete Calibration'),
-            ),
-            //Text(_deviceManager.outputCalibration),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _deviceFixFunctionKit.checkCalibrationFile(updateState);
-              },
-              child: Text('Check Calibration File'),
-            ),
-            //Text(_deviceManager.outputCalibration),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _deviceFixFunctionKit.restoreCalibration(updateState);
-              },
-              child: Text('Restore Calibration'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _productionFunctionKit.getDeviceInfo(updateState);
-              },
-              child: Text('Get device info'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _testManager.getImu(updateState);
-              },
-              child: Text('IMU'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _testManager.runUnit(updateState);
-              },
-              child: Text('run unit'),
-            ),
-            SizedBox(height: 20),
-///
-         //   FileListWidget(directoryPath: initialParamPath),
-///
-            Container(child: UnitResponse(),),
-            Container(color: Colors.redAccent,
-              child: Column(
-                children: [
-                 Text(_testManager.test),
-                //  Text(_testManager.outputCalibration2),
-                ],
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFAF7907),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                'Get Unit Information',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
               ),
             ),
+            /// OPERATION TEXT
+            const SizedBox(height: 20),
+            UnitResponse(),
+            const SizedBox(height: 20),
           ],
         ),
       ),

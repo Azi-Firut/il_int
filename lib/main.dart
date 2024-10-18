@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:il_int/screens/screen_switcher.dart';
 import 'package:il_int/widgets/menu_button.dart';
 import 'package:provider/provider.dart';
 
+import 'constant.dart';
 import 'models/data.dart';
 
 void main() {
@@ -64,7 +66,22 @@ class _LeftSideState extends State<LeftSide> {
   @override
   void initState() {
     super.initState();
+    // Запускаем функцию с интервалом в 5 секунд
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+      checkWifiConnect();
+    });
     _checkPermission();
+  }
+
+  void updateState() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    // Останавливаем таймер, когда виджет будет уничтожен
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkPermission() async {
@@ -87,6 +104,42 @@ class _LeftSideState extends State<LeftSide> {
       }
     } catch (e) {
       // Если возникла ошибка (например, нет доступа к URL), ничего не делаем и оставляем showButtons = true
+    }
+  }
+
+  String connectedSsid = '';
+  Timer? _timer;
+  Future<void> checkWifiConnect() async {
+    try {
+      // Execute 'netsh wlan show interfaces' to get the current WiFi connection details
+      ProcessResult result =
+      await Process.run('netsh', ['wlan', 'show', 'interfaces']);
+
+      if (result.exitCode == 0) {
+        // The command was successful, now process the output
+        String output = result.stdout;
+
+        // Look for the SSID line in the command output
+        RegExp ssidRegExp = RegExp(r"SSID\s*: (.+)");
+        Match? match = ssidRegExp.firstMatch(output);
+
+        if (match != null) {
+          String ssid = match.group(1)?.trim() ?? 'Unknown SSID';
+
+          setState(() {
+            connectedSsid = ssid;
+          });
+          updateState();
+        } else {
+          connectedSsid = 'Not connected';
+          updateState();
+
+        }
+      } else {
+        print('Error executing command: ${result.stderr}');
+      }
+    } catch (e) {
+      print('Error retrieving WiFi SSID: $e');
     }
   }
 
@@ -181,6 +234,14 @@ class _LeftSideState extends State<LeftSide> {
                 width: double.infinity,
                 color: const Color(0x1500A4FC),
               ),
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: SelectableText(connectedSsid,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFFA2A0A0),
+                  ),),
+              )
             ],
             WindowTitleBarBox(child: MoveWindow()),
             Expanded(child: Container())
@@ -201,6 +262,10 @@ class RightSide extends StatefulWidget {
   @override
   _RightSideState createState() => _RightSideState();
 }
+
+
+
+
 
 class _RightSideState extends State<RightSide> {
   @override
@@ -278,6 +343,9 @@ class _WindowButtonsState extends State<WindowButtons> {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        SelectableText(version,style: const TextStyle(fontSize: 12,
+          color: Color(0xFF777777),
+        ),),
         MinimizeWindowButton(colors: buttonColors),
         appWindow.isMaximized
             ? RestoreWindowButton(

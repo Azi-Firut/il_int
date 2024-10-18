@@ -1,5 +1,5 @@
 import 'dart:ui';
-
+String version = 'v.0.8';
 Map unitResponse = {'step':null,'text':null};
 String keyPath = '';
 String dragAndDropMessage = "Select two files and drop here";

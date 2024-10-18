@@ -211,6 +211,7 @@ class DeviceFixScreenState extends State<DeviceFixScreen> {
             ),
           ),
         ),
+        const SizedBox(height: 20),
         UnitResponse(),
         // Padding(
         //   padding: const EdgeInsets.all(8.0),
