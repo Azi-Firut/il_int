@@ -1,6 +1,10 @@
 import 'dart:ui';
-String version = 'v.0.8';
+String version = 'v.1.1';
 Map unitResponse = {'step':null,'text':null};
+List<String> unitInfo=['','','',''];
+Map output = {"IMU SN: ":"","Brand: ":"","Password: ":"","SSID default: ":"","SSID now: ":"","Receiver: ":"","Reciever SN: ":"","Firmware: ":"","Lidar: ":"","IMU Filter: ":""};
+
+
 String keyPath = '';
 String dragAndDropMessage = "Select two files and drop here";
 Color textColorGray = Color(0xFFA9A9A9);

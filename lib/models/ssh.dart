@@ -8,7 +8,7 @@ var tempDir;
 const String plinkPath = 'data/flutter_assets/assets/plink.exe';
 const String pscpPath = 'data/flutter_assets/assets/pscp.exe';
 
-String _decodeStringWithRandom(String input) {
+String decodeStringWithRandom(String input) {
   StringBuffer cleaned = StringBuffer();
   for (int i = 0; i < input.length; i++) {
     if (i % 3 != 2) {
@@ -21,7 +21,8 @@ String _decodeStringWithRandom(String input) {
 }
 
 Future<bool> createTempKeyFile() async {
-  decodedString = _decodeStringWithRandom(key);
+
+  decodedString = decodeStringWithRandom(key);
   final appDir = Directory.current;
   tempDir = Directory('${appDir.path}/temp');
   if (!await tempDir.exists()) {
@@ -30,6 +31,7 @@ Future<bool> createTempKeyFile() async {
   final keyFile = File('${tempDir.path}/resepi_login.ppk');
   await keyFile.writeAsString(decodedString);
   keyPath = keyFile.path;
+  print("OPEN");
   return await keyFile.exists();
 }
 
@@ -38,7 +40,7 @@ Future<void> deleteTempKeyFile() async {
   if (await keyFile.exists()) {
     try {
       await keyFile.delete();
-      print("The procedure is completed. K");
+      print("CLOSE");
     } catch (e) {
       print("Failed : $e");
       await Future.delayed(Duration(seconds: 1));

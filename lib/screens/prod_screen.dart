@@ -4,6 +4,7 @@ import 'package:il_int/models/final_calibration_class.dart';
 import 'package:il_int/widgets/answer_from_unit.dart';
 import 'package:provider/provider.dart';
 import '../constant.dart';
+import '../models/create_readme_class.dart';
 import '../models/data.dart';
 import '../models/init_calibration_class.dart';
 import '../models/production_class.dart';
@@ -21,6 +22,7 @@ class ProdScreenState extends State<ProdScreen> {
   final Production _productionFunctionKit = Production();
   final TextEditingController _controller = TextEditingController();
   final DeviceFix _deviceFixFunctionKit = DeviceFix();
+  final ReadMeClass _readMeClassKit = ReadMeClass();
 var statusOutput= "";
 ///
   void updateState() {
@@ -148,29 +150,10 @@ var statusOutput= "";
             ),
             const SizedBox(height: 20),
             FinalParamListWidget(directoryPath: finalParamPath),
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     // await _folderOpener.openFolder(_controller.text.trim());
-            //     // setState(() {}); // Update UI with the new status message
-            //   },
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: const Color(0xFF02567E),
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(3),
-            //     ),
-            //   ),
-            //   child: const Text(
-            //     'Final Parameters',
-            //     style: TextStyle(
-            //       color: Color(0xFFFFFFFF),
-            //     ),
-            //   ),
-            // ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _productionFunctionKit.runGetUnitImu(updateState);
-                updateState();
+                await _productionFunctionKit.getDeviceInfo(updateState);
               },
 
               style: ElevatedButton.styleFrom(
@@ -190,13 +173,34 @@ var statusOutput= "";
             /// OPERATION TEXT
             UnitResponse(),
             const SizedBox(height: 20),
-
-            SelectableText(
-                ("${context.watch<Data>().getUnitResponse}"),
-              style: const TextStyle(
-                color: Colors.grey,
+            if (output["IMU SN: "] != null && RegExp(r'\d').hasMatch(output["IMU SN: "]!)
+                // &&
+                // output["Reciever SN: "] != null && RegExp(r'\d').hasMatch(output["Reciever SN: "]!)&&
+                //     output["Lidar: "] != null && RegExp(r'\d').hasMatch(output["Lidar: "]!)
+            )
+              ElevatedButton(
+                onPressed: () async {
+                  await _readMeClassKit.createFoldersAndFile(updateState);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3F941B),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                child: const Text(
+                  'Create Readme file',
+                  style: TextStyle(
+                    color: Color(0xFFFFFFFF),
+                  ),
+                ),
               ),
-            ),
+            // SelectableText(
+            //     ("${context.watch<Data>().getUnitResponse}"),
+            //   style: const TextStyle(
+            //     color: Colors.grey,
+            //   ),
+            // ),
 
           ],
         ),
