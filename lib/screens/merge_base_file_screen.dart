@@ -19,17 +19,128 @@ class _MergeBaseFilesState extends State<MergeBaseFiles> {
   late XFile firstDrag;
   late XFile secondDrag;
   final List<XFile> listX = [];
+  String dragAndDropMessage = "Drop files or folder of yor project here ";
+  var nextCopyPath = '';
+
+  void processFolder(filePath) async {
+    final folderPath = filePath;
+    final folderName = folderPath.split(Platform.pathSeparator).last;
+
+    // Извлекаем дату и время из названия папки
+    final regex = RegExp(r'\d{4}-\d{2}-\d{2}-\d{2}');
+    final match = regex.firstMatch(folderName);
+    if (match == null) {
+      setState(() {
+        dragAndDropMessage = "Date and time not found in folder name ";
+      });
+      return;
+    }
+
+    final dateTimeString = match.group(0)!;
+    final dateParts = dateTimeString.split('-');
+
+    final year = dateParts[0];
+    final month = dateParts[1];
+    final day = dateParts[2];
+    final hour = dateParts[3];
+
+    // Путь к папке RTCM3_BL_East
+    final targetBasePath = 'N:\\RTCM3_BL_East\\$year\\$month\\$day';
+    final targetDir = Directory(targetBasePath);
+
+    if (!await targetDir.exists()) {
+      setState(() {
+        dragAndDropMessage = "Destination folder not found: $targetBasePath";
+      });
+      return;
+    }
+
+    // Ищем нужный файл в целевой папке
+    final targetFileName = 'bl-$year-$month-$day-$hour-00.bin';
+    final files = targetDir.listSync();
+
+    File? targetFile;
+    File? nextFile;
+    bool foundTarget = false;
+
+    for (var file in files) {
+      if (file is File && file.path.contains(targetFileName)) {
+        targetFile = file;
+        foundTarget = true;
+      } else if (foundTarget && file is File) {
+        nextFile = file;
+        break;
+      }
+    }
+
+    if (targetFile == null) {
+      setState(() {
+        dragAndDropMessage = "Could not find file: $targetFileName";
+      });
+      return;
+    }
+
+    // Копируем файлы в папку data внутри исходной папки
+    final dataDir = Directory('${folderPath}\\data');
+    if (!await dataDir.exists()) {
+      await dataDir.create();
+    }
+
+    final targetCopyPath = '${dataDir.path}\\${targetFile.path.split(Platform.pathSeparator).last}';
+    await targetFile.copy(targetCopyPath);
+    setState(() {
+      dragAndDropMessage = "File copied: ${targetCopyPath}";
+    });
+
+    // Объединяем файлы в один с названием basefile
+    final baseFile = File('${dataDir.path}\\basefile');
+    final baseSink = baseFile.openWrite();
+
+    // Записываем содержимое targetCopyPath
+    await File(targetCopyPath).openRead().pipe(baseSink);
+
+    if (nextFile != null) {
+      nextCopyPath = '';
+      nextCopyPath = '${dataDir.path}\\${nextFile.path.split(Platform.pathSeparator).last}';
+      await nextFile.copy(nextCopyPath);
+      listX.add(XFile(targetCopyPath));
+      listX.add(XFile(nextCopyPath));
+      merge();
+
+
+      setState(() {
+        dragAndDropMessage += "\nFile copied: ${nextCopyPath}";
+      });
+
+      // Записываем содержимое nextCopyPath
+      await File(nextCopyPath).openRead().pipe(baseSink);
+    } else {
+      ///
+      //закидуем адреса двух файлов драг енд дроп
+
+
+      setState(() {
+        dragAndDropMessage += "\n______________________________________";
+      });
+    }
+
+    // Закрываем поток записи
+    await baseSink.close();
+
+    setState(() {
+      dragAndDropMessage += "\nThe files are merged into ${baseFile.path}.";
+    });
+  }
 
   Future<void> merge() async {
     if (listX.length == 2) {
       var slot0 = listX[0].name.split("-");
       slot0.removeLast();
       var slot0Val = int.parse(slot0[slot0.length - 1]);
-      //
       var slot1 = listX[1].name.split("-");
       slot1.removeLast();
       var slot1Val = int.parse(slot1[slot1.length - 1]);
-      //
+
       if (slot0Val < slot1Val) {
         firstDrag = listX[0];
         secondDrag = listX[1];
@@ -37,23 +148,19 @@ class _MergeBaseFilesState extends State<MergeBaseFiles> {
         firstDrag = listX[1];
         secondDrag = listX[0];
       }
-      //
+
       print('--------  ${slot0Val}');
       print('--------  ${slot0Val.runtimeType}');
     }
 
-    /// Path splitter
     String outputPath = listX[0].path;
     List<String> putiy = outputPath.split("\\");
     putiy.removeLast();
     putiy.add('basefile');
     var directoryPath = putiy.join("/");
 
-    /// Log
-    // print('--------  ${slot0.runtimeType}');
     print('Output directory --------  ${directoryPath}');
 
-    /// Merger
     final result = await cat(
         [firstDrag.path, secondDrag.path], File(directoryPath).openWrite());
     if (result.isFailure) {
@@ -67,23 +174,24 @@ class _MergeBaseFilesState extends State<MergeBaseFiles> {
   Widget build(BuildContext context) {
     return DropTarget(
       onDragDone: (detail) async {
-        setState(() {
-          listX.addAll(detail.files);
-          if (listX.length > 2) {
-            listX.clear();
+        setState(() async {
+          listX.clear(); // Clear previous files
+          for (final file in detail.files) {
+            if (await FileSystemEntity.isDirectory(file.path)) {
+              processFolder(file.path);
+          debugPrint('You have dropped a folder: ${file.path}');
+          } else {
+          listX.add(file);
+          debugPrint('${file.name}\n'
+          '${file.path}\n'
+          '${file.readAsBytes().toString()}\n'
+          '${detail.files}\n');
+          }
           }
           if (listX.length == 2) {
-            merge();
+          merge();
           }
         });
-
-        debugPrint('onDragDone:');
-        for (final file in detail.files) {
-          debugPrint('${file.name}\n'
-              '${file.path}\n'
-              '${file.readAsBytes().toString()}\n'
-              '${detail.files}\n');
-        }
       },
       onDragUpdated: (details) {
         setState(() {
@@ -109,7 +217,6 @@ class _MergeBaseFilesState extends State<MergeBaseFiles> {
       },
       child: Container(
         height: MediaQuery.of(context).size.height - 32,
-        //  width: windowW,
         color: _dragging ? Color(0xF00A4FC) : Colors.transparent,
         child: Stack(
           children: [

@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:il_int/screens/screen_switcher.dart';
 import 'package:il_int/widgets/menu_button.dart';
 import 'package:provider/provider.dart';
-
+import '../constant.dart';
 import 'constant.dart';
 import 'models/data.dart';
 
@@ -107,7 +107,7 @@ class _LeftSideState extends State<LeftSide> {
     }
   }
 
-  String connectedSsid = '';
+  //connectedSsid = '';
   Timer? _timer;
   Future<void> checkWifiConnect() async {
     try {
@@ -209,6 +209,7 @@ class _LeftSideState extends State<LeftSide> {
                 text: "Engineering",
                 onPress: 5,
               ),
+              ///
               Container(
                 height: 1,
                 width: double.infinity,
@@ -219,6 +220,7 @@ class _LeftSideState extends State<LeftSide> {
                 text: "Test",
                 onPress: 99,
               ),
+              ///
               // Container(
               //   height: 1,
               //   width: double.infinity,

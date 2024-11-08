@@ -87,6 +87,52 @@ class Intro extends StatelessWidget {
                 ),
               ],
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(right: 12.0),
+                  child: Icon(
+                    Icons.developer_board,
+                    color: textColorGray,
+                    size: 18,
+                  ),
+                ),
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Text(
+                    "Tools for production department (chain of procedure before unit will be shipped).",
+                    style: TextStyle(
+                      color: textColorGray,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(right: 12.0),
+                  child: Icon(
+                    Icons.handyman_rounded,
+                    color: textColorGray,
+                    size: 18,
+                  ),
+                ),
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Text(
+                    "Programmatic installation of unit components.",
+                    style: TextStyle(
+                      color: textColorGray,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

@@ -22,14 +22,33 @@ class ReadMeClass {
 
   createFoldersAndFile(updateState) async {
 
+    String gnss=unitInfo[3];
+    String model="RESEPI";
     String imu=unitInfo[1];
     String lidar=unitInfo[2];
     String supplier=unitInfo[0].trim();
-    String gnss=unitInfo[3];
+    String supplierName=supplier;
+    String brand=supplier;
+
+    if(unitInfo[0].trim()=='RECON'){
+      supplierName="PHOENIX";
+      brand="PHOENIX";
+      model="RECON-XT";
+    }else if(unitInfo[0].trim()=='RESEPI'){
+      supplierName="Inertial Labs";
+      brand="RESEPI";
+      model="RESEPI";
+    }else if(unitInfo[0].trim()=='WINGTRA'){
+      supplierName="WINGTRA";
+      brand="WINGTRA";
+      model="Wingtra LIDAR";
+    }else(){};
+
+
     print ('createFoldersAndFile -- unitInfo \n$unitInfo');
     // Путь к основной папке
     String basePath = 'N:/!Factory_calibrations_and_tests/RESEPI';
-    String supplierFolderPath = '$basePath/$supplier';
+    String supplierFolderPath = '$basePath/$brand';
 
     // Проверяем, существует ли папка для поставщика, если нет, создаем её
     Directory supplierDirectory = Directory(supplierFolderPath);
@@ -38,7 +57,7 @@ class ReadMeClass {
     }
 
     // Путь к папке "Тест"
-    String testFolderPath = '$supplierFolderPath\\$supplier-$imu';
+    String testFolderPath = '$supplierFolderPath\\$brand-$imu';
     Directory testDirectory = Directory(testFolderPath);
     if (!await testDirectory.exists()) {
       await testDirectory.create(recursive: true);
@@ -52,14 +71,14 @@ class ReadMeClass {
     }
 
     // Путь к текстовому файлу
-    String filePath = '$testFolderPath\\$supplier-$imu.txt';
+    String filePath = '$testFolderPath\\$brand-$imu.txt';
     File file = File(filePath);
 
     // Содержание файла
     String fileContent = '''
-Supplier:      $supplier
+Supplier:      $supplierName    ( Inertial Labs )
 Unit SN:       ??????
-Model:         ??????         ( RESEPI , RECON-XT , RESEPI GEN2 , FLIGHTS Scan , Wingtra LIDAR ) 
+Model:         $model         ( RESEPI , RECON-XT , RESEPI GEN2 , FLIGHTS Scan , Wingtra LIDAR ) 
 Build Number:  ??????
 Motherboard:   9V; up to 45V
 IMU:           $imu

@@ -101,7 +101,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   Future<void> restartUnit() async {
     if (await createTempKeyFile()) {
       print('Рестарт');
-           pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState);
+           pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState:updateState);
       updateState();
       try {
         var processRestartUnit = await Process.start(
@@ -114,7 +114,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
         });
       } catch (e) {}
       finally {
-        pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState);
+        pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState:updateState);
         updateState();
       }
     }
@@ -158,7 +158,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   // }
 
   void uploadFinalToUnit(List<String> lines) async {
-    pushUnitResponse(0,"The procedure started11111",updateState);
+    pushUnitResponse(0,"The procedure started11111",updateState:updateState);
     updateState();
        if (await lines.isNotEmpty) {
            if (await createTempKeyFile()) {
@@ -232,12 +232,15 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
           var exitCode = await process.exitCode;
           print('Process exited with code $exitCode');
           if(exitCode == 1){
-            pushUnitResponse(2,"Failed to upload final parameters:\ncheck all conditions before start",updateState);
+            pushUnitResponse(2,"Failed to upload final parameters:\ncheck all conditions before start",updateState:updateState);
             updateState();
           }else if(exitCode == 0){
-            pushUnitResponse(1,"Final parameters uploaded",updateState);
+            pushUnitResponse(1,"Final parameters uploaded",updateState:updateState);
             updateState();
-            restartUnit();
+            await Future.delayed(Duration(seconds: 1), () async {
+              restartUnit();
+            });
+
             process.kill();
           }
           else{
@@ -248,7 +251,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
           await deleteTempKeyFile();
         }
       } else {
-        pushUnitResponse(2,"Procedure failed",updateState);
+        pushUnitResponse(2,"Procedure failed",updateState:updateState);
         updateState();
       }
     }else{
@@ -256,25 +259,25 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   }
 
   void uploadFile() {
-    pushUnitResponse(0,"The procedure started1",updateState);
+    pushUnitResponse(0,"The procedure started1",updateState:updateState);
   //  updateState();
     if (_selectedFile != null) {
-      pushUnitResponse(0,"The procedure started2",updateState);
+      pushUnitResponse(0,"The procedure started2",updateState:updateState);
    //   updateState();
       parseFinalTxt(_selectedFile);
-      pushUnitResponse(0,"The procedure started3",updateState);
+      pushUnitResponse(0,"The procedure started3",updateState:updateState);
    //   updateState();
       setState(() {
         _files.clear(); // Очищаем список файлов
         _selectedFile = null; // Сбрасываем выбор файла
         _showFileList = false; // Скрываем список
-        pushUnitResponse(0,"The procedure started4",updateState);
+        pushUnitResponse(0,"The procedure started4",updateState:updateState);
     //    updateState();
        });
-      pushUnitResponse(0,"The procedure started5",updateState);
+      pushUnitResponse(0,"The procedure started5",updateState:updateState);
      // updateState();
     } else {
-      pushUnitResponse(3,"Parameter file not selected",updateState);
+      pushUnitResponse(3,"Parameter file not selected",updateState:updateState);
    // updateState();
     }
   }
@@ -367,7 +370,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
                               onPressed: () {
                                 // Загружаем выбранный файл
                                 uploadFile();
-                                pushUnitResponse(0,"The procedure started",updateState);
+                                pushUnitResponse(0,"The procedure started",updateState:updateState);
                                // updateState();
                                 Navigator.of(context).pop(); // Закрываем диалог
                               },

@@ -48,7 +48,6 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
       setState(() {
         _files = [];
       });
-      context.read<Data>().pushResponse("Directory does not exist");
       print('Directory does not exist');
     }
   }
@@ -59,8 +58,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
       final file = File(path);
       return await file.readAsString();
     } catch (e) {
-      context.read<Data>().pushResponse("File does not exist");
-      return 'Ошибка при чтении файла.';
+      return 'Fail to read file';
     }
   }
 
@@ -94,8 +92,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
         print(line);
       }
     } catch (e) {
-      context.read<Data>().pushResponse("Error read file");
-      print('Ошибка при чтении файла: $e');
+      pushUnitResponse(2,"Fail to read file");
     }
   }
 
@@ -135,18 +132,18 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
         print('Ошибка при чтении файла: $e');
     }
   }
-void trowToGui(step,text)async{
-   await pushUnitResponse(step,text,updateState);
-}
+// void trowToGui(step,text)async{
+//     pushUnitResponse(step,text,updateState);
+// }
 
   void uploadInitialToUnit(List<String> lines) async {
 
-    pushUnitResponse(0,"The procedure started",updateState);
+    pushUnitResponse(0,"The procedure started",updateState:updateState);
     updateState();
-    trowToGui(0, "TEST");
+    //trowToGui(0, "TEST");
 
     if (await lines.isNotEmpty) {
-      pushUnitResponse(0,"The procedure started",updateState);
+      pushUnitResponse(0,"The procedure started",updateState:updateState);
       updateState();
       if (await createTempKeyFile()) {
         try {
@@ -171,7 +168,7 @@ void trowToGui(step,text)async{
 
           Future<void> restartUnit() async {
             if (await createTempKeyFile()) {
-              pushUnitResponse(1,"Initial parameters uploaded\nThe unit will be rebooted",updateState);
+              pushUnitResponse(1,"Initial parameters uploaded\nThe unit will be rebooted",updateState:updateState);
               updateState();
               try {
                 var processRestartUnit = await Process.start(
@@ -207,14 +204,13 @@ void trowToGui(step,text)async{
           // Вывод стандартной ошибки процесса
           process.stderr.transform(SystemEncoding().decoder).listen((data) {
             print('stderr: $data');
-            context.read<Data>().pushResponse(data);
           });
 
           // Ожидание завершения процесса
           var exitCode = await process.exitCode;
           print('Process exited with code $exitCode');
           if(exitCode == 1){
-            pushUnitResponse(2,"Failed to upload initial parameters:\ncheck all conditions before start",updateState);
+            pushUnitResponse(2,"Failed to upload initial parameters:\ncheck all conditions before start",updateState:updateState);
             updateState();
           }else{
             restartUnit();
@@ -225,7 +221,7 @@ void trowToGui(step,text)async{
          await deleteTempKeyFile();
         }
       } else {
-        pushUnitResponse(2,"Procedure failed",updateState);
+        pushUnitResponse(2,"Procedure failed",updateState:updateState);
         updateState();
       }
     }else{
@@ -241,7 +237,7 @@ void trowToGui(step,text)async{
         _showFileList = false; // Скрываем список
      });
     } else {
-      context.read<Data>().pushResponse("Parameter file not selected");
+      pushUnitResponse(3,"Parameter file is not selected");
       print('Файл не выбран');
     }
   }

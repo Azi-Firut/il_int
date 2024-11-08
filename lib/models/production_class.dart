@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:il_int/models/ssh.dart';
+import 'package:il_int/models/zip.dart';
 import 'package:il_int/widgets/answer_from_unit.dart';
 import 'package:path/path.dart' as p;
 import 'package:process_run/shell.dart';
@@ -33,6 +34,9 @@ class Production {
   var tempDir;
   var pathToUnitFolder;
   var pathToPPK;
+  var bDir;
+  var bAdr;
+
   //--
   var process;
   var process2;
@@ -91,16 +95,16 @@ class Production {
 
   Future<void> openFolder(String folderName,updateState) async {
     if (folderName.isEmpty) {
-      pushUnitResponse(3,"Please enter a part of folder name",updateState);
+      pushUnitResponse(3,"Please enter a part of folder name",updateState:updateState);
       updateState();
       return;
     }
-    pushUnitResponse(0,"Searching for the folder",updateState);
+    pushUnitResponse(0,"Searching for the folder",updateState:updateState);
     updateState();
     String? folderPath = await searchUserFolders(folderName);
     pathToUnitFolder = folderPath;
     //print('pathToUnitFolder = $pathToUnitFolder');
-    pushUnitResponse(1,"Folder opened successfully",updateState);
+    pushUnitResponse(1,"Folder opened successfully",updateState:updateState);
     updateState();
     if (folderPath == null) {
       folderPath = await searchFolderInIsolate(SearchParams(Directory('ftpPath'), folderName));
@@ -116,7 +120,7 @@ class Production {
         // statusOutput = 'Error opening the folder: $e';
       }
     } else {
-      pushUnitResponse(2,"Folder not found",updateState);
+      pushUnitResponse(2,"Folder not found",updateState:updateState);
       updateState();
     }
   }
@@ -129,26 +133,26 @@ class Production {
       if (await createTempKeyFile()) {
         final shell = Shell();
         final name = '\"\'"$newSSiDname"\'\" #our_ssid';
-        pushUnitResponse(0,"Procedure started",updateState);
+        pushUnitResponse(0,"Procedure started",updateState:updateState);
         updateState();
         try {
           await shell.run('''
        ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && sed -i 's/^ssid=\".*\"/ssid=$name/' wpa_supplicant-wlan0.conf && exit"
         ''');
-          pushUnitResponse(1,"SSID successfully updated",updateState);
+          pushUnitResponse(1,"SSID successfully updated",updateState:updateState);
           updateState();
         } catch (e) {
-          pushUnitResponse(2,"Failed to update SSID:\ncheck all conditions before start",updateState);
+          pushUnitResponse(2,"Failed to update SSID:\ncheck all conditions before start",updateState:updateState);
           updateState();
         } finally {
           await deleteTempKeyFile();
         }
       } else {
-        pushUnitResponse(2,"Procedure failed",updateState);
+        pushUnitResponse(2,"Procedure failed",updateState:updateState);
         updateState();
       }
     }else{
-      pushUnitResponse(3,"Add new SSID to top string",updateState);
+      pushUnitResponse(3,"Add new SSID to top string",updateState:updateState);
       updateState();
     }
   }
@@ -165,6 +169,7 @@ class Production {
     appDirectory = Directory.current.path;
     print('Il_int work directory => $appDirectory');
     var _address = await address;
+    print('addres to folder => $appDirectory');
     unitNum = p.basename(_address).split('_').last;
     Directory dir = Directory(_address);
     File? targetTxtFile;
@@ -198,7 +203,7 @@ class Production {
       await runPythonScript(jsonData, updateState);
     } else {
       print('Text file not found.');
-      pushUnitResponse(3,"No data found, enter the unit number",updateState);
+      pushUnitResponse(3,"No data found, enter the unit number",updateState:updateState);
       updateState();
     }
   }
@@ -213,11 +218,11 @@ class Production {
       var copiedExcelFile = File(copiedExcelFilePath);
       await copiedExcelFile.writeAsBytes(bytes);
       print('Excel file has been copied to $saveDirectory');
-      pushUnitResponse(1,"ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx Created",updateState);
+      pushUnitResponse(1,"ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx Created",updateState:updateState);
       updateState();
     } else {
       print('Excel file not found.');
-      pushUnitResponse(2,"Error:\ncan\'t find the ATC template",updateState);
+      pushUnitResponse(2,"Error:\ncan\'t find the ATC template",updateState:updateState);
       updateState();
     }
   }
@@ -231,12 +236,15 @@ class Production {
       if (result.exitCode == 0) {
         print('Python script executed successfully.');
         print('Output: ${result.stdout}');
-        pushUnitResponse(1,"ATC_${listContentTxt[0]}-${listContentTxt[1]}.pdf Created",updateState);
+        pushUnitResponse(1,"ATC_${listContentTxt[0]}-${listContentTxt[1]}.pdf Created",updateState:updateState);
+        /// Zip
+        zipCompress(bDir.path.toString(),bAdr.toString());
+        /// Zip end
         updateState();
       } else {
         print('Python script execution failed.');
         print('Error: ${result.stderr}');
-        pushUnitResponse(2,"Error:\n${result.stderr}",updateState);
+        pushUnitResponse(2,"Error:\n${result.stderr}",updateState:updateState);
         updateState();
       }
     } catch (e) {
@@ -249,8 +257,13 @@ class Production {
     print('== 2 parsePpkFiles');
     Directory boresightDir = Directory(p.join(baseAddress, 'Boresight\\'));
     print('== 2 parsePpkFiles boresight dir => $boresightDir');
-
+    bDir=boresightDir;
+    bAdr=baseAddress;
     if (await boresightDir.exists()) {
+      // /// Zip
+      // print("000000 ${boresightDir.path}\n000000 ${baseAddress}");
+      // zipCompress(boresightDir.path.toString(),baseAddress.toString());
+      // /// Zip end
       await for (var entity in boresightDir.list(recursive: false)) {
         print('== 2 $entity');
         if (entity is Directory) {
@@ -315,6 +328,7 @@ class Production {
 
         }
       }
+
     } else {
       print('Boresight directory not found.');
     }
@@ -405,6 +419,10 @@ class Production {
       print(jsonMap);
       lidarSerialNumber = jsonMap['Body']['SN'];
       lidarModel = jsonMap['Body']['Model'];
+      if(jsonMap['Body']['Model']=='Pandar_ZYNQ'){
+        lidarModel = "Hesai XT32";
+        jsonMap['Body']['Model']='Hesai XT32';
+      }
 
       unitInfo[2]="${jsonMap['Body']['Model']} ${jsonMap['Body']['SN']}";
       updateState();
@@ -423,7 +441,7 @@ class Production {
       print(output);
       pushUnitResponse(0,output.entries
           .map((entry) => "${entry.key}${entry.value}")
-          .join('\n'),updateState);
+          .join('\n'),updateState:updateState);
       try {
         // Получаем IMU
         output["IMU SN: "] = "${imuNumber}";
@@ -477,7 +495,7 @@ class Production {
         // unitInfo[2]=lidarSerialNumber;
 
       } catch (e) {
-        pushUnitResponse(2,"Fail: check all conditions before start",updateState);
+        pushUnitResponse(2,"Fail: check all conditions before start",updateState:updateState);
       } finally {
         await deleteTempKeyFile();
       }
@@ -485,11 +503,11 @@ class Production {
       // Обновляем состояние только после завершения всей операции
       pushUnitResponse(1,output.entries
           .map((entry) => "${entry.key}${entry.value}")
-          .join('\n'),updateState);
+          .join('\n'),updateState:updateState);
       runGetUnitImu(updateState);
       updateState();
     } else {
-      pushUnitResponse(2,"Procedure failed",updateState);
+      pushUnitResponse(2,"Procedure failed",updateState:updateState);
       updateState();
     }
   }
@@ -498,17 +516,17 @@ class Production {
 
 
   Future<void> formatUsb(updateState) async {
-    pushUnitResponse(0,"Formatting started",updateState);
+    pushUnitResponse(0,"Formatting started",updateState:updateState);
     final url = Uri.parse('http://192.168.12.1:/cgi-bin/usb-format');
     try {
       final response = await http.get(url);
       var error = response.statusCode == 200
           ? response.body
           : 'Error: ${response.statusCode}';
-      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState);
+      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState:updateState);
       responseUsb(updateState);
     } catch (e) {
-      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState);
+      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState:updateState);
     }
     finally {updateState();}
   }
@@ -521,12 +539,12 @@ class Production {
       var error = response.statusCode == 200
           ? response.body
           : 'Error: ${response.statusCode}';
-      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState);
+      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState:updateState);
       if(response.toString().length > 15){
-        pushUnitResponse(1,"Formatting complete",updateState);
+        pushUnitResponse(1,"Formatting complete",updateState:updateState);
       }
     } catch (e) {
-      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState);
+      pushUnitResponse(2,'Error: There is no connection to the unit or there is no USB drive',updateState:updateState);
     }
     finally {updateState();}
   }
@@ -539,7 +557,7 @@ class Production {
 
     pushUnitResponse(1,output.entries
         .map((entry) => "${entry.key}${entry.value}")
-        .join('\n'),updateState);
+        .join('\n'),updateState:updateState);
     getImu(updateState);
     updateState();
   }
@@ -604,7 +622,7 @@ class Production {
       output["IMU SN: "] = "Not identified";
       pushUnitResponse(3,output.entries
           .map((entry) => "${entry.key}${entry.value}")
-          .join('\n'),updateState);
+          .join('\n'),updateState:updateState);
 
     }
     else if ( counter != 0) {
@@ -745,7 +763,7 @@ class Production {
 
             pushUnitResponse(3,output.entries
                 .map((entry) => "${entry.key}${entry.value}")
-                .join('\n'),updateState);
+                .join('\n'),updateState:updateState);
             //pushUnitResponse(3,"Unit is not connected",updateState);
             await deleteTempKeyFile();
             print('Command failed with exit code: $exitCode');
@@ -884,13 +902,13 @@ class Production {
           print('Найдено: 83 01 - следующее значение 00');
           pushUnitResponse(1,output.entries
               .map((entry) => "${entry.key}${entry.value}")
-              .join('\n'),updateState);
+              .join('\n'),updateState:updateState);
           updateState();
         } if (bytes[i + 2] != '00') {
           output["IMU Filter: "] = "Wrong";
           pushUnitResponse(1,output.entries
               .map((entry) => "${entry.key}${entry.value}")
-              .join('\n'),updateState);
+              .join('\n'),updateState:updateState);
           print('Найдено: 83 01 - следующее не 00');
           updateState();
         }
@@ -910,7 +928,7 @@ class Production {
 
       pushUnitResponse(1,output.entries
           .map((entry) => "${entry.key}${entry.value}")
-          .join('\n'),updateState);;
+          .join('\n'),updateState:updateState);;
 
       decrementCounter(updateState);
       await runUnit(updateState);
@@ -928,7 +946,7 @@ class Production {
 
       pushUnitResponse(1,output.entries
           .map((entry) => "${entry.key}${entry.value}")
-          .join('\n'),updateState);
+          .join('\n'),updateState:updateState);
       updateState();
       //pushUnitResponse(2,"Not all data collected, please reboot the unit",updateState);
       await deleteTempKeyFile();
@@ -940,7 +958,7 @@ class Production {
       unitInfo[1]=number.toString();
       pushUnitResponse(1,output.entries
           .map((entry) => "${entry.key}${entry.value}")
-          .join('\n'),updateState);
+          .join('\n'),updateState:updateState);
       updateState();
       print('Найден номер IMU 1: ${number}');
       // await getDeviceInfo(updateState);
@@ -952,7 +970,7 @@ class Production {
         unitInfo[1]=number.toString();
         pushUnitResponse(1,output.entries
             .map((entry) => "${entry.key}${entry.value}")
-            .join('\n'),updateState);
+            .join('\n'),updateState:updateState);
         updateState();
         print('Найден номер IMU 2: ${number}');
         // await getDeviceInfo(updateState);
@@ -975,7 +993,7 @@ class Production {
   Future<void> uploadCalibration(Function updateState) async {
     if (await createTempKeyFile()) {
       final shell = Shell();
-      pushUnitResponse(0,"Procedure started",updateState);
+      pushUnitResponse(0,"Procedure started",updateState:updateState);
       updateState();
       String output = "";
       try {
@@ -993,16 +1011,16 @@ class Production {
         await shell.run('''${pscpPath} -i "$keyPath" -P 22 "$calibrationLaserPath" root@192.168.12.1:/etc/payload/boresight''');
         await shell.run('''${pscpPath} -i "$keyPath" -P 22 "$calibrationCameraPath" root@192.168.12.1:/etc/payload/cameras''');
 
-        pushUnitResponse(1,"Boresight file copied successfully",updateState);
+        pushUnitResponse(1,"Boresight file copied successfully",updateState:updateState);
         shell.kill();
       } catch (e) {
-        pushUnitResponse(2,"Failed to copy calibration file: check all conditions before start",updateState);
+        pushUnitResponse(2,"Failed to copy calibration file: check all conditions before start",updateState:updateState);
         } finally {
         await deleteTempKeyFile();
       }
 
     } else {
-      pushUnitResponse(2,"Procedure failed",updateState);
+      pushUnitResponse(2,"Procedure failed",updateState:updateState);
 
     }
     updateState();
@@ -1012,9 +1030,9 @@ class Production {
     print("=========== unit folder $_unitFolder");
 
     await parseBoresight(_unitFolder);
-    pushUnitResponse(0,"Searching data files",updateState);
+    pushUnitResponse(0,"Searching data files",updateState:updateState);
     if (_unitFolder == "N:\\!Factory_calibrations_and_tests\\RESEPI\\") {
-      pushUnitResponse(3,"Enter Unit SN",updateState);
+      pushUnitResponse(3,"Enter Unit SN",updateState:updateState);
       updateState();
     }
 

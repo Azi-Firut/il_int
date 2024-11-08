@@ -55,6 +55,7 @@ dependencies:
   ssh2: ^2.2.3
   #logger: ^1.1.0
   xml: ^6.5.0
+  archive: ^3.3.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -96,6 +97,7 @@ flutter:
     - assets/wifi_search/_internal/
     - assets/fill_atc/
     - assets/fill_atc/fill_xlsx.exe
+    - assets/fill_atc/_internal/
     - assets/fill_atc/atc_template/
     - assets/fill_atc/atc_template/logo_img_atc/
     - assets/wpa_supplicant-default.conf
