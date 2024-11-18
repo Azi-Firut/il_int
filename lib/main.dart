@@ -210,16 +210,16 @@ class _LeftSideState extends State<LeftSide> {
                 onPress: 5,
               ),
               ///
-              Container(
-                height: 1,
-                width: double.infinity,
-                color: const Color(0x1500A4FC),
-              ),
-              const CustomTextButton(
-                icon: Icons.tips_and_updates_outlined,
-                text: "Test",
-                onPress: 99,
-              ),
+              // Container(
+              //   height: 1,
+              //   width: double.infinity,
+              //   color: const Color(0x1500A4FC),
+              // ),
+              // const CustomTextButton(
+              //   icon: Icons.tips_and_updates_outlined,
+              //   text: "Test",
+              //   onPress: 99,
+              // ),
               ///
               // Container(
               //   height: 1,

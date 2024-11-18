@@ -99,6 +99,8 @@ flutter:
     - assets/fill_atc/fill_xlsx.exe
     - assets/fill_atc/_internal/
     - assets/fill_atc/atc_template/
+    - assets/fill_atc/atc_template/ATC_TEMP_32.xlsx
+    - assets/fill_atc/atc_template/ATC_TEMP_64.xlsx
     - assets/fill_atc/atc_template/logo_img_atc/
     - assets/wpa_supplicant-default.conf
     - assets/wpa_supplicant-wlan0.conf

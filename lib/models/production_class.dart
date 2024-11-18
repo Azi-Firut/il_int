@@ -159,7 +159,7 @@ class Production {
   /// ADD CUSTOM SSID END
 
   /// ATC GENERATOR
-  void parseFolder(address, updateState) async {
+  void generateAtc(address, updateState) async {
     listContentTxt = [];
     mapListContent = {};
     lidarOffsetsList = [];
@@ -222,7 +222,7 @@ class Production {
       updateState();
     } else {
       print('Excel file not found.');
-      pushUnitResponse(2,"Error:\ncan\'t find the ATC template",updateState:updateState);
+      pushUnitResponse(2,"Error: can\'t find the ATC template \n$saveDirectory\n$file",updateState:updateState);
       updateState();
     }
   }
@@ -238,7 +238,9 @@ class Production {
         print('Output: ${result.stdout}');
         pushUnitResponse(1,"ATC_${listContentTxt[0]}-${listContentTxt[1]}.pdf Created",updateState:updateState);
         /// Zip
-        zipCompress(bDir.path.toString(),bAdr.toString());
+        if (zip){zipCompress(bDir.path.toString(),bAdr.toString(),updateState);
+        pushUnitResponse(0,"ATC_${listContentTxt[0]}-${listContentTxt[1]}.pdf Created\nCreating ZIP file started",updateState: updateState);
+        }
         /// Zip end
         updateState();
       } else {
@@ -676,7 +678,16 @@ class Production {
               print("GET IMU STARTED part 2  ");
 
               Future.delayed(Duration(seconds: 2), () async {
-
+                /// Imu 210
+                process2 = await Process.start(
+                  plinkPath,
+                  ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x07\\x00\\xfe\\x05\\x01' >/dev/ttymxc3"],
+                );
+                process2 = await Process.start(
+                  plinkPath,
+                  ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x07\\x00\\x12\\x19\\x00' >/dev/ttymxc3"],
+                );
+                ///
                 process2 = await Process.start(
                   plinkPath,
                   ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"],

@@ -13,7 +13,10 @@ import 'data.dart';
 class InitialParamListWidget extends StatefulWidget {
   final String directoryPath;
 
-  const InitialParamListWidget({Key? key, required this.directoryPath}) : super(key: key);
+  final Function recolState;
+
+
+  const InitialParamListWidget({Key? key, required this.directoryPath, required this.recolState}) : super(key: key);
 
   @override
   _InitialParamListWidgetState createState() => _InitialParamListWidgetState();
@@ -92,7 +95,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
         print(line);
       }
     } catch (e) {
-      pushUnitResponse(2,"Fail to read file");
+      pushUnitResponse(2,"Fail to read file",updateState: widget.recolState);
     }
   }
 
@@ -138,12 +141,12 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
 
   void uploadInitialToUnit(List<String> lines) async {
 
-    pushUnitResponse(0,"The procedure started",updateState:updateState);
+    pushUnitResponse(0,"The procedure started",updateState: widget.recolState);
     updateState();
     //trowToGui(0, "TEST");
 
     if (await lines.isNotEmpty) {
-      pushUnitResponse(0,"The procedure started",updateState:updateState);
+      pushUnitResponse(0,"The procedure started",updateState: widget.recolState);
       updateState();
       if (await createTempKeyFile()) {
         try {
@@ -168,7 +171,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
 
           Future<void> restartUnit() async {
             if (await createTempKeyFile()) {
-              pushUnitResponse(1,"Initial parameters uploaded\nThe unit will be rebooted",updateState:updateState);
+              pushUnitResponse(1,"Initial parameters uploaded\nThe unit will be rebooted",updateState: widget.recolState);
               updateState();
               try {
                 var processRestartUnit = await Process.start(
@@ -210,18 +213,18 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
           var exitCode = await process.exitCode;
           print('Process exited with code $exitCode');
           if(exitCode == 1){
-            pushUnitResponse(2,"Failed to upload initial parameters:\ncheck all conditions before start",updateState:updateState);
+            pushUnitResponse(2,"Failed to upload initial parameters:\ncheck all conditions before start",updateState: widget.recolState);
             updateState();
           }else{
             restartUnit();
             process.kill();
           }
-        } catch (e) {
+        } catch (e) { pushUnitResponse(2,"Procedure failed\n$e",updateState: widget.recolState);
         } finally {
          await deleteTempKeyFile();
         }
       } else {
-        pushUnitResponse(2,"Procedure failed",updateState:updateState);
+        pushUnitResponse(2,"Procedure failed",updateState: widget.recolState);
         updateState();
       }
     }else{
@@ -237,7 +240,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
         _showFileList = false; // Скрываем список
      });
     } else {
-      pushUnitResponse(3,"Parameter file is not selected");
+      pushUnitResponse(3,"Parameter file is not selected",updateState: widget.recolState);
       print('Файл не выбран');
     }
   }

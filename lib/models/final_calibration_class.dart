@@ -13,7 +13,9 @@ import 'data.dart';
 class FinalParamListWidget extends StatefulWidget {
   final String directoryPath;
 
-  const FinalParamListWidget({Key? key, required this.directoryPath}) : super(key: key);
+  final Function recolState;
+
+  const FinalParamListWidget({Key? key, required this.directoryPath,required this.recolState}) : super(key: key);
 
   @override
   _FinalParamListWidgetState createState() => _FinalParamListWidgetState();
@@ -47,7 +49,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
       setState(() {
         _files = [];
       });
-      context.read<Data>().pushResponse("Directory does not exist");
+
       print('Directory does not exist');
     }
   }
@@ -101,7 +103,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   Future<void> restartUnit() async {
     if (await createTempKeyFile()) {
       print('Рестарт');
-           pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState:updateState);
+           pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState:widget.recolState);
       updateState();
       try {
         var processRestartUnit = await Process.start(
@@ -114,7 +116,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
         });
       } catch (e) {}
       finally {
-        pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState:updateState);
+        pushUnitResponse(1,"Final parameters uploaded\nThe unit will be rebooted",updateState:widget.recolState);
         updateState();
       }
     }
@@ -158,7 +160,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   // }
 
   void uploadFinalToUnit(List<String> lines) async {
-    pushUnitResponse(0,"The procedure started11111",updateState:updateState);
+    pushUnitResponse(0,"The procedure started",updateState:widget.recolState);
     updateState();
        if (await lines.isNotEmpty) {
            if (await createTempKeyFile()) {
@@ -232,10 +234,10 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
           var exitCode = await process.exitCode;
           print('Process exited with code $exitCode');
           if(exitCode == 1){
-            pushUnitResponse(2,"Failed to upload final parameters:\ncheck all conditions before start",updateState:updateState);
+            pushUnitResponse(2,"Failed to upload final parameters:\ncheck all conditions before start",updateState:widget.recolState);
             updateState();
           }else if(exitCode == 0){
-            pushUnitResponse(1,"Final parameters uploaded",updateState:updateState);
+            pushUnitResponse(1,"Final parameters uploaded",updateState:widget.recolState);
             updateState();
             await Future.delayed(Duration(seconds: 1), () async {
               restartUnit();
@@ -251,7 +253,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
           await deleteTempKeyFile();
         }
       } else {
-        pushUnitResponse(2,"Procedure failed",updateState:updateState);
+        pushUnitResponse(2,"Procedure failed",updateState:widget.recolState);
         updateState();
       }
     }else{
@@ -259,25 +261,25 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   }
 
   void uploadFile() {
-    pushUnitResponse(0,"The procedure started1",updateState:updateState);
+    pushUnitResponse(0,"The procedure started",updateState:widget.recolState);
   //  updateState();
     if (_selectedFile != null) {
-      pushUnitResponse(0,"The procedure started2",updateState:updateState);
+      pushUnitResponse(0,"The procedure started",updateState:widget.recolState);
    //   updateState();
       parseFinalTxt(_selectedFile);
-      pushUnitResponse(0,"The procedure started3",updateState:updateState);
+      pushUnitResponse(0,"The procedure started",updateState:widget.recolState);
    //   updateState();
       setState(() {
         _files.clear(); // Очищаем список файлов
         _selectedFile = null; // Сбрасываем выбор файла
         _showFileList = false; // Скрываем список
-        pushUnitResponse(0,"The procedure started4",updateState:updateState);
+        pushUnitResponse(0,"The procedure started",updateState:widget.recolState);
     //    updateState();
        });
-      pushUnitResponse(0,"The procedure started5",updateState:updateState);
+      pushUnitResponse(0,"The procedure started",updateState:widget.recolState);
      // updateState();
     } else {
-      pushUnitResponse(3,"Parameter file not selected",updateState:updateState);
+      pushUnitResponse(3,"Parameter file not selected",updateState:widget.recolState);
    // updateState();
     }
   }

@@ -367,3 +367,74 @@
 //     );
 //   }
 // }
+
+import 'package:flutter/material.dart';
+import 'package:il_int/models/production_class.dart';
+
+class RadioZip extends StatefulWidget {
+  @override
+  _RadioZipState createState() => _RadioZipState();
+}
+
+class _RadioZipState extends State<RadioZip> {
+
+  bool _isSelectedCreateZip = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.only(left: 25,right: 5),
+        backgroundColor: const Color(0xFF02567E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(3),
+        ),
+      ),
+      onPressed: () {
+
+        // Оставляем пустым для переключения только на чекбоксе
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Center(
+            child: const Text('Create ATC and Boresight.zip',
+              style: TextStyle(
+                color: Color(0xFFFFFFFF),
+              ),),
+          ),
+          SizedBox(width: 10),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Checkbox(
+                value: _isSelectedCreateZip,
+                shape: CircleBorder(),
+                side: BorderSide(
+                  color: _isSelectedCreateZip ? Colors.transparent : Colors.grey,
+                  width: 2,
+                ),
+                activeColor: Colors.transparent, // Убираем стандартную заливку
+                checkColor: Colors.transparent, // Убираем стандартную галочку
+                onChanged: (value) {
+                  setState(() {
+                    _isSelectedCreateZip = value ?? false;
+                  });
+                },
+              ),
+              if (_isSelectedCreateZip)
+                Container(
+                  width: 15, // Размер цветного круга
+                  height: 15,
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Цвет заполненного круга
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

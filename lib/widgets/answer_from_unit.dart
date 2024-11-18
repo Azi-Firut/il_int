@@ -85,6 +85,7 @@ class UnitResponseState extends State<UnitResponse> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
