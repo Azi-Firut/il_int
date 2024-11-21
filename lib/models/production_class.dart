@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:il_int/models/html32.dart';
 import 'package:il_int/models/ssh.dart';
 import 'package:il_int/models/zip.dart';
 import 'package:il_int/widgets/answer_from_unit.dart';
@@ -159,16 +160,19 @@ class Production {
   /// ADD CUSTOM SSID END
 
   /// ATC GENERATOR
+  var _address;
+  var dateToday;
   void generateAtc(address, updateState) async {
     listContentTxt = [];
     mapListContent = {};
     lidarOffsetsList = [];
     filtersList = [];
+    _address = await address;
 
     print('========================= parseFolder');
     appDirectory = Directory.current.path;
     print('Il_int work directory => $appDirectory');
-    var _address = await address;
+
     print('addres to folder => $appDirectory');
     unitNum = p.basename(_address).split('_').last;
     Directory dir = Directory(_address);
@@ -190,7 +194,7 @@ class Production {
         int colonIndex = line.indexOf(':');
         return colonIndex != -1 ? line.substring(colonIndex + 1).trim() : line;
       }).toList();
-      DateTime dateToday = DateTime.now();
+      dateToday = DateTime.now();
       mapListContent =  mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,appDirectory,dateToday,ssidFromFolderName,ssidNumberFromFolderName);
 
       print('List strings from Readme.txt => $listContentTxt');
@@ -223,6 +227,7 @@ class Production {
     } else {
       print('Excel file not found.');
       pushUnitResponse(2,"Error: can\'t find the ATC template \n$saveDirectory\n$file",updateState:updateState);
+      htmlToPdf(_address, listContentTxt, lidarOffsetsList, appDirectory, dateToday, ssidFromFolderName, ssidNumberFromFolderName);
       updateState();
     }
   }

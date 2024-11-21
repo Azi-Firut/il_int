@@ -327,9 +327,9 @@ Map<String, String> mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,ap
       'I64': lidarOffsetsList.length > 33 ? '${lidarOffsetsList[35][1]}' : '',
       'J64': lidarOffsetsList.length > 33 ? '${lidarOffsetsList[35][2]}' : '',
 // Camera offsets
-      'J68': lidarOffsetsList.length > 35 ? '${lidarOffsetsList[36][0]}' : '',
-      'J69': lidarOffsetsList.length > 35 ? '${lidarOffsetsList[36][1]}' : '',
-      'J70': lidarOffsetsList.length > 35 ? '${lidarOffsetsList[36][2]}' : '',
+      'J68': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[36][0]}' : '',
+      'J69': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[36][1]}' : '',
+      'J70': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[36][2]}' : '',
       'J71': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[37][0]}' : '',
       'J72': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[37][1]}' : '',
       'J73': lidarOffsetsList.length > 36 ? '${lidarOffsetsList[37][2]}' : '',

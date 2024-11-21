@@ -56,6 +56,9 @@ dependencies:
   #logger: ^1.1.0
   xml: ^6.5.0
   archive: ^3.3.0
+  htmltopdfwidgets: ^1.0.4
+  flutter_full_pdf_viewer_null_safe: ^1.0.0
+  flutter_html_to_pdf: ^0.7.0
 
 
   # The following adds the Cupertino Icons font to your application.
