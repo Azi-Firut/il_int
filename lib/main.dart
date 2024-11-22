@@ -155,11 +155,28 @@ class _LeftSideState extends State<LeftSide> {
               color: const Color(0xFF1F1F1F),
               height: 31,
               child: const Center(
-                child: Text(
-                  "Inertial Labs internal",
-                  style: TextStyle(
-                    color: Color(0xFF777777),
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Inertial",
+                      style: TextStyle(
+                        color: Color(0xFF4E7DE2),
+                      ),
+                    ),
+                    Text(
+                      " Labs",
+                      style: TextStyle(
+                        color: Color(0xFFDE7D0B),
+                      ),
+                    ),
+                    Text(
+                      " internal",
+                      style: TextStyle(
+                        color: Color(0xFF777777),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
