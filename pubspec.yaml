@@ -38,7 +38,7 @@ dependencies:
   dcat: ^1.0.1
   cross_file: ^0.3.3+8
   drag_and_drop_windows: ^0.0.3
-  path_provider: ^2.0.15
+  #path_provider: ^2.0.15
   file_picker: ^6.2.0
   file_selector: ^1.0.3
   http: ^1.2.1
@@ -60,6 +60,8 @@ dependencies:
   htmltopdfwidgets: ^1.0.4
   flutter_full_pdf_viewer_null_safe: ^1.0.0
   flutter_html_to_pdf: ^0.7.0
+  syncfusion_flutter_xlsio: ^27.2.3
+  path_provider: ^2.1.5
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -93,7 +95,7 @@ flutter:
     - temp/
     - assets/
     - assets/plink.exe
-  # - assets/putty.exe
+    - assets/xlsx_to_pdf.exe
     - assets/pscp.exe
     - assets/open_folder/
     - assets/open_folder/_internal/
@@ -106,6 +108,18 @@ flutter:
     - assets/fill_atc/atc_template/ATC_TEMP_32.xlsx
     - assets/fill_atc/atc_template/ATC_TEMP_64.xlsx
     - assets/fill_atc/atc_template/logo_img_atc/
+    - assets/fill_atc/atc_template/logo_img_atc/Inertial Labs.png
+    - assets/Inertial Labs.png
+    - assets/FLIGHTS.png
+    - assets/MARSS.png
+    - assets/ML.png
+    - assets/PHOENIX.png
+    - assets/STONEX.png
+    - assets/TERSUS.png
+    - assets/TRIDAR.png
+    - assets/WINGTRA.png
+
+    #- assets/fill_atc/atc_template/logo_img_atc/Inertial Labs.png
     - assets/wpa_supplicant-default.conf
     - assets/wpa_supplicant-wlan0.conf
 

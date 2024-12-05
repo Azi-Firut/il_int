@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:il_int/models/html32.dart';
 import 'package:il_int/models/ssh.dart';
+import 'package:il_int/models/toXl32.dart';
+import 'package:il_int/models/toXl64.dart';
 import 'package:il_int/models/zip.dart';
 import 'package:il_int/widgets/answer_from_unit.dart';
 import 'package:path/path.dart' as p;
@@ -13,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
 
 import 'data.dart';
+import 'get_imu_val.dart';
 
 class Production {
   static final Production _instance = Production._internal();
@@ -52,6 +54,7 @@ class Production {
   var lidarSerialNumber='';
   var lidarModel='';
   var urlToLidar ='http://192.168.12.1:8001/pandar.cgi?action=get&object=device_info';
+  String xlsxPath = '';
 
   /// FOLDER SEARCHER
   Future<String?> searchFolderInIsolate(SearchParams params) async {
@@ -104,7 +107,7 @@ class Production {
     updateState();
     String? folderPath = await searchUserFolders(folderName);
     pathToUnitFolder = folderPath;
-    //print('pathToUnitFolder = $pathToUnitFolder');
+
     pushUnitResponse(1,"Folder opened successfully",updateState:updateState);
     updateState();
     if (folderPath == null) {
@@ -114,11 +117,9 @@ class Production {
       var shell = Shell();
       try {
         await shell.run('explorer "${p.normalize(folderPath)}"');
-       // pathToUnitFolder=("${p.normalize(folderPath)}");
-       // shell.kill();
-       // print('pathToUnitFolder = $pathToUnitFolder');
+
       } catch (e) {
-        // statusOutput = 'Error opening the folder: $e';
+
       }
     } else {
       pushUnitResponse(2,"Folder not found",updateState:updateState);
@@ -198,13 +199,44 @@ class Production {
       mapListContent =  mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,appDirectory,dateToday,ssidFromFolderName,ssidNumberFromFolderName);
 
       print('List strings from Readme.txt => $listContentTxt');
-      await copyExcelFile(targetTxtFile.parent.path, updateState);
-      // Serialize mapListContent to JSON and pass it to the Python script
-      String jsonData = jsonEncode(mapListContent);
+      print('List strings from Readme.txt => ${targetTxtFile.parent.path}');
 
 
-      // Fill exel file
-      await runPythonScript(jsonData, updateState);
+     // await Future.delayed(Duration(seconds: 1), () async {});
+
+      /// Generator xlsx
+
+      if (lidarOffsetsList.length < 50) {
+        print("lidarOffsetsList.length == ${lidarOffsetsList.length}");
+        final fetchDataBase = await getIMUcalVAl(listContentTxt[5]);
+       // print('=================== Fetch data final:\n ${fetchDataBase.runtimeType}');
+       await  generateExcel32(
+            targetTxtFile.parent.path,
+            _address,
+            listContentTxt,
+            lidarOffsetsList,
+            appDirectory,
+            dateToday,
+            ssidFromFolderName,
+            ssidNumberFromFolderName,fetchDataBase);
+      }else if (lidarOffsetsList.length > 50) {
+        print("lidarOffsetsList.length == ${lidarOffsetsList.length}");
+        final fetchDataBase = await getIMUcalVAl(listContentTxt[5]);
+        // print('=================== Fetch data final:\n ${fetchDataBase.runtimeType}');
+        await  generateExcel64(
+            targetTxtFile.parent.path,
+            _address,
+            listContentTxt,
+            lidarOffsetsList,
+            appDirectory,
+            dateToday,
+            ssidFromFolderName,
+            ssidNumberFromFolderName,fetchDataBase);
+      }
+
+      xlsxPath = '${targetTxtFile.parent.path}/ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx';
+
+      await runPythonScript(xlsxPath, updateState);
     } else {
       print('Text file not found.');
       pushUnitResponse(3,"No data found, enter the unit number",updateState:updateState);
@@ -212,32 +244,15 @@ class Production {
     }
   }
 
-  Future<void> copyExcelFile(String saveDirectory, updateState) async {
-    print('copyExcelFile');
-    var file = File(templatePath(lidarOffsetsList));
-    if (await file.exists()) {
-      var bytes = await file.readAsBytes();
-      var copiedExcelFilePath =
-      p.join(saveDirectory, 'ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx');
-      var copiedExcelFile = File(copiedExcelFilePath);
-      await copiedExcelFile.writeAsBytes(bytes);
-      print('Excel file has been copied to $saveDirectory');
-      pushUnitResponse(1,"ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx Created",updateState:updateState);
-      updateState();
-    } else {
-      print('Excel file not found.');
-      pushUnitResponse(2,"Error: can\'t find the ATC template \n$saveDirectory\n$file",updateState:updateState);
-      htmlToPdf(_address, listContentTxt, lidarOffsetsList, appDirectory, dateToday, ssidFromFolderName, ssidNumberFromFolderName);
-      updateState();
-    }
-  }
 
-  Future<void> runPythonScript(String jsonData, updateState) async {
-    print('runPythonScript');
-    // Assuming the exe file is located at 'assets/python_script.exe'
-    String pythonScriptPath = 'assets/fill_atc/fill_xlsx.exe';
+
+  Future<void> runPythonScript(String xlsxPath, updateState) async {
+
+    print('runPythonScript jsonData\n ${xlsxPath}');
+
+    String pythonScriptPath = 'data/flutter_assets/assets/xlsx_to_pdf.exe';
     try {
-      var result = await Process.run(pythonScriptPath, [jsonData]);
+      var result = await Process.run(pythonScriptPath, [xlsxPath]);
       if (result.exitCode == 0) {
         print('Python script executed successfully.');
         print('Output: ${result.stdout}');
@@ -790,108 +805,6 @@ class Production {
     }
   }
 
-
-  // Future<void> getImu2(Function updateState) async {
-  //
-  //   if (await createTempKeyFile()) {
-  //     print("GET IMU STARTED part 2  ");
-  //     try {
-  //       Future.delayed(Duration(seconds: 2), () async {
-  //
-  //         process2 = await Process.start(
-  //           plinkPath,
-  //           ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x09\\x00\\xff\\x57\\x09\\x68\\x01' >/dev/ttymxc3"],
-  //         );
-  //       });
-  //       Future.delayed(Duration(seconds: 3), () async {
-  //         process2 = await Process.start(
-  //           plinkPath,
-  //           ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "stty -F /dev/ttymxc3 921600"],
-  //         );
-  //       });
-  //       Future.delayed(Duration(seconds: 4), () async {
-  //         process2 = await Process.start(
-  //           plinkPath,
-  //           ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x02\\x04\\x0A\\x02\\x01\\x00\\x5D\\xFB' >/dev/ttymxc3"],
-  //         );
-  //         print("GET IMU STARTED part 2 (stop traffic)  ");
-  //
-  //         int exitCode = await process2.exitCode;
-  //
-  //         if (exitCode == 0 ){
-  //           print("GET IMU STARTED part 2 (call for imu number)  ");
-  //
-  //           process2 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-  //           print('1 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process2 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-  //           print('2 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process3 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-  //           print('3 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process3 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-  //           print('4 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process4 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-  //           print('5 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process4 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-  //           print('6 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process4 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x01\\x02\\x06\\x00\\x53\\x2D' >/dev/ttymxc3"]);
-  //           print('7 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           /////
-  //           process2 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x02\\x03\\x03\\x01\\x02\\x55\\x84' >/dev/ttymxc3"]);
-  //           print('8 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process2 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x02\\x03\\x03\\x01\\x02\\x55\\x84' >/dev/ttymxc3"]);
-  //           print('9 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process2 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x02\\x03\\x03\\x01\\x02\\x55\\x84' >/dev/ttymxc3"]);
-  //           print('10 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //           process2 = await Process.start(
-  //               plinkPath,
-  //               ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xA5\\xA5\\x02\\x03\\x03\\x01\\x02\\x55\\x84' >/dev/ttymxc3"]);
-  //           print('11 --- \n${tempData.length > 312 ? tempData.substring(tempData.length - 312) : tempData}');
-  //
-  //           int exitCode2 = await process2.exitCode;
-  //           int exitCode4 = await process4.exitCode;
-  //
-  //           if(exitCode2==0 && exitCode4==0){
-  //             getResultFromImuScan(updateState);
-  //             await deleteTempKeyFile();
-  //             // print('========== TEST  $tempData');
-  //             await process2.kill();
-  //             await process3.kill();
-  //             await process4.kill();
-  //             await process.kill();
-  //           }else{
-  //             await deleteTempKeyFile();
-  //             await runUnit(updateState);
-  //             await getDeviceInfo(updateState);
-  //             await process2.kill();
-  //             await process3.kill();
-  //             await process4.kill();
-  //             await process.kill();
-  //           }
-  //         }
-  //       });
-  //     } finally {}
-  //   }
-  // }
 
   getResultFromImuScan(updateState) async {
     // await deleteTempKeyFile();

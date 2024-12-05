@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'dart:ui';
-String version = 'v.1.8 (test)';
+String version = 'v.1.9 (test)';
 Map unitResponse = {'step':null,'text':null};
 List<String> unitInfo=['','','',''];
 Map output = {"IMU SN: ":"","Brand: ":"","Password: ":"","SSID default: ":"","SSID now: ":"","Receiver: ":"","Reciever SN: ":"","Firmware: ":"","Lidar: ":"","IMU Filter: ":""};
 bool zip = false;
-
-
 
 String keyPath = '';
 String dragAndDropMessage = "Select two files and drop here";
@@ -14,6 +12,7 @@ Color textColorGray = Color(0xFFA9A9A9);
 var titleText='';
 var hostKey ='';
 var connectedSsid = '';
+var extractedDataVal;
 
    // "ssh-ed25519 255 SHA256:0z+smqD1LNdbBqOoIjFhJWhoxuJFiDtctVLxyssNFYc"; //1
 // "ssh-ed25519 255 SHA256:yGWCAcgZRDEAEymGt1Kbe5GXRz3IXU+dQmdXp9mOtqc"; //2
@@ -23,28 +22,9 @@ const List keyGen2 =
 ["UHGVUCVFFktTVXZNlCciK1LYZXBktGRmJlsNZST0yBOiBBlVY2DRzFYSP1zFaGDEyGLWS5pOc3ERwFMjDU2CCkVVuKY3ZJ5BcHHRpCb2L46VIGK5vTbmUUKWQ2S9tTbWYVuRdDLogMUkYVTHRVWBJPClOB1LYmJxpVYyS1MMaWZ5lFczVogCMwSpBVQUDFBBRTXJWValApIRTmZhMCWEH5vGWVVRJIdGYJtDbHHpkWSEEF5BTlRRZXQUAFBAQUCliCbWXx6ZZEVhBOeUI5UGWUGFBXQUUJCMQkY5aMUmE02VM3UJoSRkAh4QCjIJELTlRFOHR3SUyYTnOhzSSDWhCJRlIBlDK0PthIUXGZoGc3OdTINDLQyFbUFJ5EVWWMrYUFCcrQMWAVuJaGXk3XdGEhLKcVSJhOckSY0KQmWxxPNGCJBINGLt2GTVTIKZWHVEvPWWYRmHcFNNMSMTMA9HClOByNaXNZhPdGWUtQTGUluZZXXM6KIDIEKVQUBFBMQUTlFUTjAE0DRUT42LQlXlLLSWY1ISR0ShiUOEUFrKaULR3JLzBY4KSUKFqDTnUFIUb0ZNBJYXMIrSbWMJiRTVId5PClDByGaXLZhVdGGUtWTUSFDKOiHAxGZGHI1MMmMIyBZDQY2XYjQYyBZDZVmFODSA5YZDZc4MMjVMzXNzUAyPOGBQyTMjAA4AYmTM2IMTNlkO","ssh-ed25519 255 SHA256:yGWCAcgZRDEAEymGt1Kbe5GXRz3IXU+dQmdXp9mOtqc"];
 
 const String ftpPath = "N:\\!Factory_calibrations_and_tests\\RESEPI\\";
-//String templateAtcPath = 'assets/fill_atc/atc_template/ATC_TEMP_32.xlsx';
 
 const String initialParamPath = 'N:/Manufacturing/05. RESEPI/parameter_configurations/il_int Calibration parameters/Initial';
 const String finalParamPath = 'N:/Manufacturing/05. RESEPI/parameter_configurations/il_int Calibration parameters/Final';
-/// Initial param vars
-// List<FileSystemEntity> files = [];
-// String? selectedFile; // Для хранения пути выбранного файла
-// bool showFileList = false; // Управляет показом списка файлов
-// var directoryPath = initialParamPath;
-///
-
-String templatePath(List<List<double>> lidarOffsetsList){
-  String template;
-  if(lidarOffsetsList.length>63){
-    template='assets/fill_atc/atc_template/ATC_TEMP_64.xlsx';
-    print('template ====== ${template}');
-  }else{template='assets/fill_atc/atc_template/ATC_TEMP_32.xlsx';
-  print('template ====== ${template}');
-  }
-  return template;
-
-}
 
 String addressToFolder = '';
 
@@ -53,7 +33,7 @@ const Map brandImagesAtc = {'WINGTRA':'\\assets\\fill_atc\\atc_template\\logo_im
   'MARSS':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\MARSS.png',
   'ML':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\ML.png',
   'PHOENIX':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\PHOENIX.png',
-  'Inertial Labs':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\RESEPI.png',
+  'Inertial Labs':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\Inertial Labs.png',
   'STONEX':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\STONEX.png',
   'TERSUS':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\TERSUS.png',
   'TRIDAR':'\\assets\\fill_atc\\atc_template\\logo_img_atc\\TRIDAR.png',
