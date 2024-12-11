@@ -131,6 +131,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:html/parser.dart' show parse;
 
 import '../constant.dart';
+import '../widgets/answer_from_unit.dart';
 
 
 
@@ -235,6 +236,7 @@ var pazuzu;
       }
     } catch (e) {
       print('Fetch data error: $e');
+      pushUnitResponse(2,e.toString());
     }
 
     return pazuzu; // Возвращаем itemsList в любом случае

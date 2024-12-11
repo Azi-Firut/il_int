@@ -24,7 +24,7 @@ class Engineering {
   ];
 
   String? selectedScanner;
-  String keyPath = '';
+
   String scanner = "";
   String calibrationPath = '';
 

@@ -196,7 +196,6 @@ class Production {
         return colonIndex != -1 ? line.substring(colonIndex + 1).trim() : line;
       }).toList();
       dateToday = DateTime.now();
-      mapListContent =  mapOffsetsForAtc(_address,listContentTxt,lidarOffsetsList,appDirectory,dateToday,ssidFromFolderName,ssidNumberFromFolderName);
 
       print('List strings from Readme.txt => $listContentTxt');
       print('List strings from Readme.txt => ${targetTxtFile.parent.path}');
@@ -919,12 +918,19 @@ class Production {
 
 
   /// UPLOAD CALIBRATION TO UNIT
+  ///
+  String host= "";
   Future<void> uploadCalibration(Function updateState) async {
     if (await createTempKeyFile()) {
       final shell = Shell();
       pushUnitResponse(0,"Procedure started",updateState:updateState);
       updateState();
-      String output = "";
+
+      if (await fetchTitle() == "RESEPI GEN-II"){
+        host=keyGen2[1];
+      }else{ host=keyGen1[1];}
+
+     // String output = "";
       try {
         const calibrationLaserPath = 'temp/boresight';
         const calibrationCameraPath = 'temp/cameras';
@@ -937,8 +943,12 @@ class Production {
         ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/payload/boresight"
         ''');
 
-        await shell.run('''${pscpPath} -i "$keyPath" -P 22 "$calibrationLaserPath" root@192.168.12.1:/etc/payload/boresight''');
-        await shell.run('''${pscpPath} -i "$keyPath" -P 22 "$calibrationCameraPath" root@192.168.12.1:/etc/payload/cameras''');
+
+        await shell.run('''${pscpPath} -batch -hostkey "$host" -i "$keyPath" -P 22 "$calibrationLaserPath" root@192.168.12.1:/etc/payload/boresight''');
+        await shell.run('''${pscpPath} -batch -hostkey "$host" -i "$keyPath" -P 22 "$calibrationCameraPath" root@192.168.12.1:/etc/payload/cameras''');
+
+      //  await shell.run('''${pscpPath} -batch -i "$keyPath" -P 22 "$calibrationLaserPath" root@192.168.12.1:/etc/payload/boresight''');
+      //  await shell.run('''${pscpPath} -i "$keyPath" -P 22 "$calibrationCameraPath" root@192.168.12.1:/etc/payload/cameras''');
 
         pushUnitResponse(1,"Boresight file copied successfully",updateState:updateState);
         shell.kill();
