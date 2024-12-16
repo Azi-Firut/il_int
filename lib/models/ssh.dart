@@ -21,7 +21,7 @@ Future<String?> fetchTitle() async {
     // Парсинг HTML
     var document = parse(response.body);
     var titleElement = document.getElementsByTagName('title').first;
-    print('получениe данных: ${titleElement.text}');
+    print('Работаем с : ${titleElement.text}');
     titleText = titleElement.text;
     return titleElement.text; // Вернет текст внутри <title>
   } else {

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
-String version = 'v.1.9 (test)';
+String version = 'v.2.0 (test)';
 Map unitResponse = {'step':null,'text':null};
 List<String> unitInfo=['','','',''];
 Map output = {"IMU SN: ":"","Brand: ":"","Password: ":"","SSID default: ":"","SSID now: ":"","Receiver: ":"","Reciever SN: ":"","Firmware: ":"","Lidar: ":"","IMU Filter: ":""};
