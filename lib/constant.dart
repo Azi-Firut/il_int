@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'dart:ui';
-String version = 'v.2.0 (test)';
+
+import 'package:il_int/models/usb_check.dart';
+String version = 'v.2.1 (beta)';
 Map unitResponse = {'step':null,'text':null};
 List<String> unitInfo=['','','',''];
 Map output = {"IMU SN: ":"","Brand: ":"","Password: ":"","SSID default: ":"","SSID now: ":"","Receiver: ":"","Reciever SN: ":"","Firmware: ":"","Lidar: ":"","IMU Filter: ":""};
 bool zip = false;
 
+var usbColChanger = Color(0xFF3D3D3D);
 String keyPath = '';
 String dragAndDropMessage = "Select two files and drop here";
 Color textColorGray = Color(0xFFA9A9A9);

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../constant.dart';
 import 'constant.dart';
 import 'models/data.dart';
+import 'models/usb_check.dart';
 
 void main() {
   appWindow.size = const Size(600, 800);
@@ -114,7 +115,7 @@ class _LeftSideState extends State<LeftSide> {
       // Execute 'netsh wlan show interfaces' to get the current WiFi connection details
       ProcessResult result =
       await Process.run('netsh', ['wlan', 'show', 'interfaces']);
-
+      usbColor();
       if (result.exitCode == 0) {
         // The command was successful, now process the output
         String output = result.stdout;

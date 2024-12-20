@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:il_int/models/device_fix_class.dart';
 import 'package:il_int/models/final_calibration_class.dart';
+import 'package:il_int/models/usb_check.dart';
 import 'package:il_int/widgets/answer_from_unit.dart';
 import 'package:provider/provider.dart';
 import '../constant.dart';
@@ -18,6 +19,7 @@ class ProdScreen extends StatefulWidget {
 }
 
 class ProdScreenState extends State<ProdScreen> {
+ //var usbColChanger ;
 
   final Production _productionFunctionKit = Production();
   final TextEditingController _controller = TextEditingController();
@@ -27,8 +29,12 @@ class ProdScreenState extends State<ProdScreen> {
   bool _isSelectedCreateZip = false;
   var statusOutput= "";
 ///
+  ///
+
+  ///
   void updateState() {
     setState(() {
+      usbColor();
       var test = unitResponse;
       test;
     });
@@ -154,7 +160,7 @@ class ProdScreenState extends State<ProdScreen> {
                 _productionFunctionKit.formatUsb(updateState);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC22B00),
+                backgroundColor: usbColChanger,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(3),
                 ),

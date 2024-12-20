@@ -4,7 +4,10 @@ import '../constant.dart';
 import 'package:il_int/models/data.dart';
 import 'package:provider/provider.dart';
 
+import '../models/usb_check.dart';
+
 void pushUnitResponse(int step, String text, {Function? updateState}) {
+  usbColor();
   unitResponse['step'] = step;
   print('pushUnitResponse ${unitResponse['step']}');
   unitResponse['text'] = text;
@@ -32,6 +35,7 @@ class UnitResponseState extends State<UnitResponse> {
 
   void updateState() {
     setState(() {
+      usbColor();
        recolStep = unitResponse['step'];
        recolText = unitResponse['text'];
     }); // Обновление состояния

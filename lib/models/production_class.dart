@@ -232,6 +232,7 @@ class Production {
             ssidFromFolderName,
             ssidNumberFromFolderName,fetchDataBase);
       }
+      pushUnitResponse(0,"ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx Created",updateState: updateState);
 
       xlsxPath = '${targetTxtFile.parent.path}/ATC_${listContentTxt[0]}-${listContentTxt[1]}.xlsx';
 
@@ -503,10 +504,14 @@ class Production {
         unitInfo[3] = "${parts[0]} ${parts[1]} ${parts.last}";
         print('receiver parts===\n$parts');
         var codeCheck ='';
-        if (parts[1] == 'OEM7720-1.01' && parts[2] == 'FDDRZNTBN'){
-          codeCheck ='CODE CORRECT';
-        }else if(parts[1] == 'OEM7720-1.01' && parts[2] != 'FDDRZNTBN'){codeCheck ='CODE WRONG !!!';}
-        else{codeCheck ='';}
+        if (parts[1].contains('OEM7720') && parts[2] == 'FDDRZNTBN') {
+          codeCheck = 'CODE CORRECT';
+        } else if (parts[1].contains('OEM7720') && parts[2] != 'FDDRZNTBN') {
+          codeCheck = 'CODE WRONG !!!';
+        } else {
+          codeCheck = '';
+        }
+
 
         output["Receiver: "] = "${parts[0]} ${parts[1]} $codeCheck";
         output["Reciever SN: "] = "${receiverNow.outText.split(' ').last}";
