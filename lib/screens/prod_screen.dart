@@ -155,25 +155,55 @@ class ProdScreenState extends State<ProdScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                _productionFunctionKit.formatUsb(updateState);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: usbColChanger,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    _productionFunctionKit.formatUsb(updateState);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: usbColChanger,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  child: const Text(
+                    'Format USB',
+                    style: TextStyle(
+                      color: Color(0xFFFFFFFF),
+                    ),
+                  ),
                 ),
-              ),
-              child: const Text(
-                'Format USB',
-                style: TextStyle(
-                  color: Color(0xFFFFFFFF),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await _productionFunctionKit.sendRecCommand(_controller.text,updateState);
+                      _controller.text="";
+                    },
+
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF532F98),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    child: const Text(
+                      'Upload GNSS code',
+                      style: TextStyle(
+                        color: Color(0xFFFFFFFF),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+
+              ],
+
             ),
             const SizedBox(height: 20),
             InitialParamListWidget(directoryPath: initialParamPath,recolState: updateState),
+           // FinalParamListWidget(directoryPath: finalParamPath,recolState: updateState),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
@@ -194,8 +224,8 @@ class ProdScreenState extends State<ProdScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            FinalParamListWidget(directoryPath: finalParamPath,recolState: updateState),
-            const SizedBox(height: 20),
+           FinalParamListWidget(directoryPath: finalParamPath,recolState: updateState),
+           const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 await _productionFunctionKit.getDeviceInfo(updateState);
@@ -215,6 +245,26 @@ class ProdScreenState extends State<ProdScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            /// Rec
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     await _productionFunctionKit.sendRecCommand(_controller.text,updateState);
+            //   },
+            //
+            //   style: ElevatedButton.styleFrom(
+            //     backgroundColor: const Color(0xFF532F98),
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(3),
+            //     ),
+            //   ),
+            //   child: const Text(
+            //     'Upload GNSS code',
+            //     style: TextStyle(
+            //       color: Color(0xFFFFFFFF),
+            //     ),
+            //   ),
+            // ),
+            //const SizedBox(height: 20),
             /// OPERATION TEXT
             UnitResponse(),
             const SizedBox(height: 20),

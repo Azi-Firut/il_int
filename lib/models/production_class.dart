@@ -56,6 +56,73 @@ class Production {
   var urlToLidar ='http://192.168.12.1:8001/pandar.cgi?action=get&object=device_info';
   String xlsxPath = '';
 
+  // Отправка команды приемнику
+  Future<void> sendRecCommand(String command,updateState) async {
+    print(command);
+    if (await command.isEmpty) {
+      pushUnitResponse(0, 'Enter the code in the top line',updateState: updateState);
+      print('Команда не должна быть пустой');
+      return;
+    }
+String comm='auth $command';
+    final url =
+        'http://192.168.12.1/cgi-bin/settings?sendreceivercommand:${comm.toString()}';
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('Команда успешно отправлена: $command');
+        //print('Ответ сервера: ${response.body}');
+        if(response.body.contains('<OK')){
+          pushUnitResponse(1, 'Codes installed successfully',updateState: updateState);
+        }else{pushUnitResponse(2, response.body,updateState: updateState); }
+
+
+        //getReceiverText(updateState);
+      } else {
+        print('Ошибка: ${response.statusCode}');
+        //print('Ответ сервера: ${response.body}');
+        pushUnitResponse(2, response.body,updateState: updateState);
+      }
+    } catch (e) {
+      print('Ошибка при отправке команды: $e');
+    }
+  }
+
+// // Получение текста от приемника
+//   Future<void> getReceiverText(updateState) async {
+//     const url = 'http://192.168.12.1/cgi-bin/settings?getreceivertext';
+//
+//     try {
+//       final response = await http.get(
+//         Uri.parse(url),
+//         headers: {
+//           'Cache-Control': 'no-cache',
+//           'Pragma': 'no-cache',
+//           'If-Modified-Since': 'Sat, 1 Jan 2000 00:00:00 GMT',
+//         },
+//       );
+//
+//       if (response.statusCode == 200) {
+//         print('Получен текст от приемника: ${response.body}');
+//         pushUnitResponse(1, response.body,updateState: updateState);
+//       } else {
+//         print('Ошибка: ${response.statusCode}');
+//         print('Ответ сервера: ${response.body}');
+//       }
+//     } catch (e) {
+//       print('Ошибка при получении текста: $e');
+//     }
+//   }
+
   /// FOLDER SEARCHER
   Future<String?> searchFolderInIsolate(SearchParams params) async {
     return compute(_searchFolder, params);
@@ -502,12 +569,15 @@ class Production {
 
         List<String> parts = receiverNow.outText.split(' ');
         unitInfo[3] = "${parts[0]} ${parts[1]} ${parts.last}";
-        print('receiver parts===\n$parts');
+        print('receiver parts ===\n$parts');
+        print('receiver code ===\n${parts[2]}');
         var codeCheck ='';
         if (parts[1].contains('OEM7720') && parts[2] == 'FDDRZNTBN') {
           codeCheck = 'CODE CORRECT';
         } else if (parts[1].contains('OEM7720') && parts[2] != 'FDDRZNTBN') {
           codeCheck = 'CODE WRONG !!!';
+        } else if (parts[2].contains('GSNNNNNNN')) {
+          codeCheck = 'CODE MISSING !!!';
         } else {
           codeCheck = '';
         }

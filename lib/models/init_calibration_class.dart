@@ -254,7 +254,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
           ElevatedButton(
             onPressed: _toggleFileList,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF02567E),
+              backgroundColor: const Color(0xFF023E5D),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(3),
               ),
