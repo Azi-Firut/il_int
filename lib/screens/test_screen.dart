@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:il_int/models/device_fix_class.dart';
+import 'package:il_int/models/production_class.dart';
 import 'package:il_int/models/test_class2.dart';
 
 import 'package:il_int/models/test_class_widget.dart';
@@ -22,7 +23,7 @@ class TestScreen extends StatefulWidget {
 
 class TestScreenState extends State<TestScreen> {
 
-  final TestGen2 _productionFunctionKit = TestGen2();
+  final Production _productionFunctionKit = Production();
   final TextEditingController _controller = TextEditingController();
   final ReadMeClass _readMeClassKit = ReadMeClass();
 
@@ -83,6 +84,7 @@ class TestScreenState extends State<TestScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 await _productionFunctionKit.runUnit(updateState);
@@ -96,6 +98,25 @@ class TestScreenState extends State<TestScreen> {
               ),
               child: const Text(
                 'Run',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+              //  await _productionFunctionKit.uploadAtcToUnit(updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5B5B5B),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                'Atc menu',
                 style: TextStyle(
                   color: Color(0xFFFFFFFF),
                 ),

@@ -1401,7 +1401,130 @@ String comm='auth $command';
   }
 
 /// UPLOAD CALIBRATION TO UNIT END
-///
+
+/// ADD ATC TO UNIT
+  ///
+  /// FOLDER SEARCHER
+  Future<String?> searchFolderInIsolateATC(SearchParams params) async {
+    return compute(_searchFolderATC, params);
+  }
+  var folderPathAtc='';
+  var atcName="";
+  static Future<String?> _searchFolderATC(SearchParams params) async {
+    try {
+      final queue = <Directory>[params.dir];
+      while (queue.isNotEmpty) {
+        final currentDir = queue.removeAt(0);
+        final List<FileSystemEntity> entities = currentDir.listSync();
+        for (var entity in entities) {
+          if (entity is Directory) {
+            if (p.basename(entity.path).toLowerCase().contains(params.folderName.toLowerCase())) {
+              return entity.path;
+            }
+            queue.add(entity);
+          }
+        }
+      }
+    } on FileSystemException catch (e) {
+      print("Error during directory search: ${e.message}");
+    } catch (e) {
+      print("An error occurred: $e");
+    }
+    return null;
+  }
+
+  Future<String?> searchUserFoldersATC(String folderName) async {
+    List<Directory> searchDirs = [
+      Directory('N:\\!Factory_calibrations_and_tests\\RESEPI\\'),
+      Directory('N:\\Discrepancy_Reporting\\Quality Notices\\'),
+    ];
+    for (Directory dir in searchDirs) {
+      String? folderPathAtc = await searchFolderInIsolateATC(SearchParams(dir, folderName));
+      if (folderPathAtc != null) {
+        return folderPathAtc;
+      }
+    }
+    return null;
+  }
+
+  Future<String?> findPdfInFolder(String folderPathAtc) async {
+    try {
+      final directory = Directory(folderPathAtc);
+      final List<FileSystemEntity> entities = directory.listSync();
+      for (var entity in entities) {
+        if (entity is File && p.extension(entity.path).toLowerCase() == '.pdf') {
+          return p.basename(entity.path); // Возвращаем имя PDF файла
+        }
+      }
+    } on FileSystemException catch (e) {
+      print("Error during file search: ${e.message}");
+    } catch (e) {
+      print("An error occurred: $e");
+    }
+    return null; // Если PDF файл не найден
+  }
+
+  Future<void> findFolder(String folderName, updateState) async {
+    if (folderName.isEmpty) {
+      pushUnitResponse(3, "Please enter a part of folder name", updateState: updateState);
+      updateState();
+      return;
+    }
+    pushUnitResponse(0, "Searching for the folder", updateState: updateState);
+    updateState();
+    folderPathAtc = (await searchUserFoldersATC(folderName))!;
+
+    if (folderPathAtc != null) {
+      pushUnitResponse(1, "Folder found successfully", updateState: updateState);
+      atcName= (await findPdfInFolder(folderPathAtc))!;
+      updateState();
+    } else {
+      pushUnitResponse(2, "Folder not found", updateState: updateState);
+      updateState();
+    }
+  }
+
+  /// FOLDER SEARCHER END
+
+  ///
+  Future<void> uploadAtcToUnit(folderName,Function updateState) async {
+    if (await createTempKeyFile()) {
+      final shell = Shell();
+      pushUnitResponse(0,"Procedure started",updateState:updateState);
+      updateState();
+      //var atcPdfPath = '$pathToUnitFolder/ATC_${listContentTxt[0]}-${listContentTxt[1]}.pdf';
+      print ('pathToUnitFolder == $pathToUnitFolder');
+      if (await fetchTitle() == "RESEPI GEN-II"){
+        host=keyGen2[1];
+      }else{ host=keyGen1[1];}
+      try {
+        await findFolder(folderName,updateState);
+
+        await shell.run('''
+    ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /srv/www && mount -o remount,rw / && sed -i '/LiDAR Service/a <a href=\"img/$atcName\" id=\"Geometry\" target=\"_blank\">Calibration Certificate</a>' /var/volatile/srv/www/index.html"
+''');
+        Future.delayed(Duration(seconds: 1), () async {
+          await shell.run(
+              '''${pscpPath} -hostkey "$host" -i "$keyPath" -P 22 "$folderPathAtc/${atcName.toString()}" root@192.168.12.1:/var/volatile/srv/www/img/${atcName.toString()}''');
+        });
+        pushUnitResponse(1,"ATC file copied to the unit",updateState:updateState);
+        Future.delayed(Duration(seconds: 3), () async {
+        shell.kill();
+        await deleteTempKeyFile();
+      });
+      } catch (e) {
+        pushUnitResponse(2,"Failed to copy ATC to the unit",updateState:updateState);
+      } finally {
+
+      }
+
+    } else {
+      pushUnitResponse(2,"Procedure failed",updateState:updateState);
+
+    }
+    updateState();
+  }
+
 ///
 ///
 ///

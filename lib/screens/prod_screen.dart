@@ -228,6 +228,26 @@ class ProdScreenState extends State<ProdScreen> {
            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
+                await _productionFunctionKit.uploadAtcToUnit(_controller.text.trim(), updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F6E77),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                'Upload ATC to Unit',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+
                 await _productionFunctionKit.getDeviceInfo(updateState);
               },
 
@@ -268,11 +288,7 @@ class ProdScreenState extends State<ProdScreen> {
             /// OPERATION TEXT
             UnitResponse(),
             const SizedBox(height: 20),
-            if (output["IMU SN: "] != null && RegExp(r'\d').hasMatch(output["IMU SN: "]!)
-                // &&
-                // output["Reciever SN: "] != null && RegExp(r'\d').hasMatch(output["Reciever SN: "]!)&&
-                //     output["Lidar: "] != null && RegExp(r'\d').hasMatch(output["Lidar: "]!)
-            )
+            if (output["IMU SN: "] != null && RegExp(r'\d').hasMatch(output["IMU SN: "]!))
               ElevatedButton(
                 onPressed: () async {
                   await _readMeClassKit.createFoldersAndFile(updateState);

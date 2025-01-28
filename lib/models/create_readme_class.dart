@@ -35,7 +35,7 @@ class ReadMeClass {
       brand="PHOENIX";
       model="RECON-XT";
     }else if(unitInfo[0].trim()=='RESEPI'){
-      supplierName="Inertial Labs";
+      supplierName="InertialLabs";
       brand="RESEPI";
       model="RESEPI";
     }else if(unitInfo[0].trim()=='WINGTRA'){

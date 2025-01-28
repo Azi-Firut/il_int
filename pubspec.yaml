@@ -110,6 +110,7 @@ flutter:
     - assets/fill_atc/atc_template/logo_img_atc/
     - assets/fill_atc/atc_template/logo_img_atc/Inertial Labs.png
     - assets/Inertial Labs.png
+    - assets/InertialLabs.png
     - assets/FLIGHTS.png
     - assets/MARSS.png
     - assets/ML.png
