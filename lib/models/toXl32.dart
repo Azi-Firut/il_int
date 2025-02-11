@@ -15,7 +15,7 @@ import 'get_imu_val.dart';
     //Creating a workbook.
     final Workbook workbook = Workbook();
     //Accessing via index
-    print("lidarOffsetsList[4].length==== ${lidarOffsetsList[4].length}");
+  //  print("lidarOffsetsList[4].length==== ${lidarOffsetsList[4].length}");
     final Worksheet sheet = workbook.worksheets[0];
     sheet.pageSetup.fitToPagesWide = 1;
     sheet.pageSetup.topMargin=0;
@@ -102,7 +102,7 @@ sheet.name="Calibration Certificate";
 
     sheet.getRangeByName('E4:J13').merge();
     // Загружаем изображение из assets
-   // print("Image data from toXL32 \n $appDirectory\n${brandImagesAtc['${listContentTxt[0]}']}");
+    print("Image data from toXL32 \n $appDirectory\n${brandImagesAtc['${listContentTxt[0]}']}");
    final ByteData imageData = await rootBundle.load('assets/${listContentTxt[0]}.png');
     final Uint8List imageBytes = imageData.buffer.asUint8List();
 

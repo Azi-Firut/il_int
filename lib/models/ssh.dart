@@ -57,7 +57,7 @@ Future<bool> createTempKeyFile() async {
   await getVersion();
   print("$titleText");
  // titleText = await getVersion();
-if(await titleText == "RESEPI GEN-II") {
+if(await titleText == "RESEPI GEN-II" || titleText == "FLIGHTS GEN-II") {
   print('K2');
   var key = keyGen2;
   decodedString = decodeStringWithRandom(key[0]);

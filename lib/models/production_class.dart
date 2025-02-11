@@ -194,7 +194,25 @@ String comm='auth $command';
     }
   }
   /// FOLDER SEARCHER END
+  Future<void>runGhost(newSSiDname)async{
+    try{
+      if (await createTempKeyFile()) {
+        final shell = Shell();
+        final result =
+        await shell.run('''
+         $plinkPath -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${newSSiDname!.toUpperCase()}' > /etc/hostname && exit"
+        ''');
+      print(result.map((e) => e.stdout + e.stderr).join('\n'));
+        // pushUnitResponse(1,"SSID successfully updated",updateState:updateState);
+        // updateState();
+      }
+    }
+        catch(e){
+      print("runGhost == $e");
+        }
+  finally{await deleteTempKeyFile();}
 
+}
   /// ADD CUSTOM SSID
   Future<void> addCustomSSiD(newSSiDname,Function updateState) async {
     if (await newSSiDname.toString().isNotEmpty) {
@@ -208,13 +226,40 @@ String comm='auth $command';
           await shell.run('''
        ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && sed -i 's/^ssid=\".*\"/ssid=$name/' wpa_supplicant-wlan0.conf && exit"
         ''');
+            print('newSSiDname to ssid == $newSSiDname');
+       //    Future.delayed(Duration(seconds: 1), () async {
+       //      process = await Process.start(
+       //        plinkPath,
+       //        [
+       //          '-i', keyPath,
+       //          'root@192.168.12.1',
+       //          '-hostkey', hostKey,
+       //          'sh', '-c',
+       //          'mount -o remount,rw / && sed -i "1s/.*/$newSSiDname/" /etc/hostname && mount -o remount,ro /'
+       //        ],
+       //      );
+       //    });
+
           pushUnitResponse(1,"SSID successfully updated",updateState:updateState);
           updateState();
         } catch (e) {
+          print(e);
           pushUnitResponse(2,"Failed to update SSID:\ncheck all conditions before start",updateState:updateState);
           updateState();
         } finally {
+               // process = await Process.start(
+               //   plinkPath,
+               //   [
+               //     '-i', keyPath,
+               //     'root@192.168.12.1',
+               //     '-hostkey', hostKey,
+               //     'sh', '-c',
+               //     'mount -o remount,rw / && sed -i "1s/.*/$newSSiDname/" /etc/hostname && mount -o remount,ro /'
+               //   ],
+               // );
+
           await deleteTempKeyFile();
+          runGhost(newSSiDname);
         }
       } else {
         pushUnitResponse(2,"Procedure failed",updateState:updateState);
@@ -554,6 +599,9 @@ String comm='auth $command';
         var ssidDef = await shell.run('''
         ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "grep '^ssid=' /etc/wpa_supplicant/wpa_supplicant-default.conf | sed 's/^ssid=//' && exit"
       ''');
+//         var ssidDef = await shell.run('''
+//   ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" /etc/hostname"
+// ''');
         output["SSID default: "] = "${ssidDef.outText.split(' ').first.replaceAll('"', '')}";
 
         // Текущий SSID
@@ -1500,12 +1548,15 @@ String comm='auth $command';
       try {
         await findFolder(folderName,updateState);
 
-        await shell.run('''
-    ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /srv/www && mount -o remount,rw / && sed -i '/LiDAR Service/a <a href=\"img/$atcName\" id=\"Geometry\" target=\"_blank\">Calibration Certificate</a>' /var/volatile/srv/www/index.html"
+//         await shell.run('''
+//     ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /srv/www && mount -o remount,rw / && sed -i '/LiDAR Service/a <a href=\"img/$atcName\" id=\"Geometry\" target=\"_blank\">Calibration Certificate</a>' /var/volatile/srv/www/index.html"
+// ''');
+                await shell.run('''
+    ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" 'sh -c "mount -o remount,rw /"'
 ''');
         Future.delayed(Duration(seconds: 1), () async {
           await shell.run(
-              '''${pscpPath} -hostkey "$host" -i "$keyPath" -P 22 "$folderPathAtc/${atcName.toString()}" root@192.168.12.1:/var/volatile/srv/www/img/${atcName.toString()}''');
+              '''${pscpPath} -hostkey "$host" -i "$keyPath" -P 22 "$folderPathAtc/${atcName.toString()}" root@192.168.12.1:/etc/payload/ATC.pdf''');
         });
         pushUnitResponse(1,"ATC file copied to the unit",updateState:updateState);
         Future.delayed(Duration(seconds: 3), () async {

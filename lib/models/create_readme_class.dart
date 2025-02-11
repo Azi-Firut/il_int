@@ -76,7 +76,7 @@ class ReadMeClass {
 
     // Содержание файла
     String fileContent = '''
-Supplier:      $supplierName    ( Inertial Labs )
+Supplier:      $supplierName    ( Inertial Labs , FLIGHTS)
 Unit SN:       ??????
 Model:         $model         ( RESEPI , RECON-XT , RESEPI GEN2 , FLIGHTS Scan , Wingtra LIDAR ) 
 Build Number:  ??????
