@@ -78,13 +78,13 @@ class ReadMeClass {
     String fileContent = '''
 Supplier:      $supplierName    ( Inertial Labs , FLIGHTS)
 Unit SN:       ??????
-Model:         $model         ( RESEPI , RECON-XT , RESEPI GEN2 , FLIGHTS Scan , Wingtra LIDAR ) 
+Model:         $model         ( RESEPI , RESEPI ULTRA LITE , RECON-XT , RESEPI GEN2 , FLIGHTS Scan , Wingtra LIDAR ) 
 Build Number:  ??????
 Motherboard:   9V; up to 45V
 IMU:           $imu
 Lidar:         $lidar
 GNSS:          $gnss
-Camera:        ADTI; lens 2.8/16     ( ABSENT , ADTI; lens 2.8/16 , Sony ILX-LR1, 18mm lens ) 
+Camera:        ADTI; lens 2.8/16     ( ABSENT , ADTI; lens 2.8/16 , Sony ILX-LR1, 18mm lens , 5MP camera) 
 Other:         SKYPORT               ( ABSENT , SKYPORT )
 Boresight:     COMPLETE
 ''';
