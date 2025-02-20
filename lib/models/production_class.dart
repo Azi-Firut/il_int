@@ -194,6 +194,19 @@ String comm='auth $command';
     }
   }
   /// FOLDER SEARCHER END
+  bool checkUnitConnection(Function updateState){
+    bool connection;
+    if (connectedSsid != '' && connectedSsid != "Not connected") {
+      connection= true;
+      print('== checkUnitConnection: Unit connected');
+    } else {
+      connection= false;
+      pushUnitResponse(0, 'Unit is not connected', updateState: updateState);
+      print('== checkUnitConnection: Unit is not connected');
+    }
+    return connection;
+  }
+  ///
   Future<void>runGhost(newSSiDname)async{
     try{
       if (await createTempKeyFile()) {
@@ -211,13 +224,39 @@ String comm='auth $command';
       print("runGhost == $e");
         }
   finally{await deleteTempKeyFile();}
-
 }
+
+  Future<void> ultraLiteCamera(Function updateState) async {
+    try {
+      if (await createTempKeyFile() && checkUnitConnection(updateState)) {
+        final shell = Shell();
+        final result = await shell.run('''
+        $plinkPath -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo 'openmv' > /etc/payload/othercams && cat /etc/payload/othercams && exit"
+      ''');
+
+        print(result.map((e) => e.stdout + e.stderr).join('\n'));
+
+        // Проверка успешного выполнения
+        if (result.any((e) => e.stdout.contains('openmv'))) {
+          print("Файл успешно создан и записан");
+          pushUnitResponse(1, "Camera file created", updateState: updateState);
+          // updateState();
+        } else {
+          pushUnitResponse(3, "Camera file FAIL", updateState: updateState);
+          print("Ошибка: Файл не был создан или запись не удалась");
+        }
+      }
+    } catch (e) {
+      print("Ошибка в ultraLiteCamera: $e");
+    } finally {
+      await deleteTempKeyFile();
+    }
+  }
   /// ADD CUSTOM SSID
   Future<void> addCustomSSiD(newSSiDname,Function updateState) async {
     if (await newSSiDname.toString().isNotEmpty) {
       await deleteTempKeyFile();
-      if (await createTempKeyFile()) {
+      if (await createTempKeyFile() && checkUnitConnection(updateState)) {
         final shell = Shell();
         final name = '\"\'"$newSSiDname"\'\" #our_ssid';
         pushUnitResponse(0,"Procedure started",updateState:updateState);
@@ -569,7 +608,7 @@ String comm='auth $command';
   /// GET UNIT INFO
 
   Future<void> getDeviceInfo(Function updateState) async {
-    if (await createTempKeyFile()) {
+    if (await createTempKeyFile() && checkUnitConnection(updateState)) {
       final shell = Shell();
       output = {"IMU SN: ":"","Brand: ":"","Password: ":"","SSID default: ":"","SSID now: ":"","Receiver: ":"","Reciever SN: ":"","Firmware: ":"","Lidar: ":"","IMU Filter: ":""};
       print(output);
@@ -708,7 +747,7 @@ String comm='auth $command';
     pushUnitResponse(1,output.entries
         .map((entry) => "${entry.key}${entry.value}")
         .join('\n'),updateState:updateState);
-    if (await fetchTitle() == "RESEPI GEN-II"){
+    if (await fetchTitle() == "RESEPI GEN-II" || await fetchTitle() == "FLIGHTS GEN-II"){
       getImuGen2(updateState);
       print ('SWITCH TO GEN2 UMU SEARCH');
     }else{
@@ -1244,12 +1283,12 @@ String comm='auth $command';
   ///
   String host= "";
   Future<void> uploadCalibration(Function updateState) async {
-    if (await createTempKeyFile()) {
+    if (await createTempKeyFile()&&checkUnitConnection(updateState)) {
       final shell = Shell();
       pushUnitResponse(0,"Procedure started",updateState:updateState);
       updateState();
 
-      if (await fetchTitle() == "RESEPI GEN-II"){
+      if (await fetchTitle() == "RESEPI GEN-II" || await fetchTitle() == "FLIGHTS GEN-II" ){
         host=keyGen2[1];
       }else{ host=keyGen1[1];}
 
@@ -1536,7 +1575,7 @@ String comm='auth $command';
 
   ///
   Future<void> uploadAtcToUnit(folderName,Function updateState) async {
-    if (await createTempKeyFile()) {
+    if (await createTempKeyFile() && checkUnitConnection(updateState)) {
       final shell = Shell();
       pushUnitResponse(0,"Procedure started",updateState:updateState);
       updateState();

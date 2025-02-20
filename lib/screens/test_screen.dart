@@ -3,7 +3,6 @@ import 'package:il_int/models/device_fix_class.dart';
 import 'package:il_int/models/production_class.dart';
 import 'package:il_int/models/test_class2.dart';
 
-import 'package:il_int/models/test_class_widget.dart';
 import 'package:il_int/widgets/answer_from_unit.dart';
 import 'package:provider/provider.dart';
 import '../constant.dart';
@@ -23,7 +22,7 @@ class TestScreen extends StatefulWidget {
 
 class TestScreenState extends State<TestScreen> {
 
-  final Production _productionFunctionKit = Production();
+  final Test _testGetUnitInfo = Test();
   final TextEditingController _controller = TextEditingController();
   final ReadMeClass _readMeClassKit = ReadMeClass();
 
@@ -68,11 +67,12 @@ class TestScreenState extends State<TestScreen> {
 
             ElevatedButton(
               onPressed: () async {
-                await _productionFunctionKit.getDeviceInfo(updateState);
+              //  await _testGetUnitInfo.getDeviceInfo(updateState);
+                await _testGetUnitInfo.getImuGen2(updateState);
               },
 
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5B5B5B),
+                backgroundColor: const Color(0xFF4E7DE2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(3),
                 ),
@@ -87,7 +87,7 @@ class TestScreenState extends State<TestScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _productionFunctionKit.runUnit(updateState);
+                await _testGetUnitInfo.runUnit(updateState);
               },
 
               style: ElevatedButton.styleFrom(

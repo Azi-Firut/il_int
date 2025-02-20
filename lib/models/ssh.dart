@@ -5,6 +5,8 @@ import 'package:html/parser.dart';
 import '../constant.dart';
 import 'package:http/http.dart' as http;
 
+import '../widgets/answer_from_unit.dart';
+
 String decodedString = "";
 var tempDir;
 //String keyPath = '';
@@ -12,22 +14,32 @@ const String plinkPath = 'data/flutter_assets/assets/plink.exe';
 const String pscpPath = 'data/flutter_assets/assets/pscp.exe';
 var ssidCompare='';
 
+
+
 Future<String?> fetchTitle() async {
   ssidCompare=connectedSsid;
   final url = Uri.parse('http://192.168.12.1/');
   final response = await http.get(url);
 
+  if (connectedSsid != '' && connectedSsid !="Not connected"){
+
+
+
   if (response.statusCode == 200) {
     // Парсинг HTML
     var document = parse(response.body);
     var titleElement = document.getElementsByTagName('title').first;
-    print('Работаем с : ${titleElement.text}');
+    print('K : ${titleElement.text}');
     titleText = titleElement.text;
     return titleElement.text; // Вернет текст внутри <title>
   } else {
     print('Ошибка при получении данных: ${response.statusCode}');
     return null;
   }
+  }else{
+    pushUnitResponse(0, 'Unit is not connected', );
+  }
+
 }
 
 
@@ -37,7 +49,7 @@ if(ssidCompare != connectedSsid){
 } else {}
 
  // titleText  = (await fetchTitle().toString());
-  print('Текст внутри <title>: $titleText');
+  print('K T: $titleText');
 }
 
 
@@ -55,10 +67,10 @@ String decodeStringWithRandom(String input) {
 
 Future<bool> createTempKeyFile() async {
   await getVersion();
-  print("$titleText");
+ // print("$titleText");
  // titleText = await getVersion();
 if(await titleText == "RESEPI GEN-II" || titleText == "FLIGHTS GEN-II") {
-  print('K2');
+  print('K 2');
   var key = keyGen2;
   decodedString = decodeStringWithRandom(key[0]);
   hostKey = key[1];
@@ -70,10 +82,10 @@ if(await titleText == "RESEPI GEN-II" || titleText == "FLIGHTS GEN-II") {
   final keyFile = File('${tempDir.path}/resepi_login.ppk');
   await keyFile.writeAsString(decodedString);
   keyPath = keyFile.path;
-  print("OPEN");
+  print("K OPEN");
   return await keyFile.exists();
   }else{var key = keyGen1;
-print('K1');
+print('K 1');
   decodedString = decodeStringWithRandom(key[0]);
 hostKey = key[1];
   final appDir = Directory.current;
@@ -84,7 +96,7 @@ hostKey = key[1];
 final keyFile = File('${tempDir.path}/resepi_login.ppk');
 await keyFile.writeAsString(decodedString);
 keyPath = keyFile.path;
-print("OPEN \n$key");
+//print("OPEN \n$key");
 return await keyFile.exists();}
 }
 
@@ -93,15 +105,15 @@ Future<void> deleteTempKeyFile() async {
   if (await keyFile.exists()) {
     try {
       await keyFile.delete();
-      print("CLOSE");
+      print("K CLOSE");
     } catch (e) {
-      print("Failed : $e");
+      print("K Failed : $e");
       await Future.delayed(Duration(seconds: 1));
       try {
         await keyFile.delete();
-        print("Retry procedure.");
+        print("K Retry procedure.");
       } catch (retryException) {
-        print("Procedure failed : $retryException");
+        print("K Procedure failed : $retryException");
       }
     }
   }

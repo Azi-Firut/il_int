@@ -139,6 +139,19 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
 //     pushUnitResponse(step,text,updateState);
 // }
 
+  bool checkUnitConnection(Function updateState){
+    bool connection;
+    if (connectedSsid != '' && connectedSsid != "Not connected") {
+      connection= true;
+      print('== checkUnitConnection: Unit connected');
+    } else {
+      connection= false;
+      pushUnitResponse(0, 'Unit is not connected', updateState: updateState);
+      print('== checkUnitConnection: Unit is not connected');
+    }
+    return connection;
+  }
+
   void uploadInitialToUnit(List<String> lines) async {
 
     pushUnitResponse(0,"The procedure started",updateState: widget.recolState);
@@ -148,7 +161,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
     if (await lines.isNotEmpty) {
       pushUnitResponse(0,"The procedure started",updateState: widget.recolState);
       updateState();
-      if (await createTempKeyFile()) {
+      if (await createTempKeyFile() &&checkUnitConnection(updateState)) {
         try {
           print('===[1]=== ${lines.length}');
 

@@ -265,6 +265,26 @@ class ProdScreenState extends State<ProdScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+
+                await _productionFunctionKit.ultraLiteCamera(updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF65A03),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                'Ultra lite camera update',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             /// Rec
             // ElevatedButton(
             //   onPressed: () async {
