@@ -20,15 +20,15 @@ class CustomTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       style: ButtonStyle(
-        maximumSize: MaterialStateProperty.all(const Size(150, 60)),
-        minimumSize: MaterialStateProperty.all(const Size(150, 54)),
-        overlayColor: MaterialStateProperty.all<Color>(Color(0x1800A4FC)),
-        backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-        foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
-        padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+        maximumSize: WidgetStateProperty.all(const Size(150, 60)),
+        minimumSize: WidgetStateProperty.all(const Size(150, 54)),
+        overlayColor: WidgetStateProperty.all<Color>(const Color(0x1800A4FC)),
+        backgroundColor: WidgetStateProperty.all<Color>(Colors.transparent),
+        foregroundColor: WidgetStateProperty.all<Color>(Colors.black),
+        padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
           const EdgeInsets.only(top: 3, bottom: 3),
         ),
-        shape: MaterialStateProperty.all<OutlinedBorder>(
+        shape: WidgetStateProperty.all<OutlinedBorder>(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(0),
           ),

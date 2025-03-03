@@ -102,7 +102,7 @@ class DeviceFix {
 
       try {
         await shell.run('''
-        ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
+        $_plinkPath -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/payload && mount -o remount,rw / && rm -rf calibration && mount -o remount,ro / && exit"
         ''');
         pushUnitResponse(1,"Calibration file successfully deleted",updateState:updateState);
 
@@ -126,7 +126,7 @@ class DeviceFix {
 
       try {
         var result = await shell.run('''
-${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist';)"
+$_plinkPath -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e /etc/payload/calibration && echo 'Calibration file exists' || (echo 'Calibration file does not exist';)"
 ''');
         ////////////////////////////////////////////
         if (result.outText == "Calibration file does not exist") {
@@ -154,14 +154,14 @@ ${_plinkPath} -ssh -i "$keyPath" root@192.168.12.1 -hostkey "$hostKey" "test -e 
 
       try {
         var brandNow = await shell.run('''
-          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
+          $_plinkPath -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cat /etc/brand"
           ''');
         await shell.run('''
-          ${_plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${brandNow.outText}' > /etc/brand && exit"
+          $_plinkPath -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "mount -o remount,rw / && echo '${brandNow.outText}' > /etc/brand && exit"
           ''');
         const calibrationAssetPath = 'assets/calibration';
         await shell.run('''
-        ${_pscpPath} -i "$keyPath" -P 22 "$calibrationAssetPath" root@192.168.12.1:/etc/payload/calibration 
+        $_pscpPath -i "$keyPath" -P 22 "$calibrationAssetPath" root@192.168.12.1:/etc/payload/calibration 
         ''');
         pushUnitResponse(1,"Calibration file copied successfully",updateState:updateState);
       } catch (e) {

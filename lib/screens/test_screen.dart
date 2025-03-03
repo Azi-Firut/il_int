@@ -9,6 +9,7 @@ import '../constant.dart';
 
 import '../models/create_readme_class.dart';
 import '../models/data.dart';
+import '../models/test_get_imu_number_g1.dart';
 
 
 
@@ -21,7 +22,7 @@ class TestScreen extends StatefulWidget {
 }
 
 class TestScreenState extends State<TestScreen> {
-
+final TestGetImuNumberG1 _getImuNumberG1 = TestGetImuNumberG1();
   final Test _testGetUnitInfo = Test();
   final TextEditingController _controller = TextEditingController();
   final ReadMeClass _readMeClassKit = ReadMeClass();
@@ -62,9 +63,182 @@ class TestScreenState extends State<TestScreen> {
               ),
             ),
             const SizedBox(height: 20),
+/// G1 get imu
+            ElevatedButton(
+              onPressed: () async {
+                await _getImuNumberG1.genSwitchToGetImuNumber(updateState);
+              },
 
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                'Get Unit Imu G1',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+///
+            ///
+            ElevatedButton(
+              onPressed: () async {
+                await _getImuNumberG1.getImuG1_01(updateState);
+              },
 
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                '1',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _getImuNumberG1.getImuG1_02(updateState);
+              },
 
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                '2',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            // const SizedBox(height: 20),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     await _getImuNumberG1.getImuG1_03(updateState);
+            //   },
+            //
+            //   style: ElevatedButton.styleFrom(
+            //     backgroundColor: const Color(0xFF258346),
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(3),
+            //     ),
+            //   ),
+            //   child: const Text(
+            //     '3',
+            //     style: TextStyle(
+            //       color: Color(0xFFFFFFFF),
+            //     ),
+            //   ),
+            // ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _getImuNumberG1.getImuG1_04(updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                '4',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _getImuNumberG1.getImuG1_05(updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                '5',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _getImuNumberG1.getImuG1_06(updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                '6',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _getImuNumberG1.getImuG1_07(updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                '7',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                await _getImuNumberG1.getImuG1_08(updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                '8',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ///
+            ///
             ElevatedButton(
               onPressed: () async {
               //  await _testGetUnitInfo.getDeviceInfo(updateState);

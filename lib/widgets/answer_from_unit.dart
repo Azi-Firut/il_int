@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:il_int/screens/prod_screen.dart';
 import '../constant.dart';
-import 'package:il_int/models/data.dart';
-import 'package:provider/provider.dart';
 
 import '../models/usb_check.dart';
 

@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,12 +15,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: FileFinderScreen(),
+      home: const FileFinderScreen(),
     );
   }
 }
 
 class FileFinderScreen extends StatefulWidget {
+  const FileFinderScreen({super.key});
+
   @override
   _FileFinderScreenState createState() => _FileFinderScreenState();
 }
@@ -86,7 +90,7 @@ class _FileFinderScreenState extends State<FileFinderScreen> {
     }
 
     // Копируем файлы в папку data внутри исходной папки
-    final dataDir = Directory('${folderPath}\\data');
+    final dataDir = Directory('$folderPath\\data');
     if (!await dataDir.exists()) {
       await dataDir.create();
     }
@@ -94,7 +98,7 @@ class _FileFinderScreenState extends State<FileFinderScreen> {
     final targetCopyPath = '${dataDir.path}\\${targetFile.path.split(Platform.pathSeparator).last}';
     await targetFile.copy(targetCopyPath);
     setState(() {
-      _statusMessage = "Скопирован файл: ${targetCopyPath}";
+      _statusMessage = "Скопирован файл: $targetCopyPath";
     });
 
     // Объединяем файлы в один с названием basefile
@@ -108,7 +112,7 @@ class _FileFinderScreenState extends State<FileFinderScreen> {
       final nextCopyPath = '${dataDir.path}\\${nextFile.path.split(Platform.pathSeparator).last}';
       await nextFile.copy(nextCopyPath);
       setState(() {
-        _statusMessage += "\nСкопирован следующий файл: ${nextCopyPath}";
+        _statusMessage += "\nСкопирован следующий файл: $nextCopyPath";
       });
 
       // Записываем содержимое nextCopyPath
@@ -134,7 +138,7 @@ class _FileFinderScreenState extends State<FileFinderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('File Finder'),
+        title: const Text('File Finder'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -142,20 +146,20 @@ class _FileFinderScreenState extends State<FileFinderScreen> {
           children: [
             TextField(
               controller: _folderController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Адрес папки',
                 hintText: 'Введите полный адрес папки...',
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _processFolder,
-              child: Text('Найти файлы'),
+              child: const Text('Найти файлы'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text(
               _statusMessage,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),

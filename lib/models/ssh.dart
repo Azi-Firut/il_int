@@ -93,10 +93,10 @@ hostKey = key[1];
   if (!await tempDir.exists()) {
   await tempDir.create(recursive: true);
 }
-final keyFile = File('${tempDir.path}/resepi_login.ppk');
-await keyFile.writeAsString(decodedString);
-keyPath = keyFile.path;
-//print("OPEN \n$key");
+    final keyFile = File('${tempDir.path}/resepi_login.ppk');
+    await keyFile.writeAsString(decodedString);
+    keyPath = keyFile.path;
+  print("OPEN \n$key");
 return await keyFile.exists();}
 }
 

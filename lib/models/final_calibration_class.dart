@@ -159,24 +159,11 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
   //   }
   // }
 
-  bool checkUnitConnection(Function updateState){
-    bool connection;
-    if (connectedSsid != '' && connectedSsid != "Not connected") {
-      connection= true;
-      print('== checkUnitConnection: Unit connected');
-    } else {
-      connection= false;
-      pushUnitResponse(0, 'Unit is not connected', updateState: updateState);
-      print('== checkUnitConnection: Unit is not connected');
-    }
-    return connection;
-  }
-  
   void uploadFinalToUnit(List<String> lines) async {
     pushUnitResponse(0,"The procedure started",updateState:widget.recolState);
     updateState();
        if (await lines.isNotEmpty) {
-           if (await createTempKeyFile()&&checkUnitConnection(updateState)) {
+           if (await createTempKeyFile()) {
             var process;
         try {
           print('uploadFinalToUnit => ${lines.length}');
