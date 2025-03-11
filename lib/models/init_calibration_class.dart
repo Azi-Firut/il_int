@@ -156,10 +156,20 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
             plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[4]}\n${lines[5]}' > cameras && exit"],
           );
-           process = await Process.start(
+          //  process = await Process.start(
+          //   plinkPath,
+          //   ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[3]}\n${lines.length > 10 ? lines[11]:'')}' > boresight && exit"],
+          // );
+          process = await Process.start(
             plinkPath,
-            ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[3]}\n' > boresight && exit"],
+            [
+              '-i', keyPath,
+              'root@192.168.12.1',
+              '-hostkey', hostKey,
+              "cd /etc/payload && mount -o remount,rw / && echo '${lines[3]}\n${lines.length > 11 ? lines[11] : ''}' > boresight"
+            ],
           );
+
           process = await Process.start(
             plinkPath,
             ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "cd /etc/payload && mount -o remount,rw / && echo '${lines[2]}\n' > FOV && exit"],

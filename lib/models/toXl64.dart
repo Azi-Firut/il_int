@@ -495,7 +495,7 @@ Future<void> generateExcel64(saveDirectory,_address,listContentTxt,lidarOffsetsL
   sheet.getRangeByName('C116:D116').merge();
   sheet.getRangeByName('C116').setText('Camera Focal Length');
 
-  print('============${lidarOffsetsList[70][5]}');
+ // print('============${lidarOffsetsList[70][5]}');
  // print('============${lidarOffsetsList[71]}');
   sheet.getRangeByName('I116').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[70][0]}' : '');
 
@@ -503,12 +503,12 @@ Future<void> generateExcel64(saveDirectory,_address,listContentTxt,lidarOffsetsL
   sheet.getRangeByName('E116:E118').setText('mm');
   sheet.getRangeByName('C117:D117').merge();
   sheet.getRangeByName('C117').setText('Camera Delta X / Delta Y');
-  sheet.getRangeByName('I117').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[70][5]}' : '');
-  sheet.getRangeByName('J117').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[70][4]}' : '');
+  sheet.getRangeByName('I117').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[71][5]}' : '');
+  sheet.getRangeByName('J117').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[71][4]}' : '');
   sheet.getRangeByName('C118:D118').merge();
   sheet.getRangeByName('C118').setText('Camera Rational Numerator / Denominator');
-  sheet.getRangeByName('I118').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[70][3]}' : '');
-  sheet.getRangeByName('J118').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[70][2]}' : '');
+  sheet.getRangeByName('I118').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[71][3]}' : '');
+  sheet.getRangeByName('J118').setText(lidarOffsetsList.length >= 71 ? '${lidarOffsetsList[71][2]}' : '');
   sheet.getRangeByName('C119').cellStyle.bold=true;
   sheet.getRangeByName('C119').setText('Review');
   sheet.getRangeByName('C120').setText('Flight test #1');

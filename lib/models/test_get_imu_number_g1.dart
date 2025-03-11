@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:html/parser.dart';
 import 'package:il_int/models/ssh.dart';
 import 'package:il_int/models/toXl32.dart';
 import 'package:il_int/models/toXl64.dart';
@@ -26,6 +27,7 @@ class TestGetImuNumberG1 {
 
   TestGetImuNumberG1._internal();
 
+//  =VARS=
   String? unitNum;
   List<String> listContentTxt = [];
   Map<String, String> mapListContent = {};
@@ -53,13 +55,12 @@ class TestGetImuNumberG1 {
   var imuFilter = '';
   var tempData = '';
   var counter = 5;
-
-  //
   var lidarSerialNumber = '';
   var lidarModel = '';
   var urlToLidar = 'http://192.168.12.1:8001/pandar.cgi?action=get&object=device_info';
 
 
+  //////////////////////////////////////////////////////////////
 
   /// Restart unit
   Future<void> _restartUnit() async {
@@ -136,9 +137,7 @@ class TestGetImuNumberG1 {
       finally {}
     }
   }
-
-  /// RestartS unit END
-///////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////
 
   void _decrementCounter(Function updateState) {
     if (counter > 0) {
@@ -148,6 +147,8 @@ class TestGetImuNumberG1 {
     }
   }
 
+
+  /// Check WiFi connection with unit
   bool _checkUnitConnection(Function updateState){
     bool connection;
     if (connectedSsid != '' && connectedSsid != "Not connected") {
@@ -160,7 +161,9 @@ class TestGetImuNumberG1 {
     }
     return connection;
   }
-// ENTRY POINT FROM SCREEN _______________________________________________
+  ///////////////////////////////////////////////////////////////
+
+  // ENTRY POINT FROM SCREEN ____________________________________
   genSwitchToGetImuNumber(updateState) async {  // ENTRY POINT FROM SCREEN
     if (_checkUnitConnection(updateState)) {
       print("RUN GET UNIT IMU");
@@ -183,8 +186,8 @@ class TestGetImuNumberG1 {
     } else {
       pushUnitResponse(0, 'Unit is not connected', updateState: updateState);
     }
-
-  }//_____________________________________________________________________
+  }
+  //_____________________________________________________________
 
   _getResultFromImuScan(updateState) async {
     String result = _processDataFromUnit(tempData).replaceAll('\n', '').replaceAll(' ', '');
@@ -266,8 +269,7 @@ class TestGetImuNumberG1 {
     print('Last --- \n${tempData.length > 1000 ? tempData.substring(tempData.length - 1000) : tempData}');
 
   }
-
-  //=====================================================================
+  //=============================================================
 
   Future<void> _getLidarSn(updateState) async {
     lidarSerialNumber='';
@@ -425,7 +427,7 @@ class TestGetImuNumberG1 {
           Future.delayed(const Duration(milliseconds: 100), () async {
             await getImuG1_02(updateState); // collect data
             Future.delayed(const Duration(milliseconds: 10), () async {
-              // await _getImuG1_03(updateState); // IMU KERNEL-210
+               await getImuG1_03(updateState); // IMU KERNEL-210
               Future.delayed(const Duration(milliseconds: 10), () async {
                if (await getImuG1_04(updateState) == 0) { // 3012-HF
                  Future.delayed(const Duration(milliseconds: 10), () async {
@@ -439,16 +441,11 @@ class TestGetImuNumberG1 {
                                  const Duration(milliseconds: 10), () async {
                                if (await getImuG1_07(updateState) == 0) {
                                  await getImuG1_07(updateState); // request
-
-
                                  if (await getImuG1_07(updateState) == 0) {
                                    Future.delayed(
                                        const Duration(
                                            milliseconds: 100), () async {
-
                                      await getImuG1_08(updateState);
-
-
                                    });
                                  }
                                }
@@ -461,7 +458,6 @@ class TestGetImuNumberG1 {
                  });
                }
               });
-
             });
           });
         }
@@ -477,7 +473,7 @@ class TestGetImuNumberG1 {
     else {
       pushUnitResponse(0, 'Unit is not connected', updateState: updateState);
     }
-  }
+  } // Main function to get imu sn
 
   Future<int> getImuG1_01(Function updateState) async {
    // await createTempKeyFile();
@@ -532,23 +528,23 @@ class TestGetImuNumberG1 {
     }
   }
 
-  // Future<void> _getImuG1_03(Function updateState) async {
-  //   print("_getImuG1_03 : START");
-  //   try{
-  //     process2 = await Process.start(
-  //       plinkPath,
-  //       ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x07\\x00\\xfe\\x05\\x01' >/dev/ttymxc3"],
-  //     );
-  //     process2 = await Process.start(
-  //       plinkPath,
-  //       ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x07\\x00\\x12\\x19\\x00' >/dev/ttymxc3"],
-  //     );
-  //   }catch(e){
-  //     print(e);
-  //   }finally{
-  //     print("_getImuG1_03 : DONE");
-  //   }
-  // }
+  Future<void> getImuG1_03(Function updateState) async {
+    print("_getImuG1_03 : START");
+    try{
+      process2 = await Process.start(
+        plinkPath,
+        ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x07\\x00\\xfe\\x05\\x01' >/dev/ttymxc3"],
+      );
+      process2 = await Process.start(
+        plinkPath,
+        ['-i', keyPath, 'root@192.168.12.1', '-hostkey', hostKey, "echo -en '\\xaa\\x55\\x00\\x00\\x07\\x00\\x12\\x19\\x00' >/dev/ttymxc3"],
+      );
+    }catch(e){
+      print(e);
+    }finally{
+      print("_getImuG1_03 : DONE");
+    }
+  }
 
   Future<int> getImuG1_04(Function updateState) async {
     print("_getImuG1_04 : START");

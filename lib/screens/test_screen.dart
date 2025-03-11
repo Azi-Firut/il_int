@@ -66,7 +66,8 @@ final TestGetImuNumberG1 _getImuNumberG1 = TestGetImuNumberG1();
 /// G1 get imu
             ElevatedButton(
               onPressed: () async {
-                await _getImuNumberG1.genSwitchToGetImuNumber(updateState);
+                //await _getImuNumberG1.genSwitchToGetImuNumber(updateState);
+                await _getImuNumberG1.getDeviceInfo(updateState);
               },
 
               style: ElevatedButton.styleFrom(
