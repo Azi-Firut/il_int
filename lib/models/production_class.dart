@@ -813,9 +813,13 @@ class Production {
 
   Future<void> formatUsb(updateState) async {
     pushUnitResponse(0, "Formatting started", updateState: updateState);
+
     final url = Uri.parse('http://192.168.12.1:/cgi-bin/usb-format');
+    final urlhdd = Uri.parse('http://192.168.12.1:/cgi-bin/data-format');
     try {
+
       final response = await http.get(url);
+
       var error = response.statusCode == 200
           ? response.body
           : 'Error: ${response.statusCode}';
@@ -823,6 +827,7 @@ class Production {
           'Error: There is no connection to the unit or there is no USB drive',
           updateState: updateState);
       responseUsb(updateState);
+      final responsehdd = await http.get(urlhdd);
     } catch (e) {
       pushUnitResponse(2,
           'Error: There is no connection to the unit or there is no USB drive',

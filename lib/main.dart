@@ -13,12 +13,12 @@ import 'models/data.dart';
 import 'models/usb_check.dart';
 
 void main() {
-  appWindow.size = const Size(600, 800);
+  appWindow.size = const Size(600, 880);
   runApp(IlintGui());
   appWindow.hide();
   doWhenWindowReady(() {
     final win = appWindow;
-    const initialSize = Size(600, 800);
+    const initialSize = Size(600, 880);
     win.minSize = initialSize;
     win.size = initialSize;
     win.alignment = Alignment.topRight;
@@ -194,7 +194,7 @@ class _LeftSideState extends State<LeftSide> {
               ),
               const CustomTextButton(
                 icon: Icons.call_merge_rounded,
-                text: "Merge file",
+                text: "Add base file",
                 onPress: 2,
               ),
               Container(
@@ -235,11 +235,11 @@ class _LeftSideState extends State<LeftSide> {
                 width: double.infinity,
                 color: const Color(0x1500A4FC),
               ),
-              const CustomTextButton(
-                icon: Icons.tips_and_updates_outlined,
-                text: "Test",
-                onPress: 99,
-              ),
+              // const CustomTextButton(
+              //   icon: Icons.tips_and_updates_outlined,
+              //   text: "Test",
+              //   onPress: 99,
+              // ),
               ///
               ///
               ///

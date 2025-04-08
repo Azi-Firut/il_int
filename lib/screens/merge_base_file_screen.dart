@@ -19,7 +19,7 @@ class _MergeBaseFilesState extends State<MergeBaseFiles> {
   late XFile firstDrag;
   late XFile secondDrag;
   final List<XFile> listX = [];
-  String dragAndDropMessage = "Drop files or folder of yor project here ";
+  String dragAndDropMessage = "Drop folder of yor project here ";
   var nextCopyPath = '';
 
   void processFolder(filePath) async {

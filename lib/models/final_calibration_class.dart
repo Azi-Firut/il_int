@@ -377,7 +377,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
                                 Navigator.of(context).pop(); // Закрываем диалог
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF3F941B),
+                                backgroundColor: const Color(0xFF259D3F),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(3),
                                 ),
@@ -397,7 +397,7 @@ class _FinalParamListWidgetState extends State<FinalParamListWidget> {
             ElevatedButton(
               onPressed:() {uploadFile();}, // Вызов общего метода
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3F941B),
+                backgroundColor: const Color(0xFF259D3F),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(3),
                 ),

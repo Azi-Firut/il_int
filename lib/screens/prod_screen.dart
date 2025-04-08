@@ -3,6 +3,7 @@ import 'package:il_int/models/device_fix_class.dart';
 import 'package:il_int/models/final_calibration_class.dart';
 import 'package:il_int/models/usb_check.dart';
 import 'package:il_int/widgets/answer_from_unit.dart';
+import 'package:il_int/widgets/divider.dart';
 import 'package:provider/provider.dart';
 import '../constant.dart';
 import '../models/create_readme_class.dart';
@@ -47,6 +48,7 @@ class ProdScreenState extends State<ProdScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            DividerString(text: "Operation field"),
             TextField(
               style: const TextStyle(
                 color: Colors.grey,
@@ -58,193 +60,214 @@ class ProdScreenState extends State<ProdScreen> {
                 hintStyle: TextStyle(color: Colors.grey),
               ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _productionFunctionKit.openFolder(_controller.text.trim(),updateState);
-                // setState(() {}); // Update UI with the new status message
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF02567E),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              child: const Text(
-                'Get Unit Folder',
-                style: TextStyle(
-                  color: Color(0xFFFFFFFF),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _productionFunctionKit.addCustomSSiD(_controller.text.trim(),updateState);
-                // setState(() {}); // Update UI with the new status message
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFAF7907),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              child: const Text(
-                'Add custom SSiD',
-                style: TextStyle(
-                  color: Color(0xFFFFFFFF),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.only(left: 25,right: 5),
-                backgroundColor: const Color(0xFF02567E),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              onPressed: () {
-                _productionFunctionKit.generateAtc(_productionFunctionKit.searchUserFolders(_controller.text.trim()),updateState);
-                zip=_isSelectedCreateZip;
-                // Оставляем пустым для переключения только на чекбоксе
-              },
-              child: Container(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Center(
-                      child: Text('Create ATC and Boresight.zip',
-                        style: TextStyle(
-                          color: Color(0xFFFFFFFF),
-                        ),),
-                    ),
-                    const SizedBox(width: 10),
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Checkbox(
-                          value: _isSelectedCreateZip,
-                          shape: CircleBorder(),
-                          side: BorderSide(
-                            color: _isSelectedCreateZip ? Colors.transparent : Colors.grey,
-                            width: 2,
-                          ),
-                          activeColor: Colors.transparent, // Убираем стандартную заливку
-                          checkColor: Colors.transparent, // Убираем стандартную галочку
-                          onChanged: (value) {
-                            setState(() {
-                              _isSelectedCreateZip = value ?? false;
-                            });
-                          },
-                        ),
-                        if (_isSelectedCreateZip)
-                          Container(
-                            width: 15, // Размер цветного круга
-                            height: 15,
-                            decoration: BoxDecoration(
-                              color: Colors.white, // Цвет заполненного круга
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            DividerString(text: "FTP operations"),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    _productionFunctionKit.formatUsb(updateState);
+                    await _productionFunctionKit.openFolder(_controller.text.trim(),updateState);
+                    // setState(() {}); // Update UI with the new status message
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: usbColChanger,
+                    backgroundColor: const Color(0xFF526D81),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                   child: const Text(
-                    'Format USB',
+                    'Get Unit Folder',
                     style: TextStyle(
                       color: Color(0xFFFFFFFF),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await _productionFunctionKit.sendRecCommand(_controller.text,updateState);
-                      _controller.text="";
-                    },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF532F98),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(3),
-                      ),
+                Container(width: 10,),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.only(left: 25,right: 5),
+                    backgroundColor: const Color(0xFF526181),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3),
                     ),
-                    child: const Text(
-                      'Upload GNSS code',
-                      style: TextStyle(
-                        color: Color(0xFFFFFFFF),
-                      ),
+                  ),
+                  onPressed: () {
+                    _productionFunctionKit.generateAtc(_productionFunctionKit.searchUserFolders(_controller.text.trim()),updateState);
+                    zip=_isSelectedCreateZip;
+                    // Оставляем пустым для переключения только на чекбоксе
+                  },
+                  child: Container(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Center(
+                          child: Text('Create ATC and Boresight.zip',
+                            style: TextStyle(
+                              color: Color(0xFFFFFFFF),
+                            ),),
+                        ),
+                        const SizedBox(width: 10),
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Checkbox(
+                              value: _isSelectedCreateZip,
+                              shape: CircleBorder(),
+                              side: BorderSide(
+                                color: _isSelectedCreateZip ? Colors.transparent : Colors.grey,
+                                width: 2,
+                              ),
+                              activeColor: Colors.transparent, // Убираем стандартную заливку
+                              checkColor: Colors.transparent, // Убираем стандартную галочку
+                              onChanged: (value) {
+                                setState(() {
+                                  _isSelectedCreateZip = value ?? false;
+                                });
+                              },
+                            ),
+                            if (_isSelectedCreateZip)
+                              Container(
+                                width: 15, // Размер цветного круга
+                                height: 15,
+                                decoration: BoxDecoration(
+                                  color: Colors.white, // Цвет заполненного круга
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
-
               ],
+            ),
+            const SizedBox(height: 12),
+            const DividerString(text: "Unit twaeks"),
+            Row(mainAxisAlignment: MainAxisAlignment.center,children: [
+              ElevatedButton(
+                onPressed: () async {
+                  await _productionFunctionKit.addCustomSSiD(_controller.text.trim(),updateState);
+                  // setState(() {}); // Update UI with the new status message
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF817452),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                child: const Text(
+                  'Add custom SSiD',
+                  style: TextStyle(
+                    color: Color(0xFFFFFFFF),
+                  ),
+                ),
+              ),
+              Container(width: 10,),
+              ElevatedButton(
+                onPressed: () async {
+                  await _productionFunctionKit.sendRecCommand(_controller.text,updateState);
+                  _controller.text="";
+                },
 
-            ),
-            const SizedBox(height: 20),
-            InitialParamListWidget(directoryPath: initialParamPath,recolState: updateState),
-           // FinalParamListWidget(directoryPath: finalParamPath,recolState: updateState),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _productionFunctionKit.runCreatePreUploadLaserBoresightFile(await _productionFunctionKit.searchUserFolders(_controller.text.trim()),updateState);
-                // setState(() {}); // Update UI with the new status message
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3F941B),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5B5281),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                child: const Text(
+                  'Upload GNSS code',
+                  style: TextStyle(
+                    color: Color(0xFFFFFFFF),
+                  ),
                 ),
               ),
-              child: const Text(
-                'Upload calibration',
-                style: TextStyle(
-                  color: Color(0xFFFFFFFF),
+            ],),
+            const SizedBox(height: 12),
+             Row(mainAxisAlignment: MainAxisAlignment.center,children: [
+              ElevatedButton(
+                onPressed: () async {
+                  _productionFunctionKit.formatUsb(updateState);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: usbColChanger,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                child: const Text(
+                  'Format USB',
+                  style: TextStyle(
+                    color: Color(0xFFFFFFFF),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-           FinalParamListWidget(directoryPath: finalParamPath,recolState: updateState),
-           const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _productionFunctionKit.uploadAtcToUnit(_controller.text.trim(), updateState);
-              },
+              Container(width: 10,),
+               ElevatedButton(
+                 onPressed: () async {
+                   await _productionFunctionKit.ultraLiteCamera(updateState);
+                 },
+                 style: ElevatedButton.styleFrom(
+                   backgroundColor: const Color(0xFF815F44),
+                   shape: RoundedRectangleBorder(
+                     borderRadius: BorderRadius.circular(3),
+                   ),
+                 ),
+                 child: const Text(
+                   'Ultra lite camera update',
+                   style: TextStyle(
+                     color: Color(0xFFFFFFFF),
+                   ),
+                 ),
+               ),
+            ],),
+            const SizedBox(height: 12),
+            const DividerString(text: "Calibration prepare - finish"),
+             InitialParamListWidget(directoryPath: initialParamPath,recolState: updateState),
+            const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () async {
+                  await _productionFunctionKit.runCreatePreUploadLaserBoresightFile(await _productionFunctionKit.searchUserFolders(_controller.text.trim()),updateState);
+                  // setState(() {}); // Update UI with the new status message
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFA49E54),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                child: const Text(
+                  'Upload calibration',
+                  style: TextStyle(
+                    color: Color(0xFFFFFFFF),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
+        FinalParamListWidget(directoryPath: finalParamPath,recolState: updateState),
+            const SizedBox(height: 12),
+        ElevatedButton(
+          onPressed: () async {
+            await _productionFunctionKit.uploadAtcToUnit(_controller.text.trim(), updateState);
+          },
 
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0F6E77),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              child: const Text(
-                'Upload ATC to Unit',
-                style: TextStyle(
-                  color: Color(0xFFFFFFFF),
-                ),
-              ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF527381),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(3),
             ),
-            const SizedBox(height: 20),
+          ),
+          child: const Text(
+            'Upload ATC to Unit',
+            style: TextStyle(
+              color: Color(0xFFFFFFFF),
+            ),
+          ),
+        ),
+            const SizedBox(height: 12),
+            const DividerString(text: "Get info and create a Readme file"),
             ElevatedButton(
               onPressed: () async {
 
@@ -264,27 +287,8 @@ class ProdScreenState extends State<ProdScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-
-                await _productionFunctionKit.ultraLiteCamera(updateState);
-              },
-
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF65A03),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              child: const Text(
-                'Ultra lite camera update',
-                style: TextStyle(
-                  color: Color(0xFFFFFFFF),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+            const DividerString(text: "Log message"),
             /// Rec
             // ElevatedButton(
             //   onPressed: () async {
@@ -306,15 +310,17 @@ class ProdScreenState extends State<ProdScreen> {
             // ),
             //const SizedBox(height: 20),
             /// OPERATION TEXT
+            ///
+
             UnitResponse(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             if (output["IMU SN: "] != null && RegExp(r'\d').hasMatch(output["IMU SN: "]!))
               ElevatedButton(
                 onPressed: () async {
                   await _readMeClassKit.createFoldersAndFile(updateState);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3F941B),
+                  backgroundColor: const Color(0xFFCEA233),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(3),
                   ),

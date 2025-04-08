@@ -346,7 +346,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
                                 Navigator.of(context).pop(); // Закрываем диалог
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF3F941B),
+                                backgroundColor: const Color(0xFF0D7EB9),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(3),
                                 ),
@@ -366,7 +366,7 @@ class _InitialParamListWidgetState extends State<InitialParamListWidget> {
             ElevatedButton(
               onPressed: uploadFile, // Вызов общего метода
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3F941B),
+                backgroundColor: const Color(0xFF0D7EB9),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(3),
                 ),

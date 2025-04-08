@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:il_int/models/usb_check.dart';
-String version = 'v.2.9 (beta)';
+String version = 'v.3.0';
 Map unitResponse = {'step':null,'text':null};
 List<String> unitInfo=['','','',''];
 Map output = {"IMU SN: ":"","Brand: ":"","Password: ":"","SSID default: ":"","SSID now: ":"","Receiver: ":"","Reciever SN: ":"","Firmware: ":"","Lidar: ":"","IMU Filter: ":""};
