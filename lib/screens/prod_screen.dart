@@ -56,6 +56,12 @@ class ProdScreenState extends State<ProdScreen> {
               textCapitalization: TextCapitalization.characters,
               controller: _controller,
               decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFF0C1317),
+                enabledBorder: OutlineInputBorder(
+
+                  borderSide: BorderSide(color: Color(0xFFD07E12), width: 1),
+                ),
                 hintText: 'Enter Unit Serial Number',
                 hintStyle: TextStyle(color: Colors.grey),
               ),

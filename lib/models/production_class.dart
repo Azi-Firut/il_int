@@ -55,7 +55,7 @@ class Production {
   //--
   var lidarSerialNumber = '';
   var lidarModel = '';
-  var urlToLidar = 'http://192.168.12.1:8001/pandar.cgi?action=get&object=device_info';
+  var urlToLidar = 'http://192.168.12.1:8001/pandar.cgi?action=get&object=device_info'; // Ouster http://192.168.12.1:8001/config
   String xlsxPath = '';
 
   // Отправка команды приемнику
@@ -302,6 +302,7 @@ class Production {
   /// ADD CUSTOM SSID
   Future<void> addCustomSSiD(newSSiDname, Function updateState) async {
     print('newSSiDname to ssid == $newSSiDname');
+    final pass = ['\"\'"LidarAndINS"\'\"','\"\'"FLIGHTSscan"\'\"'];
     if (await newSSiDname
         .toString()
         .isNotEmpty) {
@@ -315,7 +316,20 @@ class Production {
           await shell.run('''
        ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && sed -i 's/^ssid=\".*\"/ssid=$name/' wpa_supplicant-wlan0.conf && exit"
         ''');
+          if (await newSSiDname.toString().contains("RESEPI")){
+            await shell.run('''
+            ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && sed -i 's/^psk=\".*\"/psk=${pass[0]}/' wpa_supplicant-wlan0.conf && exit"
+          ''');
+          print('newSSiPass to pass == ${pass[0]}');
+          }
+          else if (await newSSiDname.toString().contains("FLIGHT")){
+            await shell.run('''
+            ${plinkPath} -i "$keyPath" -P 22 root@192.168.12.1 -hostkey "$hostKey" "cd /etc/wpa_supplicant && mount -o remount,rw / && sed -i 's/^psk=\".*\"/psk=${pass[1]}/' wpa_supplicant-wlan0.conf && exit"
+          ''');
+        print('newSSiPass to pass == ${pass[1]}');
+      };
           print('newSSiDname to ssid == $newSSiDname');
+
           //    Future.delayed(Duration(seconds: 1), () async {
           //      process = await Process.start(
           //        plinkPath,
@@ -675,7 +689,7 @@ class Production {
       // Преобразуем строку JSON в объект Dart (Map)
       Map<String, dynamic> jsonMap = jsonDecode(stringFromLidar);
       // Получаем значение поля SN
-      print(jsonMap);
+      print("jsonMap === $jsonMap");
       lidarSerialNumber = jsonMap['Body']['SN'];
       lidarModel = jsonMap['Body']['Model'];
       if (jsonMap['Body']['Model'] == 'Pandar_ZYNQ') {
