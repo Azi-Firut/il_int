@@ -13,6 +13,7 @@
 #include <drag_and_drop_windows/drag_and_drop_windows_plugin.h>
 #include <file_selector_windows/file_selector_windows.h>
 #include <flutter_secure_storage_windows/flutter_secure_storage_windows_plugin.h>
+#include <webview_windows/webview_windows_plugin.h>
 #include <wifi_scan_windows/wifi_scan_windows_plugin_c_api.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
@@ -30,6 +31,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FileSelectorWindows"));
   FlutterSecureStorageWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FlutterSecureStorageWindowsPlugin"));
+  WebviewWindowsPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("WebviewWindowsPlugin"));
   WifiScanWindowsPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("WifiScanWindowsPluginCApi"));
 }

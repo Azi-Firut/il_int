@@ -9,6 +9,7 @@ import '../constant.dart';
 import '../models/create_readme_class.dart';
 import '../models/data.dart';
 import '../models/init_calibration_class.dart';
+import '../models/ouster_config.dart';
 import '../models/production_class.dart';
 
 
@@ -228,6 +229,28 @@ class ProdScreenState extends State<ProdScreen> {
                    ),
                  ),
                ),
+            ],),
+            const SizedBox(height: 12),
+            Row(mainAxisAlignment: MainAxisAlignment.center,children: [
+              ElevatedButton(
+                onPressed: () async {
+                  await changeLidarMode(updateState); // updatestate
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5D5D5C),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                child: const Text(
+                  'Upload Ouster parameters',
+                  style: TextStyle(
+                    color: Color(0xFFFFFFFF),
+                  ),
+                ),
+              ),
+              Container(width: 10,),
+             /////
             ],),
             const SizedBox(height: 12),
             const DividerString(text: "Calibration prepare - finish"),

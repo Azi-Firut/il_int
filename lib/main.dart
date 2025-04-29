@@ -13,12 +13,12 @@ import 'models/data.dart';
 import 'models/usb_check.dart';
 
 void main() {
-  appWindow.size = const Size(600, 880);
+  appWindow.size = const Size(600, 920);
   runApp(IlintGui());
   appWindow.hide();
   doWhenWindowReady(() {
     final win = appWindow;
-    const initialSize = Size(600, 880);
+    const initialSize = Size(600, 920);
     win.minSize = initialSize;
     win.size = initialSize;
     win.alignment = Alignment.topRight;
@@ -230,11 +230,11 @@ class _LeftSideState extends State<LeftSide> {
               ///
               ///
               ///
-              Container(
-                height: 1,
-                width: double.infinity,
-                color: const Color(0x1500A4FC),
-              ),
+              // Container(
+              //   height: 1,
+              //   width: double.infinity,
+              //   color: const Color(0x1500A4FC),
+              // ),
               // const CustomTextButton(
               //   icon: Icons.tips_and_updates_outlined,
               //   text: "Test",

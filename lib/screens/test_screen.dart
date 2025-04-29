@@ -9,6 +9,7 @@ import '../constant.dart';
 
 import '../models/create_readme_class.dart';
 import '../models/data.dart';
+import '../models/ouster_config.dart';
 import '../models/test_get_imu_number_g1.dart';
 
 
@@ -63,6 +64,27 @@ final TestGetImuNumberG1 _getImuNumberG1 = TestGetImuNumberG1();
               ),
             ),
             const SizedBox(height: 20),
+/// Ouster
+            ElevatedButton(
+              onPressed: () async {
+                await changeLidarMode(updateState);
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF258346),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              child: const Text(
+                'Ouster config',
+                style: TextStyle(
+                  color: Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
 /// G1 get imu
             ElevatedButton(
               onPressed: () async {
